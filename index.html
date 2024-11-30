@@ -1,52 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Vahui_Box</title>
-<style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  background-color: #FFE8DF;
-  border-radius: 10px;
-  touch-action: manipulation; /* Prevents accidental scrolling on touch devices */
-  user-select: none; /* Prevents text selection */
-}
+    <meta charset="utf-8">
+    <title>Vahui_Box</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background-color: #FFE8DF;
+            border-radius: 10px;
+            touch-action: manipulation;
+            user-select: none;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
-#container {
-  width: 90%;
-  margin: 50px auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #FFFFFF;
-}
+        .container {
+            width: 90%;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #FFFFFF;
+            height: calc(100vh - 13px);
+            position: absolute;
+            transition: transform 0.3s ease-in-out;
+        }
 
-img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 20px;
-}
-
-button {
-  padding: 20px 40px; /* Reduced padding for better layout */
-  margin: 10px; /* Added margin for spacing between buttons */
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  background-color: #888888;
-  font-size: 24px; /* Reduced font size for better readability */
-}
-</style>
+        .container.hidden {
+            opacity: 0;
+        }
+    </style>
 </head>
 <body>
+    <div id="container" class="container">
+        Container 1
+    </div>
+    <div id="container2" class="container" style="transform: translateX(100%); opacity: 0;">
+        Container 2
+    </div>
 
-<div id="container">
-  <h1>VAHUI_BOX</h1>
-  <img id="catImage" src="Images/start.jpeg" alt="WTF"> <br> <br>
-  <button onclick="window.location.href='https://polufabricat.github.io/NEWS/'">NEWS</button>
-  <button onclick="window.location.href='https://polufabricat.github.io/bruh/'">BRUH</button>
-</div>
+<script>
+    const containers = document.querySelectorAll('.container');
+    let currentContainerIndex = 0;
+    const containerWidth = containers[0].offsetWidth;
+    let startX, endX;
+    const swipeThreshold = 50;
+    const offScreenThreshold = 3 * containerWidth; // Remove containers further than 3 widths
 
+    containers[0].style.transform = `translateX(0)`;
+    containers[0].style.opacity = 1;
+
+    containers.forEach(container => {
+        container.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        container.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            const diffX = endX - startX;
+
+            if (Math.abs(diffX) > swipeThreshold) {
+                if (diffX > 0) { // Swipe right
+                    showPreviousContainer();
+                } else { // Swipe left
+                    showNextContainer();
+                }
+            }
+        });
+    });
+
+    function showNextContainer() {
+        if (currentContainerIndex < containers.length -1) {
+            currentContainerIndex++;
+            containers.forEach((container, index) => {
+                container.style.transform = `translateX(${ (index - currentContainerIndex) * containerWidth}px)`;
+                if (index === currentContainerIndex){
+                    container.style.opacity = 1;
+                } else {
+                    container.style.opacity = 0;
+                }
+            });
+        }
+    }
+
+    function showPreviousContainer() {
+        if (currentContainerIndex > 0) {
+            currentContainerIndex--;
+            containers.forEach((container, index) => {
+                container.style.transform = `translateX(${ (index - currentContainerIndex) * containerWidth}px)`;
+                if (index === currentContainerIndex){
+                    container.style.opacity = 1;
+                } else {
+                    container.style.opacity = 0;
+                }
+            });
+        }
+    }
+
+
+    function removeOffScreenContainers(){
+        containers.forEach(container => {
+            let pos = parseInt(container.style.transform.replace('translateX(', '').replace('px)', ''), 10) || 0;
+
+            if (Math.abs(pos) > offScreenThreshold){
+                container.remove();
+            }
+        });
+    }
+
+    setInterval(removeOffScreenContainers, 100); // Regularly remove off-screen containers
+</script>
 </body>
 </html>
