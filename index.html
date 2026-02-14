@@ -793,6 +793,20 @@
       opacity:0;
       transition: opacity .22s ease;
     }
+    .scene{
+      padding-top: 98px; /* резерв под верхний пузырь */
+    }
+
+    .scene > .bubble{
+    position:absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    margin: 0 auto;
+    max-width: 92%;
+    z-index: 20;
+  }
+  .modalWrap{ z-index: 10; } /* <-- добавь (или проверь что так) */
     .centerMsg.show{opacity:1;}
     .centerMsgBox{
       max-width: 92%;
