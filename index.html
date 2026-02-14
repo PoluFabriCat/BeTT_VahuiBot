@@ -1,116 +1,728 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <title>Vahui_Box</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #FFE8DF;
-            border-radius: 10px;
-            touch-action: manipulation;
-            user-select: none;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff2d55" />
+  <title>Для Джамы 💌</title>
+  <style>
+    :root{
+      --bg0:#07070c;
+      --bg1:#140816;
+      --pink:#ff2d55;
+      --pink2:#ff7abf;
+      --cream:#fff2f7;
+      --ink:#0d0d12;
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.14);
+      --shadow: 0 26px 70px rgba(0,0,0,.58);
+      --r: 26px;
+      --safeT: max(16px, env(safe-area-inset-top));
+      --safeB: max(16px, env(safe-area-inset-bottom));
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height:100%; margin:0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+    body{
+      color: rgba(255,255,255,.92);
+      overflow:hidden;
+      background:
+        radial-gradient(900px 600px at 18% 20%, rgba(255,45,85,.22), transparent 55%),
+        radial-gradient(800px 520px at 80% 78%, rgba(255,122,191,.16), transparent 62%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+    }
+    body:before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      pointer-events:none;
+    }
 
-        .container {
-            width: 90%;
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            background-color: #FFFFFF;
-            height: calc(100vh - 13px);
-            position: absolute;
-            transition: transform 0.3s ease-in-out;
-        }
+    .wrap{
+      height:100%;
+      padding: var(--safeT) 16px var(--safeB);
+      display:grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      place-items:center;
+      position:relative;
+    }
 
-        .container.hidden {
-            opacity: 0;
-        }
-    </style>
+    .title{
+      width:min(680px, 94vw);
+      text-align:center;
+      padding: 6px 8px 0;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      font-size: 13px;
+      color: rgba(255,255,255,.72);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--pink);
+      box-shadow: 0 0 0 6px rgba(255,45,85,.18);
+    }
+    h1{
+      margin: 12px 0 6px;
+      font-size: clamp(22px, 4.6vw, 34px);
+      line-height:1.1;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0 auto;
+      max-width: 56ch;
+      color: rgba(255,255,255,.70);
+      font-size: clamp(13px, 2.7vw, 15px);
+      line-height: 1.45;
+    }
+
+    /* stage */
+    .stage{
+      width:min(680px, 96vw);
+      height:min(520px, 58vh);
+      display:grid;
+      place-items:center;
+      position:relative;
+      perspective: 900px;
+      touch-action: none; /* important for drag rotate in TG */
+    }
+
+    /* envelope 3D wrapper */
+    .env3d{
+      width:min(420px, 86vw);
+      aspect-ratio: 16/11;
+      position:relative;
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 26px 36px rgba(0,0,0,.45));
+      user-select:none;
+    }
+
+    /* Envelope body */
+    .env{
+      position:absolute; inset:0;
+      transform-style: preserve-3d;
+      border-radius: 22px;
+    }
+
+    /* back panel */
+    .back{
+      position:absolute; inset:0;
+      border-radius: 22px;
+      background:
+        radial-gradient(500px 280px at 30% 28%, rgba(255,255,255,.35), transparent 55%),
+        linear-gradient(145deg, rgba(255,45,85,.95), rgba(255,122,191,.95));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+      transform: translateZ(-2px);
+    }
+
+    /* pocket */
+    .pocket{
+      position:absolute; inset:0;
+      border-radius: 22px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      overflow:hidden;
+      transform: translateZ(2px);
+    }
+
+    /* pocket shine */
+    .pocket:before{
+      content:"";
+      position:absolute; inset:-30%;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.30), transparent 55%);
+      transform: rotate(12deg);
+      opacity:.9;
+    }
+
+    /* pocket triangles */
+    .tri{
+      position:absolute;
+      width: 100%;
+      height: 100%;
+      left:0; top:0;
+      transform-style: preserve-3d;
+    }
+    .tri .left, .tri .right, .tri .bottom{
+      position:absolute; inset:0;
+      clip-path: polygon(0 0, 50% 55%, 0 100%);
+      background: rgba(255,255,255,.08);
+      border-left: 1px solid rgba(255,255,255,.14);
+    }
+    .tri .right{
+      clip-path: polygon(100% 0, 50% 55%, 100% 100%);
+      background: rgba(255,255,255,.05);
+      border-left: none;
+      border-right: 1px solid rgba(255,255,255,.14);
+    }
+    .tri .bottom{
+      clip-path: polygon(0 100%, 50% 45%, 100% 100%);
+      background: rgba(0,0,0,.12);
+      border-top: 1px solid rgba(255,255,255,.10);
+      border-left:none; border-right:none;
+    }
+
+    /* flap */
+    .flap{
+      position:absolute; inset:0;
+      transform-origin: 50% 0%;
+      transform: translateZ(10px) rotateX(0deg);
+      transition: transform 1100ms cubic-bezier(.18,.85,.12,1);
+      pointer-events:none;
+    }
+    .flap:before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: 22px;
+      clip-path: polygon(0 0, 100% 0, 50% 58%);
+      background:
+        radial-gradient(340px 180px at 50% 18%, rgba(255,255,255,.55), transparent 60%),
+        linear-gradient(145deg, rgba(255,45,85,.95), rgba(255,122,191,.92));
+      border-top: 1px solid rgba(255,255,255,.18);
+      border-left: 1px solid rgba(255,255,255,.12);
+      border-right: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.18);
+    }
+
+    /* seal */
+    .seal{
+      position:absolute;
+      left:50%;
+      top: 54%;
+      transform: translate(-50%,-50%) translateZ(16px);
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.72), rgba(255,255,255,.20) 18%, transparent 48%),
+        linear-gradient(145deg, rgba(255,255,255,.18), rgba(0,0,0,.08));
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 16px 30px rgba(0,0,0,.28);
+      display:grid;
+      place-items:center;
+      font-size: 24px;
+      opacity:.95;
+      transition: opacity 350ms ease;
+      pointer-events:none;
+    }
+    .seal span{
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,.25));
+    }
+
+    /* letter */
+    .letter{
+      position:absolute;
+      left: 50%;
+      top: 18%;
+      transform: translateX(-50%) translateZ(6px);
+      width: 86%;
+      height: 78%;
+      border-radius: 18px;
+      background:
+        radial-gradient(520px 280px at 40% 20%, rgba(255,255,255,.92), rgba(255,255,255,.82) 30%, rgba(255,255,255,.72) 65%),
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
+      color: rgba(14,14,20,.90);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 18px 40px rgba(0,0,0,.25);
+      overflow:hidden;
+      opacity:0;
+      transform-origin: 50% 90%;
+      transition: opacity 420ms ease, transform 1200ms cubic-bezier(.18,.85,.12,1);
+      pointer-events:none;
+    }
+    .letterHead{
+      padding: 14px 16px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background: rgba(255,45,85,.08);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    .from{
+      font-weight: 750;
+      letter-spacing: .2px;
+    }
+    .stamp{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px dashed rgba(0,0,0,.18);
+      background: rgba(255,255,255,.62);
+      font-size: 12.5px;
+    }
+    .letterBody{
+      padding: 14px 16px 18px;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+    .letterBody b{ color: rgba(0,0,0,.92); }
+    .sig{
+      margin-top: 10px;
+      opacity:.85;
+      font-weight: 650;
+    }
+
+    /* photos that fly out */
+    .photo{
+      position:absolute;
+      width: 90px;
+      height: 120px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 40px rgba(0,0,0,.28);
+      overflow:hidden;
+      transform: translateZ(40px) scale(.7);
+      opacity:0;
+      pointer-events:none;
+    }
+    .photo img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      filter: saturate(1.05) contrast(1.03);
+    }
+    .photo .ph{
+      width:100%; height:100%;
+      display:grid; place-items:center;
+      font-size: 26px;
+      background:
+        radial-gradient(120px 120px at 30% 25%, rgba(255,255,255,.35), transparent 60%),
+        linear-gradient(145deg, rgba(255,45,85,.85), rgba(255,122,191,.85));
+      color: rgba(255,255,255,.92);
+      font-weight: 800;
+      letter-spacing: .6px;
+    }
+
+    /* controls */
+    .controls{
+      width:min(680px, 96vw);
+      display:flex;
+      gap: 12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+    }
+    button{
+      border:0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 750;
+      color:#fff;
+      cursor:pointer;
+      transition: transform .12s ease, filter .12s ease, opacity .2s ease;
+      background: linear-gradient(135deg, rgba(255,45,85,1), rgba(255,122,191,1));
+      box-shadow: 0 14px 30px rgba(255,45,85,.30);
+    }
+    button:active{ transform: scale(.98); filter: brightness(.98); }
+    button.ghost{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+      color: rgba(255,255,255,.92);
+      font-weight: 700;
+    }
+    button[disabled]{
+      opacity:.5;
+      cursor: not-allowed;
+    }
+
+    /* toast error */
+    .toast{
+      position:fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 80;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(10,10,14,.72);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      width: min(420px, 88vw);
+      display:none;
+    }
+    .toast.show{ display:block; animation: pop 220ms ease-out; }
+    @keyframes pop{
+      from{ transform: translate(-50%,-50%) scale(.96); opacity: .0; }
+      to{ transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    }
+    .toastTitle{
+      display:flex; gap:10px; align-items:center;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+    }
+    .toastTitle .ic{
+      width: 26px; height: 26px; border-radius: 10px;
+      display:grid; place-items:center;
+      background: rgba(255,45,85,.18);
+      border: 1px solid rgba(255,45,85,.28);
+    }
+    .toastMsg{ color: rgba(255,255,255,.82); line-height:1.4; }
+
+    /* fireworks canvas */
+    canvas#fx{
+      position:fixed; inset:0;
+      z-index: 60;
+      pointer-events:none;
+    }
+
+    /* opened state */
+    .opened .flap{
+      transform: translateZ(10px) rotateX(-155deg);
+    }
+    .opened .seal{
+      opacity:0;
+    }
+    .opened .letter{
+      opacity: 1;
+      transform: translateX(-50%) translateZ(60px) translateY(-28px) rotateX(0deg);
+      pointer-events:auto;
+    }
+
+    /* when animating open sequence: letter emerges later */
+    .opening .letter{
+      opacity: 0;
+      transform: translateX(-50%) translateZ(16px) translateY(30px) rotateX(8deg);
+    }
+
+    /* hint */
+    .hint{
+      text-align:center;
+      color: rgba(255,255,255,.56);
+      font-size: 12.5px;
+      padding-bottom: 6px;
+      width:min(680px, 94vw);
+    }
+
+    @media (max-width: 380px){
+      .photo{ width: 78px; height: 104px; }
+      button{ padding: 12px 16px; }
+      .letterBody{ font-size: 14.5px; }
+    }
+  </style>
 </head>
 <body>
-    <div id="container" class="container">
-        Container 1
+  <canvas id="fx"></canvas>
+
+  <div class="wrap">
+    <div class="title">
+      <div class="badge"><span class="dot"></span><span>Конверт только для <b>Джамы</b></span></div>
+      <h1>Вращай конверт пальцем ✨</h1>
+      <p class="sub">Потом решай: <b>открыть</b> или <b>“выбросить”</b> (но мы оба знаем правильный выбор).</p>
     </div>
-    <div id="container2" class="container" style="transform: translateX(100%); opacity: 0;">
-        Container 2
+
+    <div class="stage" id="stage" aria-label="Envelope stage">
+      <div class="env3d" id="env3d">
+        <div class="env" id="env">
+          <div class="back"></div>
+
+          <div class="pocket">
+            <div class="tri">
+              <div class="left"></div>
+              <div class="right"></div>
+              <div class="bottom"></div>
+            </div>
+          </div>
+
+          <div class="flap"></div>
+          <div class="seal"><span>💗</span></div>
+
+          <div class="letter" id="letter" aria-label="Letter">
+            <div class="letterHead">
+              <div class="from">Джама 💌</div>
+              <div class="stamp">штамп: <b>“моя”</b> ❤️</div>
+            </div>
+            <div class="letterBody" id="letterBody">
+              Я хотел(а) сделать тебе валентинку, которая <b>не как у всех</b>.<br>
+              Поэтому вот: конверт, который слушается твою руку — и письмо, которое слушается сердце.<br><br>
+              <b>Ты очень красивая.</b> И я реально ценю тебя.  
+              Пусть у тебя будет больше улыбок, спокойствия и тепла — а я постараюсь быть частью этого. 🫶
+              <div class="sig">— от твоего(ей) Ацетона</div>
+            </div>
+          </div>
+
+          <!-- “Our photos” (replace src below) -->
+          <div class="photo" id="p1" style="left: 10%; top: 56%;">
+            <div class="ph">A+J</div>
+            <!-- <img src="PHOTO_1" alt="photo1"> -->
+          </div>
+          <div class="photo" id="p2" style="left: 72%; top: 52%;">
+            <div class="ph">J+A</div>
+            <!-- <img src="PHOTO_2" alt="photo2"> -->
+          </div>
+
+        </div>
+      </div>
     </div>
 
-<script>
-    const containers = document.querySelectorAll('.container');
-    let currentContainerIndex = 0;
-    const containerWidth = containers[0].offsetWidth;
-    let startX, endX;
-    const swipeThreshold = 50;
-    const offScreenThreshold = 3 * containerWidth; // Remove containers further than 3 widths
+    <div class="controls">
+      <button id="openBtn">Открыть</button>
+      <button id="trashBtn" class="ghost">Выбросить</button>
+    </div>
 
-    containers[0].style.transform = `translateX(0)`;
-    containers[0].style.opacity = 1;
+    <div class="hint" id="hint">Подсказка: если крутить сильнее — будет “дорогой” 3D эффект.</div>
+  </div>
 
-    containers.forEach(container => {
-        container.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-        });
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="toastTitle">
+      <div class="ic">⚠️</div>
+      <div>Ошибка</div>
+    </div>
+    <div class="toastMsg" id="toastMsg">Ты что ошалела? не отвяжешься</div>
+  </div>
 
-        container.addEventListener('touchend', (e) => {
-            endX = e.changedTouches[0].clientX;
-            const diffX = endX - startX;
+  <script>
+    // ========= Settings / Replace with your photos =========
+    // If you want real photos:
+    // 1) uncomment <img> tags in #p1 #p2
+    // 2) put direct image URLs here and hide placeholders
+    const PHOTO_1 = ""; // e.g. "https://.../photo1.jpg"
+    const PHOTO_2 = ""; // e.g. "https://.../photo2.jpg"
 
-            if (Math.abs(diffX) > swipeThreshold) {
-                if (diffX > 0) { // Swipe right
-                    showPreviousContainer();
-                } else { // Swipe left
-                    showNextContainer();
-                }
-            }
-        });
+    // ========= DOM =========
+    const stage = document.getElementById('stage');
+    const env3d = document.getElementById('env3d');
+    const env = document.getElementById('env');
+    const openBtn = document.getElementById('openBtn');
+    const trashBtn = document.getElementById('trashBtn');
+    const toast = document.getElementById('toast');
+
+    const p1 = document.getElementById('p1');
+    const p2 = document.getElementById('p2');
+
+    // Insert photos if provided
+    function injectPhoto(container, url) {
+      if (!url) return;
+      const ph = container.querySelector('.ph');
+      if (ph) ph.style.display = 'none';
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = "photo";
+      container.appendChild(img);
+    }
+    injectPhoto(p1, PHOTO_1);
+    injectPhoto(p2, PHOTO_2);
+
+    // ========= 3D drag rotate =========
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    let rotX = -10;  // tilt
+    let rotY = 18;   // turn
+    let velX = 0, velY = 0;
+
+    function applyTransform() {
+      // clamp for nice look
+      const cx = Math.max(-32, Math.min(32, rotX));
+      const cy = rotY;
+      // subtle translate for “real” feel
+      env3d.style.transform = `rotateX(${cx}deg) rotateY(${cy}deg)`;
+    }
+    applyTransform();
+
+    stage.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      stage.setPointerCapture(e.pointerId);
+    }, {passive:false});
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      rotY += dx * 0.25;
+      rotX -= dy * 0.18;
+      velX = dx;
+      velY = dy;
+      applyTransform();
+      e.preventDefault();
+    }, {passive:false});
+
+    stage.addEventListener('pointerup', () => {
+      dragging = false;
+      // inertia-ish
+      const decay = () => {
+        velX *= 0.90;
+        velY *= 0.90;
+        if (Math.abs(velX) + Math.abs(velY) < 0.2) return;
+        rotY += velX * 0.12;
+        rotX -= velY * 0.10;
+        applyTransform();
+        requestAnimationFrame(decay);
+      };
+      requestAnimationFrame(decay);
+    }, {passive:true});
+
+    stage.addEventListener('pointercancel', () => dragging = false, {passive:true});
+
+    // ========= Toast =========
+    let toastTimer = null;
+    function showToast(msg, ms=1400){
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> toast.classList.remove('show'), ms);
+    }
+
+    // ========= “Trash” logic =========
+    let trashedOnce = false;
+    trashBtn.addEventListener('click', () => {
+      if (trashedOnce) return;
+      showToast("Ты что ошалела? не отвяжешься", 1550);
+      trashedOnce = true;
+
+      // After the toast, hide trash button
+      setTimeout(() => {
+        trashBtn.style.opacity = '0';
+        trashBtn.style.pointerEvents = 'none';
+        setTimeout(() => trashBtn.remove(), 220);
+      }, 900);
     });
 
-    function showNextContainer() {
-        if (currentContainerIndex < containers.length -1) {
-            currentContainerIndex++;
-            containers.forEach((container, index) => {
-                container.style.transform = `translateX(${ (index - currentContainerIndex) * containerWidth}px)`;
-                if (index === currentContainerIndex){
-                    container.style.opacity = 1;
-                } else {
-                    container.style.opacity = 0;
-                }
-            });
-        }
+    // ========= Open sequence =========
+    let opened = false;
+    openBtn.addEventListener('click', () => {
+      if (opened) return;
+      opened = true;
+
+      // lock buttons
+      openBtn.disabled = true;
+
+      // opening state for timing
+      env.classList.add('opening');
+
+      // start FX
+      burstHearts(1.4);
+
+      // flap opens (CSS transition)
+      setTimeout(() => {
+        env.classList.add('opened');
+      }, 120);
+
+      // photos fly out
+      setTimeout(() => {
+        flyPhoto(p1, -120, -220, -18);
+        flyPhoto(p2, 120, -240, 18);
+      }, 520);
+
+      // letter rises after
+      setTimeout(() => {
+        env.classList.remove('opening');
+        burstHearts(1.2);
+      }, 1100);
+
+      // re-enable open button as "Again"? keep disabled for clean
+    });
+
+    function flyPhoto(el, dx, dy, rot){
+      el.style.opacity = '1';
+      el.style.transition = 'transform 1200ms cubic-bezier(.16,.86,.12,1), opacity 700ms ease';
+      // start
+      el.style.transform = `translateZ(40px) translate(0px, 0px) rotate(${rot}deg) scale(.75)`;
+      requestAnimationFrame(() => {
+        el.style.transform = `translateZ(120px) translate(${dx}px, ${dy}px) rotate(${rot*1.6}deg) scale(1.05)`;
+      });
+      // slight fade later
+      setTimeout(()=> { el.style.opacity = '0.96'; }, 600);
     }
 
-    function showPreviousContainer() {
-        if (currentContainerIndex > 0) {
-            currentContainerIndex--;
-            containers.forEach((container, index) => {
-                container.style.transform = `translateX(${ (index - currentContainerIndex) * containerWidth}px)`;
-                if (index === currentContainerIndex){
-                    container.style.opacity = 1;
-                } else {
-                    container.style.opacity = 0;
-                }
-            });
-        }
+    // ========= Heart fireworks (canvas) =========
+    const canvas = document.getElementById('fx');
+    const ctx = canvas.getContext('2d');
+    let W=0,H=0;
+    function resize(){
+      W = canvas.width = Math.floor(window.innerWidth * devicePixelRatio);
+      H = canvas.height = Math.floor(window.innerHeight * devicePixelRatio);
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
     }
+    window.addEventListener('resize', resize);
+    resize();
 
+    const hearts = ["❤","💗","💖","💘","💞","💕","💓"];
+    const particles = [];
+    let raf = null;
 
-    function removeOffScreenContainers(){
-        containers.forEach(container => {
-            let pos = parseInt(container.style.transform.replace('translateX(', '').replace('px)', ''), 10) || 0;
+    function rand(a,b){ return a + Math.random()*(b-a); }
 
-            if (Math.abs(pos) > offScreenThreshold){
-                container.remove();
-            }
+    function spawn(x,y,count=36, power=1){
+      for(let i=0;i<count;i++){
+        const a = rand(0, Math.PI*2);
+        const sp = rand(2.4, 6.2) * power;
+        particles.push({
+          x, y,
+          vx: Math.cos(a)*sp,
+          vy: Math.sin(a)*sp - rand(1.2, 3.2)*power,
+          g: rand(0.06, 0.12),
+          life: rand(52, 82),
+          s: rand(14, 22),
+          r: rand(-0.12, 0.12),
+          t: hearts[(Math.random()*hearts.length)|0],
+          o: 1
         });
+      }
+      if (!raf) raf = requestAnimationFrame(tick);
     }
 
-    setInterval(removeOffScreenContainers, 100); // Regularly remove off-screen containers
-</script>
+    function tick(){
+      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+      for(let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 1;
+        p.o = Math.max(0, p.life / 82);
+
+        ctx.save();
+        ctx.globalAlpha = p.o;
+        ctx.font = `700 ${p.s}px -apple-system, system-ui, Arial`;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.r * (82 - p.life));
+        ctx.fillText(p.t, -p.s/2, p.s/2);
+        ctx.restore();
+
+        if (p.life <= 0) particles.splice(i,1);
+      }
+      if (particles.length){
+        raf = requestAnimationFrame(tick);
+      }else{
+        raf = null;
+      }
+    }
+
+    function burstHearts(mult=1){
+      const r = env.getBoundingClientRect();
+      const x = r.left + r.width/2;
+      const y = r.top + r.height/2 - 20;
+      spawn(x, y, Math.floor(44*mult), mult);
+      // extra small bursts
+      setTimeout(()=> spawn(x-90, y+20, 18, 0.9), 120);
+      setTimeout(()=> spawn(x+90, y+10, 18, 0.9), 180);
+    }
+
+    // Optional: tap to spawn small hearts when opened
+    document.body.addEventListener('pointerdown', (e)=>{
+      if (!opened) return;
+      spawn(e.clientX, e.clientY, 12, 0.7);
+    }, {passive:true});
+  </script>
 </body>
 </html>
