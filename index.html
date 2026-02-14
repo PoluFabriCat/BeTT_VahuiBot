@@ -806,6 +806,12 @@
     max-width: 92%;
     z-index: 20;
   }
+  /* FIX step1 buttons */
+    #step1 .row{ flex-wrap: nowrap; }
+    #step1 .btn.wide{
+      min-width: 0;
+      flex: 1 1 0;
+    }
   .modalWrap{ z-index: 10; } /* <-- добавь (или проверь что так) */
     .centerMsg.show{opacity:1;}
     .centerMsgBox{
@@ -819,9 +825,12 @@
       font-weight: 950;
       text-align:center;
     }
-
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
+    }
+
+    .loader{
+      touch-action: none;
     }
   </style>
 </head>
@@ -1639,8 +1648,11 @@
 
     /* ----- tiny sound design (no new assets) ----- */
     function sfxKnock(){
-      // knock = "wrong" beep + shake (matches CRT vibe)
-      audio.sfx("wrong");
+      if (!audio?.unlocked) return;
+
+      // два коротких "тук"
+      audio._beep(0.09, 130, 0.06, 2);
+      setTimeout(()=>audio._beep(0.08, 110, 0.07, 2), 120);
     }
     function sfxPositive(){
       // pleasant short two-tone
@@ -2063,26 +2075,54 @@
     });
 
     /* =========================================================
-       Boot
-       ========================================================= */
+   Boot (fixed: no ghost-click + knock after first tap)
+   ========================================================= */
+    function swallow(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     function startApp(){
       showStep(0);
       setTimeout(()=> signModal.classList.add("show"), 220);
+
+      // важно: перерендерить после unlock, чтобы стук реально проигрался
+      render();
     }
 
-    async function onFirstTap(){
-      loader.removeEventListener("pointerdown", onFirstTap);
+    async function onFirstTap(e){
+      swallow(e);
+
+      // 1) убиваем "проброс" клика на элементы под лоадером (кнопки Да/Нет)
+      const kill = (ev)=>swallow(ev);
+      window.addEventListener("click", kill, true);
+      window.addEventListener("pointerup", kill, true);
+
+      // хватит ~450мс, чтобы браузер не успел синтезировать click "вниз"
+      setTimeout(()=>{
+        window.removeEventListener("click", kill, true);
+        window.removeEventListener("pointerup", kill, true);
+      }, 450);
+
+      loader.removeEventListener("pointerdown", onFirstTap, true);
+
+      // 2) unlock audio
       audio.sfx("click");
       await audio.unlock();
+
+      // 3) прячем лоадер
       loader.classList.add("hide");
       setTimeout(()=> loader.style.display="none", 520);
+
+      // 4) стартуем игру (и стук будет уже после unlock)
       startApp();
     }
 
     (async ()=>{
       await preload();
       try{ await audio.init(); }catch(e){}
-      loader.addEventListener("pointerdown", onFirstTap, {passive:true});
+      // capture=true чтобы лоадер гарантированно перехватил тап
+      loader.addEventListener("pointerdown", onFirstTap, true);
     })();
   </script>
 </body>
