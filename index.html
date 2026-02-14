@@ -1,728 +1,1441 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#ff2d55" />
+  <meta name="color-scheme" content="light dark" />
   <title>Для Джамы 💌</title>
   <style>
     :root{
-      --bg0:#07070c;
-      --bg1:#140816;
-      --pink:#ff2d55;
-      --pink2:#ff7abf;
-      --cream:#fff2f7;
-      --ink:#0d0d12;
-      --glass: rgba(255,255,255,.08);
-      --glass2: rgba(255,255,255,.12);
-      --stroke: rgba(255,255,255,.14);
-      --shadow: 0 26px 70px rgba(0,0,0,.58);
-      --r: 26px;
-      --safeT: max(16px, env(safe-area-inset-top));
-      --safeB: max(16px, env(safe-area-inset-bottom));
+      --bg1:#0b1220;
+      --bg2:#140b24;
+      --card: rgba(255,255,255,.10);
+      --card2: rgba(255,255,255,.14);
+      --stroke: rgba(255,255,255,.18);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --accent:#ff4fa6;
+      --accent2:#7cf1ff;
+      --good:#5cffb3;
+      --bad:#ff5c7a;
+      --shadow: 0 18px 60px rgba(0,0,0,.40);
+      --radius: 22px;
     }
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html,body{ height:100%; margin:0; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+
+    *{ box-sizing: border-box; }
+    html,body{ height:100%; }
     body{
-      color: rgba(255,255,255,.92);
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
       overflow:hidden;
       background:
-        radial-gradient(900px 600px at 18% 20%, rgba(255,45,85,.22), transparent 55%),
-        radial-gradient(800px 520px at 80% 78%, rgba(255,122,191,.16), transparent 62%),
-        linear-gradient(160deg, var(--bg0), var(--bg1));
-    }
-    body:before{
-      content:"";
-      position:fixed; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E");
-      mix-blend-mode: overlay;
-      pointer-events:none;
+        radial-gradient(1200px 900px at 20% 10%, rgba(255,79,166,.22), transparent 60%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(124,241,255,.16), transparent 55%),
+        radial-gradient(900px 600px at 60% 90%, rgba(92,255,179,.10), transparent 55%),
+        linear-gradient(145deg, var(--bg1), var(--bg2));
     }
 
-    .wrap{
+    .app{
+      position:relative;
+      width:100%;
       height:100%;
-      padding: var(--safeT) 16px var(--safeB);
-      display:grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 14px;
-      place-items:center;
-      position:relative;
-    }
-
-    .title{
-      width:min(680px, 94vw);
-      text-align:center;
-      padding: 6px 8px 0;
-    }
-    .badge{
-      display:inline-flex; align-items:center; gap:10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      font-size: 13px;
-      color: rgba(255,255,255,.72);
-    }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: var(--pink);
-      box-shadow: 0 0 0 6px rgba(255,45,85,.18);
-    }
-    h1{
-      margin: 12px 0 6px;
-      font-size: clamp(22px, 4.6vw, 34px);
-      line-height:1.1;
-      letter-spacing:.2px;
-    }
-    .sub{
-      margin:0 auto;
-      max-width: 56ch;
-      color: rgba(255,255,255,.70);
-      font-size: clamp(13px, 2.7vw, 15px);
-      line-height: 1.45;
-    }
-
-    /* stage */
-    .stage{
-      width:min(680px, 96vw);
-      height:min(520px, 58vh);
-      display:grid;
-      place-items:center;
-      position:relative;
-      perspective: 900px;
-      touch-action: none; /* important for drag rotate in TG */
-    }
-
-    /* envelope 3D wrapper */
-    .env3d{
-      width:min(420px, 86vw);
-      aspect-ratio: 16/11;
-      position:relative;
-      transform-style: preserve-3d;
-      filter: drop-shadow(0 26px 36px rgba(0,0,0,.45));
-      user-select:none;
-    }
-
-    /* Envelope body */
-    .env{
-      position:absolute; inset:0;
-      transform-style: preserve-3d;
-      border-radius: 22px;
-    }
-
-    /* back panel */
-    .back{
-      position:absolute; inset:0;
-      border-radius: 22px;
-      background:
-        radial-gradient(500px 280px at 30% 28%, rgba(255,255,255,.35), transparent 55%),
-        linear-gradient(145deg, rgba(255,45,85,.95), rgba(255,122,191,.95));
-      border: 1px solid rgba(255,255,255,.18);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
-      transform: translateZ(-2px);
-    }
-
-    /* pocket */
-    .pocket{
-      position:absolute; inset:0;
-      border-radius: 22px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.16);
-      overflow:hidden;
-      transform: translateZ(2px);
-    }
-
-    /* pocket shine */
-    .pocket:before{
-      content:"";
-      position:absolute; inset:-30%;
-      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.30), transparent 55%);
-      transform: rotate(12deg);
-      opacity:.9;
-    }
-
-    /* pocket triangles */
-    .tri{
-      position:absolute;
-      width: 100%;
-      height: 100%;
-      left:0; top:0;
-      transform-style: preserve-3d;
-    }
-    .tri .left, .tri .right, .tri .bottom{
-      position:absolute; inset:0;
-      clip-path: polygon(0 0, 50% 55%, 0 100%);
-      background: rgba(255,255,255,.08);
-      border-left: 1px solid rgba(255,255,255,.14);
-    }
-    .tri .right{
-      clip-path: polygon(100% 0, 50% 55%, 100% 100%);
-      background: rgba(255,255,255,.05);
-      border-left: none;
-      border-right: 1px solid rgba(255,255,255,.14);
-    }
-    .tri .bottom{
-      clip-path: polygon(0 100%, 50% 45%, 100% 100%);
-      background: rgba(0,0,0,.12);
-      border-top: 1px solid rgba(255,255,255,.10);
-      border-left:none; border-right:none;
-    }
-
-    /* flap */
-    .flap{
-      position:absolute; inset:0;
-      transform-origin: 50% 0%;
-      transform: translateZ(10px) rotateX(0deg);
-      transition: transform 1100ms cubic-bezier(.18,.85,.12,1);
-      pointer-events:none;
-    }
-    .flap:before{
-      content:"";
-      position:absolute; inset:0;
-      border-radius: 22px;
-      clip-path: polygon(0 0, 100% 0, 50% 58%);
-      background:
-        radial-gradient(340px 180px at 50% 18%, rgba(255,255,255,.55), transparent 60%),
-        linear-gradient(145deg, rgba(255,45,85,.95), rgba(255,122,191,.92));
-      border-top: 1px solid rgba(255,255,255,.18);
-      border-left: 1px solid rgba(255,255,255,.12);
-      border-right: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 -1px 0 rgba(0,0,0,.18);
-    }
-
-    /* seal */
-    .seal{
-      position:absolute;
-      left:50%;
-      top: 54%;
-      transform: translate(-50%,-50%) translateZ(16px);
-      width: 64px;
-      height: 64px;
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.72), rgba(255,255,255,.20) 18%, transparent 48%),
-        linear-gradient(145deg, rgba(255,255,255,.18), rgba(0,0,0,.08));
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: 0 16px 30px rgba(0,0,0,.28);
-      display:grid;
-      place-items:center;
-      font-size: 24px;
-      opacity:.95;
-      transition: opacity 350ms ease;
-      pointer-events:none;
-    }
-    .seal span{
-      filter: drop-shadow(0 8px 10px rgba(0,0,0,.25));
-    }
-
-    /* letter */
-    .letter{
-      position:absolute;
-      left: 50%;
-      top: 18%;
-      transform: translateX(-50%) translateZ(6px);
-      width: 86%;
-      height: 78%;
-      border-radius: 18px;
-      background:
-        radial-gradient(520px 280px at 40% 20%, rgba(255,255,255,.92), rgba(255,255,255,.82) 30%, rgba(255,255,255,.72) 65%),
-        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
-      color: rgba(14,14,20,.90);
-      border: 1px solid rgba(0,0,0,.08);
-      box-shadow: 0 18px 40px rgba(0,0,0,.25);
-      overflow:hidden;
-      opacity:0;
-      transform-origin: 50% 90%;
-      transition: opacity 420ms ease, transform 1200ms cubic-bezier(.18,.85,.12,1);
-      pointer-events:none;
-    }
-    .letterHead{
-      padding: 14px 16px 10px;
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      background: rgba(255,45,85,.08);
-      border-bottom: 1px solid rgba(0,0,0,.06);
-    }
-    .from{
-      font-weight: 750;
-      letter-spacing: .2px;
-    }
-    .stamp{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px dashed rgba(0,0,0,.18);
-      background: rgba(255,255,255,.62);
-      font-size: 12.5px;
-    }
-    .letterBody{
-      padding: 14px 16px 18px;
-      line-height: 1.45;
-      font-size: 15px;
-    }
-    .letterBody b{ color: rgba(0,0,0,.92); }
-    .sig{
-      margin-top: 10px;
-      opacity:.85;
-      font-weight: 650;
+      justify-content:center;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
     }
 
-    /* photos that fly out */
-    .photo{
-      position:absolute;
-      width: 90px;
-      height: 120px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.18);
-      box-shadow: 0 18px 40px rgba(0,0,0,.28);
-      overflow:hidden;
-      transform: translateZ(40px) scale(.7);
-      opacity:0;
+    /* мягкая «плёнка» */
+    .grain::before{
+      content:"";
+      position:absolute; inset:0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.20;
       pointer-events:none;
+    }
+
+    .stage{
+      width:min(980px, 100%);
+      height:min(720px, calc(100vh - 24px));
+      position:relative;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .topbar{
+      position:absolute; inset: 14px 14px auto 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      z-index:20;
+      pointer-events:none;
+    }
+    .badge{
+      pointer-events:none;
+      padding:10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size:13px;
+      letter-spacing:.2px;
+      color: rgba(255,255,255,.78);
+    }
+
+    .hint{
+      pointer-events:none;
+      padding:10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size:13px;
+      color: rgba(255,255,255,.80);
+      display:flex; align-items:center; gap:8px;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
+      box-shadow: 0 0 18px rgba(255,79,166,.55);
+    }
+
+    .scene{
+      position:absolute; inset:0;
+      display:none;
+      z-index:1;
+    }
+    .scene.active{ display:block; }
+
+    /* Карточки/диалоги */
+    .panel{
+      position:absolute;
+      left:18px; right:18px; bottom:18px;
+      padding:16px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      z-index:10;
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .msg{
+      font-size: 16px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.90);
+      margin:0 0 12px 0;
+    }
+    .submsg{
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+      margin:0 0 10px 0;
+    }
+
+    .btns{ display:flex; gap:10px; flex-wrap:wrap; }
+    button{
+      appearance:none;
+      border:0;
+      cursor:pointer;
+      color: rgba(255,255,255,.92);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: transform .12s ease, background .2s ease, border-color .2s ease, opacity .2s ease;
+      font-weight: 650;
+      letter-spacing: .2px;
+      min-width: 110px;
+      touch-action: manipulation;
+    }
+    button:hover{ transform: translateY(-1px); }
+    button:active{ transform: translateY(1px) scale(.99); }
+    button.primary{
+      background: linear-gradient(135deg, rgba(255,79,166,.36), rgba(124,241,255,.22));
+      border-color: rgba(255,255,255,.22);
+      box-shadow: 0 14px 40px rgba(255,79,166,.14);
+    }
+    button.danger{
+      background: rgba(255,92,122,.14);
+      border-color: rgba(255,92,122,.22);
+    }
+    button.ghost{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.12);
+      color: rgba(255,255,255,.82);
+    }
+    button[disabled]{ opacity:.45; cursor:not-allowed; }
+
+    /* Центр сцены */
+    .center{
+      position:absolute; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* 3D-объект */
+    .object-wrap{
+      width:min(520px, 88vw);
+      height:min(420px, 52vh);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      perspective: 1200px;
+      touch-action:none;
+      user-select:none;
+    }
+    .object{
+      width: min(420px, 80vw);
+      height: min(320px, 42vh);
+      position:relative;
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rx, -12deg)) rotateY(var(--ry, 20deg));
+      transition: filter .25s ease;
+      will-change: transform;
+    }
+
+    /* Коробка */
+    .box{
+      position:absolute; inset:0;
+      border-radius: 24px;
+      background:
+        radial-gradient(120px 120px at 30% 20%, rgba(255,255,255,.14), transparent 60%),
+        linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 24px 70px rgba(0,0,0,.40);
+      overflow:hidden;
+    }
+    .box::after{
+      content:"";
+      position:absolute; inset: -1px;
+      background:
+        linear-gradient(90deg, rgba(255,79,166,.18), transparent 35%, rgba(124,241,255,.16));
+      opacity:.9;
+      mix-blend-mode: soft-light;
+      pointer-events:none;
+    }
+    .label{
+      position:absolute;
+      left: 18px; top: 18px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.14);
+      font-weight: 750;
+      letter-spacing:.3px;
+    }
+    .ribbon{
+      position:absolute;
+      left: 50%;
+      top: -8%;
+      width: 20%;
+      height: 116%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(255,79,166,.35), rgba(255,79,166,.10));
+      border-left: 1px solid rgba(255,255,255,.12);
+      border-right: 1px solid rgba(255,255,255,.12);
+      filter: drop-shadow(0 10px 30px rgba(255,79,166,.14));
+    }
+    .ribbon::before{
+      content:"";
+      position:absolute;
+      left:-120%;
+      top: 26%;
+      width: 340%;
+      height: 16%;
+      transform: rotate(-14deg);
+      background: linear-gradient(90deg, rgba(255,79,166,.34), rgba(124,241,255,.16));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      opacity:.85;
+    }
+
+    .lock{
+      position:absolute;
+      right: 18px; bottom: 18px;
+      width: 96px; height: 96px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.16);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      transform: translateZ(26px);
+      box-shadow: 0 16px 50px rgba(0,0,0,.32);
+      overflow:hidden;
+    }
+    .lock::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,79,166,.42), transparent 55%),
+                  radial-gradient(circle at 70% 70%, rgba(124,241,255,.30), transparent 55%);
+      animation: glow 1.8s ease-in-out infinite;
+      filter: blur(8px);
+      opacity:.9;
+    }
+    .lock svg{ position:relative; z-index:2; filter: drop-shadow(0 6px 16px rgba(255,79,166,.18)); }
+    @keyframes glow{
+      0%,100%{ transform: translate(-2%, -2%) scale(1.05); opacity:.75; }
+      50%{ transform: translate(2%, 2%) scale(1.12); opacity:1; }
+    }
+
+    /* Конверт */
+    .envelope{
+      position:absolute; inset:0;
+      border-radius: 24px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 24px 70px rgba(0,0,0,.40);
+      overflow:hidden;
+    }
+    .flap{
+      position:absolute;
+      left: 0; right: 0; top: 0;
+      height: 58%;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02));
+      clip-path: polygon(0 0, 100% 0, 50% 70%);
+      opacity:.95;
+      transform: translateZ(12px);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .seal{
+      position:absolute;
+      left:50%; top:52%;
+      transform: translate(-50%,-50%) translateZ(28px);
+      width: 86px; height: 86px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), rgba(255,79,166,.85));
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 18px 60px rgba(255,79,166,.18), inset 0 0 0 8px rgba(0,0,0,.06);
+      display:flex; align-items:center; justify-content:center;
+      font-weight: 900;
+      letter-spacing:.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.95);
+      cursor:pointer;
+      user-select:none;
+    }
+    .seal small{ opacity:.9; font-size: 12px; }
+
+    .shake{
+      animation: shake .22s ease-in-out 0s 2;
+    }
+    @keyframes shake{
+      0%{ transform: translate(-50%,-50%) translateZ(28px) rotate(0deg); }
+      25%{ transform: translate(calc(-50% + 2px), -50%) translateZ(28px) rotate(1deg); }
+      50%{ transform: translate(-50%, calc(-50% + 2px)) translateZ(28px) rotate(-1deg); }
+      75%{ transform: translate(calc(-50% - 2px), -50%) translateZ(28px) rotate(1deg); }
+      100%{ transform: translate(-50%,-50%) translateZ(28px) rotate(0deg); }
+    }
+
+    /* Модалки */
+    .overlay{
+      position:absolute; inset:0;
+      background: rgba(0,0,0,.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:none;
+      z-index:30;
+    }
+    .overlay.active{ display:block; }
+
+    .modal{
+      position:absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      width: min(720px, calc(100% - 28px));
+      border-radius: 26px;
+      background: rgba(10,12,20,.70);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      padding: 16px;
+      overflow:hidden;
+    }
+    .modal-head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    .title{
+      font-size: 16px;
+      font-weight: 850;
+      letter-spacing:.25px;
+      margin:0;
+    }
+    .subtitle{
+      margin:4px 0 0 0;
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+    }
+
+    /* Пикер замка (3 колонки) */
+    .picker-wrap{
+      display:grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .picker{
+      height: 220px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+      touch-action:none;
+    }
+    .picker::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.55), transparent 30%, transparent 70%, rgba(0,0,0,.55));
+      pointer-events:none;
+      z-index:2;
+    }
+    .picker::after{
+      content:"";
+      position:absolute;
+      left: 10px; right: 10px;
+      top: 50%;
+      height: 48px;
+      transform: translateY(-50%);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      pointer-events:none;
+      z-index:2;
+    }
+    .wheel{
+      position:absolute;
+      left:0; right:0;
+      top: 50%;
+      transform: translateY(-50%);
+      will-change: transform;
+      z-index:1;
+    }
+    .item{
+      height: 48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 850;
+      letter-spacing:.2px;
+      color: rgba(255,255,255,.78);
+      opacity:.85;
+      user-select:none;
+    }
+    .item.active{
+      color: rgba(255,255,255,.96);
+      opacity:1;
+      text-shadow: 0 10px 30px rgba(255,255,255,.10);
+    }
+
+    /* Инпут даты (для печати) */
+    .date-row{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .field{
+      flex:1 1 240px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .field input{
+      width:100%;
+      background: transparent;
+      border:0;
+      outline:none;
+      color: rgba(255,255,255,.92);
+      font-size: 16px;
+      letter-spacing:.6px;
+      font-weight: 800;
+    }
+    .field input::placeholder{ color: rgba(255,255,255,.45); }
+
+    /* Фейерверки/сердечки */
+    canvas#fx{
+      position:absolute; inset:0;
+      pointer-events:none;
+      z-index:25;
+    }
+
+    /* Фото-галерея */
+    .gallery{
+      position:absolute;
+      left: 18px; right: 18px;
+      top: 64px;
+      display:flex;
+      gap: 12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      z-index:12;
+      pointer-events:none;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .gallery.show{ opacity:1; transform: translateY(0); }
+    .photo{
+      width: min(220px, 28vw);
+      aspect-ratio: 4/5;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      overflow:hidden;
+      position:relative;
     }
     .photo img{
       width:100%; height:100%;
-      object-fit:cover;
+      object-fit: cover;
       display:block;
-      filter: saturate(1.05) contrast(1.03);
+      transform: scale(1.04);
+      filter: saturate(1.05) contrast(1.02);
     }
-    .photo .ph{
-      width:100%; height:100%;
-      display:grid; place-items:center;
-      font-size: 26px;
+    .photo::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(220px 180px at 20% 20%, rgba(255,255,255,.18), transparent 60%);
+      pointer-events:none;
+      mix-blend-mode: soft-light;
+    }
+
+    /* Бумажка из тетрадки */
+    .note{
+      position:absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%) scale(.98);
+      width: min(720px, calc(100% - 34px));
+      max-height: calc(100% - 140px);
+      overflow:auto;
+      opacity:0;
+      z-index:14;
+      border-radius: 22px;
       background:
-        radial-gradient(120px 120px at 30% 25%, rgba(255,255,255,.35), transparent 60%),
-        linear-gradient(145deg, rgba(255,45,85,.85), rgba(255,122,191,.85));
-      color: rgba(255,255,255,.92);
-      font-weight: 800;
-      letter-spacing: .6px;
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.88));
+      color: #182033;
+      box-shadow: 0 24px 80px rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: 18px 18px 20px;
+      transition: opacity .7s ease, transform .7s ease;
     }
-
-    /* controls */
-    .controls{
-      width:min(680px, 96vw);
-      display:flex;
-      gap: 12px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
-    }
-    button{
-      border:0;
-      border-radius: 999px;
-      padding: 13px 18px;
-      font-size: 15px;
-      font-weight: 750;
-      color:#fff;
-      cursor:pointer;
-      transition: transform .12s ease, filter .12s ease, opacity .2s ease;
-      background: linear-gradient(135deg, rgba(255,45,85,1), rgba(255,122,191,1));
-      box-shadow: 0 14px 30px rgba(255,45,85,.30);
-    }
-    button:active{ transform: scale(.98); filter: brightness(.98); }
-    button.ghost{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow:none;
-      color: rgba(255,255,255,.92);
-      font-weight: 700;
-    }
-    button[disabled]{
-      opacity:.5;
-      cursor: not-allowed;
-    }
-
-    /* toast error */
-    .toast{
-      position:fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      z-index: 80;
-      padding: 14px 16px;
+    .note.show{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+    .paper{
+      position:relative;
       border-radius: 16px;
-      background: rgba(10,10,14,.72);
-      border: 1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      width: min(420px, 88vw);
-      display:none;
+      padding: 18px 18px 22px;
+      background:
+        repeating-linear-gradient(180deg,
+          rgba(24,32,51,.09) 0px, rgba(24,32,51,.09) 1px,
+          transparent 1px, transparent 26px);
     }
-    .toast.show{ display:block; animation: pop 220ms ease-out; }
-    @keyframes pop{
-      from{ transform: translate(-50%,-50%) scale(.96); opacity: .0; }
-      to{ transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    .paper::before{
+      content:"";
+      position:absolute; left: 54px; top:0; bottom:0;
+      width: 2px;
+      background: rgba(255,79,166,.35);
     }
-    .toastTitle{
-      display:flex; gap:10px; align-items:center;
-      font-weight: 800;
-      margin-bottom: 6px;
+    .paper h2{
+      margin: 0 0 10px 0;
+      font-size: 22px;
       letter-spacing:.2px;
     }
-    .toastTitle .ic{
-      width: 26px; height: 26px; border-radius: 10px;
-      display:grid; place-items:center;
-      background: rgba(255,45,85,.18);
-      border: 1px solid rgba(255,45,85,.28);
-    }
-    .toastMsg{ color: rgba(255,255,255,.82); line-height:1.4; }
-
-    /* fireworks canvas */
-    canvas#fx{
-      position:fixed; inset:0;
-      z-index: 60;
-      pointer-events:none;
+    .paper p{
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.55;
+      letter-spacing:.1px;
+      white-space: pre-wrap;
     }
 
-    /* opened state */
-    .opened .flap{
-      transform: translateZ(10px) rotateX(-155deg);
+    /* Анимации переходов */
+    .fadeIn{ animation: fadeIn .45s ease both; }
+    .fadeOut{ animation: fadeOut .35s ease both; }
+    @keyframes fadeIn{ from{opacity:0; transform: translateY(8px);} to{opacity:1; transform: translateY(0);} }
+    @keyframes fadeOut{ from{opacity:1;} to{opacity:0;} }
+
+    /* Открытие коробки/конверта */
+    .openBox{
+      animation: openBox 1.05s cubic-bezier(.2,.9,.2,1) both;
+      transform-origin: center;
     }
-    .opened .seal{
+    @keyframes openBox{
+      0%{ filter: brightness(1); transform: translateZ(0) scale(1) rotateX(var(--rx)) rotateY(var(--ry)); }
+      45%{ filter: brightness(1.12); transform: translateZ(0) scale(1.02) rotateX(calc(var(--rx) - 4deg)) rotateY(calc(var(--ry) + 12deg)); }
+      100%{ filter: brightness(1.18); transform: translateZ(0) scale(1.04) rotateX(calc(var(--rx) - 10deg)) rotateY(calc(var(--ry) + 28deg)); }
+    }
+
+    .sealDrop{
+      animation: sealDrop .7s cubic-bezier(.2,.9,.2,1) both;
+    }
+    @keyframes sealDrop{
+      0%{ transform: translate(-50%,-50%) translateZ(28px) rotate(0deg); opacity:1; }
+      70%{ transform: translate(-50%, calc(-50% + 160px)) translateZ(12px) rotate(16deg); opacity:1; }
+      100%{ transform: translate(-50%, calc(-50% + 220px)) translateZ(0px) rotate(26deg); opacity:0; }
+    }
+
+    .zoomToSeal{
+      animation: zoomToSeal .55s cubic-bezier(.2,.9,.2,1) both;
+    }
+    @keyframes zoomToSeal{
+      0%{ transform: rotateX(var(--rx)) rotateY(var(--ry)) scale(1); }
+      100%{ transform: rotateX(calc(var(--rx) - 6deg)) rotateY(calc(var(--ry) + 10deg)) scale(1.10); }
+    }
+
+    /* маленькие системные уведомления */
+    .toast{
+      position:absolute;
+      left: 50%; bottom: 98px;
+      transform: translateX(-50%);
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
       opacity:0;
-    }
-    .opened .letter{
-      opacity: 1;
-      transform: translateX(-50%) translateZ(60px) translateY(-28px) rotateX(0deg);
-      pointer-events:auto;
-    }
-
-    /* when animating open sequence: letter emerges later */
-    .opening .letter{
-      opacity: 0;
-      transform: translateX(-50%) translateZ(16px) translateY(30px) rotateX(8deg);
-    }
-
-    /* hint */
-    .hint{
+      pointer-events:none;
+      z-index:40;
+      transition: opacity .25s ease, transform .25s ease;
+      font-weight: 750;
+      color: rgba(255,255,255,.92);
+      max-width: calc(100% - 34px);
       text-align:center;
-      color: rgba(255,255,255,.56);
-      font-size: 12.5px;
-      padding-bottom: 6px;
-      width:min(680px, 94vw);
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-6px);
     }
 
-    @media (max-width: 380px){
-      .photo{ width: 78px; height: 104px; }
-      button{ padding: 12px 16px; }
-      .letterBody{ font-size: 14.5px; }
+    /* адаптация */
+    @media (max-width: 520px){
+      .msg{ font-size: 15px; }
+      button{ min-width: 104px; padding: 12px 12px; }
+      .picker-wrap{ grid-template-columns: 1fr; }
+      .picker{ height: 200px; }
+      .photo{ width: 42vw; }
     }
   </style>
 </head>
+
 <body>
-  <canvas id="fx"></canvas>
-
-  <div class="wrap">
-    <div class="title">
-      <div class="badge"><span class="dot"></span><span>Конверт только для <b>Джамы</b></span></div>
-      <h1>Вращай конверт пальцем ✨</h1>
-      <p class="sub">Потом решай: <b>открыть</b> или <b>“выбросить”</b> (но мы оба знаем правильный выбор).</p>
-    </div>
-
-    <div class="stage" id="stage" aria-label="Envelope stage">
-      <div class="env3d" id="env3d">
-        <div class="env" id="env">
-          <div class="back"></div>
-
-          <div class="pocket">
-            <div class="tri">
-              <div class="left"></div>
-              <div class="right"></div>
-              <div class="bottom"></div>
-            </div>
-          </div>
-
-          <div class="flap"></div>
-          <div class="seal"><span>💗</span></div>
-
-          <div class="letter" id="letter" aria-label="Letter">
-            <div class="letterHead">
-              <div class="from">Джама 💌</div>
-              <div class="stamp">штамп: <b>“моя”</b> ❤️</div>
-            </div>
-            <div class="letterBody" id="letterBody">
-              Я хотел(а) сделать тебе валентинку, которая <b>не как у всех</b>.<br>
-              Поэтому вот: конверт, который слушается твою руку — и письмо, которое слушается сердце.<br><br>
-              <b>Ты очень красивая.</b> И я реально ценю тебя.  
-              Пусть у тебя будет больше улыбок, спокойствия и тепла — а я постараюсь быть частью этого. 🫶
-              <div class="sig">— от твоего(ей) Ацетона</div>
-            </div>
-          </div>
-
-          <!-- “Our photos” (replace src below) -->
-          <div class="photo" id="p1" style="left: 10%; top: 56%;">
-            <div class="ph">A+J</div>
-            <!-- <img src="PHOTO_1" alt="photo1"> -->
-          </div>
-          <div class="photo" id="p2" style="left: 72%; top: 52%;">
-            <div class="ph">J+A</div>
-            <!-- <img src="PHOTO_2" alt="photo2"> -->
-          </div>
-
-        </div>
+  <div class="app grain">
+    <div class="stage" id="stage">
+      <div class="topbar">
+        <div class="badge" id="badge">Для Джамы • мини-игра</div>
+        <div class="hint" id="hint"><span class="dot"></span><span id="hintText">Листай дальше 😌</span></div>
       </div>
-    </div>
 
-    <div class="controls">
-      <button id="openBtn">Открыть</button>
-      <button id="trashBtn" class="ghost">Выбросить</button>
-    </div>
+      <canvas id="fx"></canvas>
 
-    <div class="hint" id="hint">Подсказка: если крутить сильнее — будет “дорогой” 3D эффект.</div>
-  </div>
+      <!-- СЦЕНА 1 -->
+      <section class="scene active" id="scene1" aria-label="Курьер">
+        <div class="center">
+          <div class="object-wrap" id="courierWrap">
+            <div class="object" id="courierObj">
+              <div class="box" style="display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;padding:18px;">
+                  <div style="font-size:46px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.25));">🧍‍♂️📦</div>
+                  <div style="margin-top:8px;font-weight:900;letter-spacing:.25px;">Яндекс-курьер</div>
+                  <div style="margin-top:6px;color:rgba(255,255,255,.72);font-size:13px;">
+                    «Вам посылка от фаната»
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite">
-    <div class="toastTitle">
-      <div class="ic">⚠️</div>
-      <div>Ошибка</div>
+        <div class="panel" id="paperPanel">
+          <p class="msg" id="paperMsg">Вы принимаете посылку от фаната?</p>
+          <p class="submsg" id="paperSub">Нужно расписаться на бумажке.</p>
+          <div class="row">
+            <div class="btns" id="paperBtns">
+              <button class="primary" id="btnYes1">Да</button>
+              <button class="ghost" id="btnNo1">Нет</button>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,.62);">касание/мышь: можно крутить персонажа</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- СЦЕНА 2 -->
+      <section class="scene" id="scene2" aria-label="Коробка">
+        <div class="center">
+          <div class="object-wrap" id="boxWrap">
+            <div class="object" id="boxObj">
+              <div class="box">
+                <div class="ribbon"></div>
+                <div class="label">Для Джамы</div>
+                <div class="lock" id="lockBtn" title="Нажми на замок">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="white" stroke-opacity=".92" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M7.6 11h8.8a2.6 2.6 0 0 1 2.6 2.6v4.8A2.6 2.6 0 0 1 16.4 21H7.6A2.6 2.6 0 0 1 5 18.4v-4.8A2.6 2.6 0 0 1 7.6 11Z" stroke="white" stroke-opacity=".92" stroke-width="1.8" />
+                    <path d="M12 14.2v3.2" stroke="white" stroke-opacity=".92" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="msg">Посылка заперта. Сначала открой замок.</p>
+          <p class="submsg">Подсказка: код — дата <b>5 ноября 2025</b>.</p>
+          <div class="row">
+            <div class="btns">
+              <button class="ghost" id="backTo1">Назад</button>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,.62);">крути коробку пальцем — она «инерционная»</div>
+          </div>
+        </div>
+
+        <!-- Модалка замка -->
+        <div class="overlay" id="lockOverlay">
+          <div class="modal">
+            <div class="modal-head">
+              <div>
+                <h3 class="title">Кодовый замок</h3>
+                <p class="subtitle">Прокрути колёсики и нажми «Готово»</p>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,.65);">день • месяц • год</div>
+            </div>
+
+            <div class="picker-wrap">
+              <div class="picker" id="pickerDay"></div>
+              <div class="picker" id="pickerMonth"></div>
+              <div class="picker" id="pickerYear"></div>
+            </div>
+
+            <div class="row" style="margin-top:14px;">
+              <div class="btns">
+                <button class="ghost" id="lockBack">Назад</button>
+              </div>
+              <div class="btns">
+                <button class="primary" id="lockDone">Готово</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- СЦЕНА 3 -->
+      <section class="scene" id="scene3" aria-label="Конверт">
+        <div class="center">
+          <div class="object-wrap" id="envWrap">
+            <div class="object" id="envObj">
+              <div class="envelope">
+                <div class="flap"></div>
+                <div class="seal" id="sealBtn"><span>F</span><small style="margin-left:6px;">❤</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+
+        <div class="note" id="note">
+          <div class="paper">
+            <h2>Джама 💗</h2>
+            <p id="loveText">
+Я не знаю, как ты это делаешь,
+но рядом с тобой мир становится тише — и теплее.
+
+Ты моя любимая случайность, которую я хочу выбирать каждый день.
+Спасибо, что ты есть.
+
+С Днём святого Валентина.
+Твой фанат :)
+            </p>
+          </div>
+        </div>
+
+        <div class="panel" id="envPanel">
+          <p class="msg" id="envMsg">Внутри — письмо. Но печать мешает открыть конверт.</p>
+          <p class="submsg" id="envSub">Можно крутить конверт. Печать выглядит подозрительно важной.</p>
+          <div class="row">
+            <div class="btns" id="envBtns">
+              <button class="danger" id="throwBtn">Выбросить</button>
+              <button class="primary" id="openBtn">Открыть</button>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,.62);">крути конверт пальцем</div>
+          </div>
+        </div>
+
+        <!-- Модалка дня рождения -->
+        <div class="overlay" id="bdayOverlay">
+          <div class="modal">
+            <div class="modal-head">
+              <div>
+                <h3 class="title">Печать держится на «секрете»</h3>
+                <p class="subtitle">Введи день рождения фаната</p>
+              </div>
+            </div>
+
+            <div class="date-row">
+              <div class="field">
+                <span style="opacity:.8">📅</span>
+                <input id="bdayInput" inputmode="numeric" placeholder="дд.мм.гггг" maxlength="10" />
+              </div>
+              <button class="primary" id="bdayOk" style="min-width:90px;">✓</button>
+              <button class="ghost" id="bdayClose" style="min-width:110px;">Назад</button>
+            </div>
+
+            <p class="subtitle" style="margin-top:10px;opacity:.8;">
+              Подсказка: <b>01.02.2005</b>
+            </p>
+          </div>
+        </div>
+
+      </section>
+
+      <div class="toast" id="toast"></div>
     </div>
-    <div class="toastMsg" id="toastMsg">Ты что ошалела? не отвяжешься</div>
   </div>
 
   <script>
-    // ========= Settings / Replace with your photos =========
-    // If you want real photos:
-    // 1) uncomment <img> tags in #p1 #p2
-    // 2) put direct image URLs here and hide placeholders
-    const PHOTO_1 = ""; // e.g. "https://.../photo1.jpg"
-    const PHOTO_2 = ""; // e.g. "https://.../photo2.jpg"
+    // ----------------------------
+    // Утилиты
+    // ----------------------------
+    const $ = (s, el=document) => el.querySelector(s);
+    const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+    const lerp = (a,b,t) => a + (b-a)*t;
 
-    // ========= DOM =========
-    const stage = document.getElementById('stage');
-    const env3d = document.getElementById('env3d');
-    const env = document.getElementById('env');
-    const openBtn = document.getElementById('openBtn');
-    const trashBtn = document.getElementById('trashBtn');
-    const toast = document.getElementById('toast');
-
-    const p1 = document.getElementById('p1');
-    const p2 = document.getElementById('p2');
-
-    // Insert photos if provided
-    function injectPhoto(container, url) {
-      if (!url) return;
-      const ph = container.querySelector('.ph');
-      if (ph) ph.style.display = 'none';
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = "photo";
-      container.appendChild(img);
-    }
-    injectPhoto(p1, PHOTO_1);
-    injectPhoto(p2, PHOTO_2);
-
-    // ========= 3D drag rotate =========
-    let dragging = false;
-    let lastX = 0, lastY = 0;
-    let rotX = -10;  // tilt
-    let rotY = 18;   // turn
-    let velX = 0, velY = 0;
-
-    function applyTransform() {
-      // clamp for nice look
-      const cx = Math.max(-32, Math.min(32, rotX));
-      const cy = rotY;
-      // subtle translate for “real” feel
-      env3d.style.transform = `rotateX(${cx}deg) rotateY(${cy}deg)`;
-    }
-    applyTransform();
-
-    stage.addEventListener('pointerdown', (e) => {
-      dragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      stage.setPointerCapture(e.pointerId);
-    }, {passive:false});
-
-    stage.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      rotY += dx * 0.25;
-      rotX -= dy * 0.18;
-      velX = dx;
-      velY = dy;
-      applyTransform();
-      e.preventDefault();
-    }, {passive:false});
-
-    stage.addEventListener('pointerup', () => {
-      dragging = false;
-      // inertia-ish
-      const decay = () => {
-        velX *= 0.90;
-        velY *= 0.90;
-        if (Math.abs(velX) + Math.abs(velY) < 0.2) return;
-        rotY += velX * 0.12;
-        rotX -= velY * 0.10;
-        applyTransform();
-        requestAnimationFrame(decay);
-      };
-      requestAnimationFrame(decay);
-    }, {passive:true});
-
-    stage.addEventListener('pointercancel', () => dragging = false, {passive:true});
-
-    // ========= Toast =========
+    const toast = $("#toast");
     let toastTimer = null;
-    function showToast(msg, ms=1400){
-      document.getElementById('toastMsg').textContent = msg;
-      toast.classList.add('show');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(()=> toast.classList.remove('show'), ms);
+    function showToast(text, ms=1400){
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>toast.classList.remove("show"), ms);
     }
 
-    // ========= “Trash” logic =========
-    let trashedOnce = false;
-    trashBtn.addEventListener('click', () => {
-      if (trashedOnce) return;
-      showToast("Ты что ошалела? не отвяжешься", 1550);
-      trashedOnce = true;
-
-      // After the toast, hide trash button
-      setTimeout(() => {
-        trashBtn.style.opacity = '0';
-        trashBtn.style.pointerEvents = 'none';
-        setTimeout(() => trashBtn.remove(), 220);
-      }, 900);
-    });
-
-    // ========= Open sequence =========
-    let opened = false;
-    openBtn.addEventListener('click', () => {
-      if (opened) return;
-      opened = true;
-
-      // lock buttons
-      openBtn.disabled = true;
-
-      // opening state for timing
-      env.classList.add('opening');
-
-      // start FX
-      burstHearts(1.4);
-
-      // flap opens (CSS transition)
-      setTimeout(() => {
-        env.classList.add('opened');
-      }, 120);
-
-      // photos fly out
-      setTimeout(() => {
-        flyPhoto(p1, -120, -220, -18);
-        flyPhoto(p2, 120, -240, 18);
-      }, 520);
-
-      // letter rises after
-      setTimeout(() => {
-        env.classList.remove('opening');
-        burstHearts(1.2);
-      }, 1100);
-
-      // re-enable open button as "Again"? keep disabled for clean
-    });
-
-    function flyPhoto(el, dx, dy, rot){
-      el.style.opacity = '1';
-      el.style.transition = 'transform 1200ms cubic-bezier(.16,.86,.12,1), opacity 700ms ease';
-      // start
-      el.style.transform = `translateZ(40px) translate(0px, 0px) rotate(${rot}deg) scale(.75)`;
-      requestAnimationFrame(() => {
-        el.style.transform = `translateZ(120px) translate(${dx}px, ${dy}px) rotate(${rot*1.6}deg) scale(1.05)`;
-      });
-      // slight fade later
-      setTimeout(()=> { el.style.opacity = '0.96'; }, 600);
+    function setHint(text){
+      $("#hintText").textContent = text;
     }
 
-    // ========= Heart fireworks (canvas) =========
-    const canvas = document.getElementById('fx');
-    const ctx = canvas.getContext('2d');
-    let W=0,H=0;
-    function resize(){
-      W = canvas.width = Math.floor(window.innerWidth * devicePixelRatio);
-      H = canvas.height = Math.floor(window.innerHeight * devicePixelRatio);
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
-      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    // ----------------------------
+    // Физичное вращение объекта (с инерцией)
+    // ----------------------------
+    function attachInertiaRotation(wrapEl, objEl, opt={}){
+      const state = {
+        rx: opt.rx ?? -12,
+        ry: opt.ry ?? 20,
+        vx: 0, vy: 0,
+        dragging:false,
+        lastX:0, lastY:0,
+        lastT:0
+      };
 
-    const hearts = ["❤","💗","💖","💘","💞","💕","💓"];
-    const particles = [];
-    let raf = null;
-
-    function rand(a,b){ return a + Math.random()*(b-a); }
-
-    function spawn(x,y,count=36, power=1){
-      for(let i=0;i<count;i++){
-        const a = rand(0, Math.PI*2);
-        const sp = rand(2.4, 6.2) * power;
-        particles.push({
-          x, y,
-          vx: Math.cos(a)*sp,
-          vy: Math.sin(a)*sp - rand(1.2, 3.2)*power,
-          g: rand(0.06, 0.12),
-          life: rand(52, 82),
-          s: rand(14, 22),
-          r: rand(-0.12, 0.12),
-          t: hearts[(Math.random()*hearts.length)|0],
-          o: 1
-        });
+      function apply(){
+        objEl.style.setProperty("--rx", state.rx + "deg");
+        objEl.style.setProperty("--ry", state.ry + "deg");
       }
-      if (!raf) raf = requestAnimationFrame(tick);
+      apply();
+
+      const friction = opt.friction ?? 0.92;
+      const speed = opt.speed ?? 0.16;
+      const maxX = opt.maxX ?? 26;
+
+      function onDown(e){
+        state.dragging = true;
+        const p = getPoint(e);
+        state.lastX = p.x; state.lastY = p.y;
+        state.lastT = performance.now();
+        state.vx = 0; state.vy = 0;
+        wrapEl.setPointerCapture?.(e.pointerId);
+      }
+
+      function onMove(e){
+        if(!state.dragging) return;
+        const p = getPoint(e);
+        const now = performance.now();
+        const dt = Math.max(16, now - state.lastT);
+
+        const dx = (p.x - state.lastX);
+        const dy = (p.y - state.lastY);
+
+        // вертикаль -> rotateX, горизонталь -> rotateY
+        state.ry += dx * speed;
+        state.rx -= dy * speed;
+        state.rx = clamp(state.rx, -maxX, maxX);
+
+        // скорость (для инерции)
+        state.vy = (dx / dt) * 18;
+        state.vx = (-dy / dt) * 18;
+
+        state.lastX = p.x; state.lastY = p.y; state.lastT = now;
+        apply();
+      }
+
+      function onUp(e){
+        state.dragging = false;
+      }
+
+      function tick(){
+        if(!state.dragging){
+          state.vx *= friction;
+          state.vy *= friction;
+          if(Math.abs(state.vx) < 0.02) state.vx = 0;
+          if(Math.abs(state.vy) < 0.02) state.vy = 0;
+
+          state.rx += state.vx;
+          state.ry += state.vy;
+          state.rx = clamp(state.rx, -maxX, maxX);
+          apply();
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      function getPoint(e){
+        if(e.touches && e.touches[0]) return {x:e.touches[0].clientX, y:e.touches[0].clientY};
+        return {x:e.clientX, y:e.clientY};
+      }
+
+      // pointer events
+      wrapEl.addEventListener("pointerdown", onDown, {passive:true});
+      wrapEl.addEventListener("pointermove", onMove, {passive:true});
+      wrapEl.addEventListener("pointerup", onUp, {passive:true});
+      wrapEl.addEventListener("pointercancel", onUp, {passive:true});
     }
 
-    function tick(){
-      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+    // ----------------------------
+    // Wheel picker (вертикальный)
+    // ----------------------------
+    function createWheelPicker(container, items, initialIndex=0){
+      container.innerHTML = "";
+      const wheel = document.createElement("div");
+      wheel.className = "wheel";
+      container.appendChild(wheel);
+
+      const itemEls = items.map((t)=>{
+        const d = document.createElement("div");
+        d.className = "item";
+        d.textContent = t;
+        wheel.appendChild(d);
+        return d;
+      });
+
+      const itemH = 48;
+      const state = {
+        index: clamp(initialIndex, 0, items.length-1),
+        offset: 0, // px relative to center position
+        v: 0,
+        dragging:false,
+        lastY:0,
+        lastT:0
+      };
+
+      function syncActive(){
+        itemEls.forEach((el,i)=> el.classList.toggle("active", i===state.index));
+      }
+
+      function setIndex(i){
+        state.index = clamp(i, 0, items.length-1);
+        state.offset = 0;
+        state.v = 0;
+        render();
+      }
+
+      function render(){
+        // wheel centered: index at center
+        const base = -state.index * itemH + state.offset;
+        wheel.style.transform = `translateY(calc(-50% + ${base}px))`;
+        // подсветка активного
+        syncActive();
+      }
+
+      function snap(){
+        // offset -> nearest item
+        const deltaIndex = Math.round(-state.offset / itemH);
+        state.index = clamp(state.index + deltaIndex, 0, items.length-1);
+        state.offset = 0;
+        render();
+      }
+
+      function onDown(e){
+        state.dragging = true;
+        state.lastY = getY(e);
+        state.lastT = performance.now();
+        state.v = 0;
+        container.setPointerCapture?.(e.pointerId);
+      }
+
+      function onMove(e){
+        if(!state.dragging) return;
+        const y = getY(e);
+        const now = performance.now();
+        const dt = Math.max(16, now - state.lastT);
+        const dy = y - state.lastY;
+
+        state.offset += dy;
+        // ограничим offset, но мягко
+        const maxOffset = itemH * 2.2;
+        state.offset = clamp(state.offset, -maxOffset, maxOffset);
+
+        state.v = (dy / dt) * 26;
+        state.lastY = y;
+        state.lastT = now;
+        render();
+      }
+
+      function onUp(){
+        state.dragging = false;
+        snap();
+      }
+
+      function tick(){
+        if(!state.dragging){
+          state.v *= 0.86;
+          if(Math.abs(state.v) < 0.08) state.v = 0;
+          if(state.v !== 0){
+            state.offset += state.v;
+            const maxOffset = itemH * 2.2;
+            state.offset = clamp(state.offset, -maxOffset, maxOffset);
+            render();
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      function getY(e){
+        if(e.touches && e.touches[0]) return e.touches[0].clientY;
+        return e.clientY;
+      }
+
+      container.addEventListener("pointerdown", onDown, {passive:true});
+      container.addEventListener("pointermove", onMove, {passive:true});
+      container.addEventListener("pointerup", onUp, {passive:true});
+      container.addEventListener("pointercancel", onUp, {passive:true});
+
+      render();
+
+      return {
+        get value(){ return items[state.index]; },
+        get index(){ return state.index; },
+        setIndex
+      };
+    }
+
+    // ----------------------------
+    // FX: сердца/фейерверк
+    // ----------------------------
+    const fx = $("#fx");
+    const ctx = fx.getContext("2d");
+    let W=0,H=0, DPR=1;
+    function resizeFx(){
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+      const rect = fx.getBoundingClientRect();
+      W = Math.floor(rect.width);
+      H = Math.floor(rect.height);
+      fx.width = Math.floor(W * DPR);
+      fx.height = Math.floor(H * DPR);
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+    }
+    window.addEventListener("resize", resizeFx, {passive:true});
+
+    const particles = [];
+    function spawnHeartsBurst(count=26){
+      for(let i=0;i<count;i++){
+        const x = W*0.5 + (Math.random()-0.5)*120;
+        const y = H*0.52 + (Math.random()-0.5)*80;
+        particles.push(makeParticle(x,y, "heart"));
+      }
+    }
+    function spawnFirework(count=34){
+      for(let i=0;i<count;i++){
+        const x = W*0.5 + (Math.random()-0.5)*180;
+        const y = H*0.38 + (Math.random()-0.5)*120;
+        particles.push(makeParticle(x,y, "spark"));
+      }
+    }
+    function makeParticle(x,y,type){
+      const a = Math.random()*Math.PI*2;
+      const s = (type==="spark" ? 3.6 : 2.8) + Math.random()*3.0;
+      return {
+        type,
+        x,y,
+        vx: Math.cos(a)*s,
+        vy: Math.sin(a)*s - (type==="heart" ? 1.2 : 0.2),
+        life: 1,
+        size: (type==="spark" ? 2.2 : 10) + Math.random()*4,
+        rot: Math.random()*Math.PI*2,
+        vr: (Math.random()-0.5)*0.22,
+      };
+    }
+
+    function drawHeart(x,y,s,rot,alpha){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(rot);
+      ctx.globalAlpha = alpha;
+      // градиентная заливка «сердца»
+      const g = ctx.createRadialGradient(-s*0.2, -s*0.2, s*0.2, 0,0, s*1.2);
+      g.addColorStop(0, "rgba(255,255,255,0.95)");
+      g.addColorStop(0.25, "rgba(255,79,166,0.95)");
+      g.addColorStop(1, "rgba(124,241,255,0.55)");
+      ctx.fillStyle = g;
+
+      ctx.beginPath();
+      const k = s/16;
+      ctx.moveTo(0, 6*k);
+      ctx.bezierCurveTo(0, 0, -10*k, 0, -10*k, 6*k);
+      ctx.bezierCurveTo(-10*k, 12*k, 0, 14*k, 0, 20*k);
+      ctx.bezierCurveTo(0, 14*k, 10*k, 12*k, 10*k, 6*k);
+      ctx.bezierCurveTo(10*k, 0, 0, 0, 0, 6*k);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function tickFx(){
+      ctx.clearRect(0,0,W,H);
 
       for(let i=particles.length-1;i>=0;i--){
         const p = particles[i];
-        p.vy += p.g;
+        p.life -= 0.012;
+        p.vy += (p.type==="spark" ? 0.06 : 0.04);
         p.x += p.vx;
         p.y += p.vy;
-        p.life -= 1;
-        p.o = Math.max(0, p.life / 82);
+        p.rot += p.vr;
 
-        ctx.save();
-        ctx.globalAlpha = p.o;
-        ctx.font = `700 ${p.s}px -apple-system, system-ui, Arial`;
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.r * (82 - p.life));
-        ctx.fillText(p.t, -p.s/2, p.s/2);
-        ctx.restore();
+        const alpha = clamp(p.life, 0, 1);
 
-        if (p.life <= 0) particles.splice(i,1);
+        if(p.type === "spark"){
+          ctx.globalAlpha = alpha;
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
+          g.addColorStop(0, "rgba(255,255,255,0.9)");
+          g.addColorStop(0.2, "rgba(255,79,166,0.65)");
+          g.addColorStop(1, "rgba(124,241,255,0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 10, 0, Math.PI*2);
+          ctx.fill();
+
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillRect(p.x, p.y, 2, 2);
+        } else {
+          drawHeart(p.x, p.y, p.size, p.rot, alpha);
+        }
+
+        if(p.life <= 0 || p.y > H + 80) particles.splice(i,1);
       }
-      if (particles.length){
-        raf = requestAnimationFrame(tick);
-      }else{
-        raf = null;
-      }
+
+      requestAnimationFrame(tickFx);
     }
 
-    function burstHearts(mult=1){
-      const r = env.getBoundingClientRect();
-      const x = r.left + r.width/2;
-      const y = r.top + r.height/2 - 20;
-      spawn(x, y, Math.floor(44*mult), mult);
-      // extra small bursts
-      setTimeout(()=> spawn(x-90, y+20, 18, 0.9), 120);
-      setTimeout(()=> spawn(x+90, y+10, 18, 0.9), 180);
+    // ----------------------------
+    // Галерея: берём максимум 4 фото из Images/1.jpg..4.jpg
+    // ----------------------------
+    const galleryEl = $("#gallery");
+    async function loadGallery(){
+      const candidates = ["Images/1.jpg","Images/2.jpg","Images/3.jpg","Images/4.jpg"];
+      const ok = [];
+      await Promise.all(candidates.map(src => new Promise((resolve)=>{
+        const img = new Image();
+        img.onload = ()=>{ ok.push(src); resolve(); };
+        img.onerror = ()=> resolve();
+        img.src = src;
+      })));
+
+      galleryEl.innerHTML = "";
+      ok.slice(0,4).forEach((src)=>{
+        const card = document.createElement("div");
+        card.className = "photo";
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "Фото";
+        card.appendChild(img);
+        galleryEl.appendChild(card);
+      });
+
+      return ok.length;
     }
 
-    // Optional: tap to spawn small hearts when opened
-    document.body.addEventListener('pointerdown', (e)=>{
-      if (!opened) return;
-      spawn(e.clientX, e.clientY, 12, 0.7);
-    }, {passive:true});
+    // ----------------------------
+    // Сцены
+    // ----------------------------
+    const scenes = [$("#scene1"), $("#scene2"), $("#scene3")];
+    function goScene(n){
+      scenes.forEach((s,i)=> s.classList.toggle("active", i===n));
+      if(n===0) setHint("Сцена 1: подпиши бумажку");
+      if(n===1) setHint("Сцена 2: нажми на замок");
+      if(n===2) setHint("Сцена 3: разберись с печатью");
+    }
+
+    // Scene 1 logic
+    const btnYes1 = $("#btnYes1");
+    const btnNo1 = $("#btnNo1");
+    const paperMsg = $("#paperMsg");
+    const paperSub = $("#paperSub");
+    const paperBtns = $("#paperBtns");
+
+    let noPressedOnce = false;
+
+    btnNo1.addEventListener("click", ()=>{
+      // пропадает окошко, курьер ругается, потом снова, но без "нет"
+      const panel = $("#paperPanel");
+      panel.classList.add("fadeOut");
+      setTimeout(()=>{
+        panel.classList.remove("fadeOut");
+        panel.style.display = "none";
+        showToast("Вы что балбес? На первый раз прощаю 😑", 1500);
+        setTimeout(()=>{
+          panel.style.display = "";
+          panel.classList.add("fadeIn");
+          setTimeout(()=>panel.classList.remove("fadeIn"), 500);
+
+          noPressedOnce = true;
+          paperMsg.textContent = "Ладно. Подписывай. Принимаешь посылку?";
+          paperSub.textContent = "Выбора нет 🙂";
+          // удаляем кнопку "Нет"
+          btnNo1.remove();
+        }, 1200);
+      }, 260);
+    });
+
+    btnYes1.addEventListener("click", ()=>{
+      showToast("Подпись принята. Держите коробку 📦", 1300);
+      goScene(1);
+    });
+
+    // Rotation on scene 1 object
+    attachInertiaRotation($("#courierWrap"), $("#courierObj"), {rx:-10, ry:16, friction:0.91, speed:0.18, maxX:22});
+
+    // Scene 2: box + lock game
+    attachInertiaRotation($("#boxWrap"), $("#boxObj"), {rx:-12, ry:22, friction:0.92, speed:0.16, maxX:26});
+
+    $("#backTo1").addEventListener("click", ()=> goScene(0));
+
+    const lockOverlay = $("#lockOverlay");
+    const lockBtn = $("#lockBtn");
+    const lockBack = $("#lockBack");
+    const lockDone = $("#lockDone");
+
+    let pickerDay, pickerMonth, pickerYear;
+
+    const months = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+    const days = Array.from({length:31}, (_,i)=> String(i+1));
+    const years = Array.from({length:41}, (_,i)=> String(2010+i)); // 2010..2050
+
+    function openLock(){
+      lockOverlay.classList.add("active");
+
+      if(!pickerDay){
+        pickerDay = createWheelPicker($("#pickerDay"), days, 4); // 5
+        pickerMonth = createWheelPicker($("#pickerMonth"), months, 10); // ноября
+        pickerYear = createWheelPicker($("#pickerYear"), years, years.indexOf("2025"));
+      }
+    }
+    function closeLock(){
+      lockOverlay.classList.remove("active");
+    }
+
+    lockBtn.addEventListener("click", openLock);
+    lockBack.addEventListener("click", closeLock);
+    lockOverlay.addEventListener("click", (e)=>{
+      if(e.target === lockOverlay) closeLock();
+    });
+
+    lockDone.addEventListener("click", ()=>{
+      const day = Number(pickerDay.value);
+      const month = pickerMonth.value;
+      const year = Number(pickerYear.value);
+
+      const ok = (day===5 && month==="ноября" && year===2025);
+
+      if(ok){
+        closeLock();
+        showToast("Код верный. Замок открылся ✅", 1200);
+
+        // анимация открытия коробки
+        const obj = $("#boxObj");
+        obj.classList.add("openBox");
+
+        setTimeout(()=>{
+          // переходим на конверт
+          goScene(2);
+          setTimeout(()=> obj.classList.remove("openBox"), 100);
+        }, 850);
+
+      } else {
+        // дрожь замка
+        lockBtn.classList.remove("shake");
+        void lockBtn.offsetWidth;
+        lockBtn.classList.add("shake");
+        showToast("Не-а. Попробуй ещё 😉", 1200);
+      }
+    });
+
+    // Scene 3: envelope + seal + bday
+    attachInertiaRotation($("#envWrap"), $("#envObj"), {rx:-10, ry:18, friction:0.92, speed:0.16, maxX:26});
+
+    const throwBtn = $("#throwBtn");
+    const openBtn = $("#openBtn");
+    const envMsg = $("#envMsg");
+    const envSub = $("#envSub");
+    const envBtns = $("#envBtns");
+    const sealBtn = $("#sealBtn");
+
+    const bdayOverlay = $("#bdayOverlay");
+    const bdayInput = $("#bdayInput");
+    const bdayOk = $("#bdayOk");
+    const bdayClose = $("#bdayClose");
+
+    let throwLocked = false;
+    let galleryLoaded = false;
+
+    throwBtn.addEventListener("click", ()=>{
+      // всё дрожит, окно "Щас по шее получишь", кнопка "Открыть" вытесняет "Выбросить"
+      const stage = $("#stage");
+      stage.classList.add("shake");
+      showToast("Щас по шее получишь 🙂", 1200);
+      setTimeout(()=> stage.classList.remove("shake"), 380);
+
+      if(!throwLocked){
+        throwLocked = true;
+        // «расплывется влево и вытеснит»
+        openBtn.animate([
+          { transform: "translateX(0)", filter:"blur(0px)", opacity:1 },
+          { transform: "translateX(-8px) scaleX(1.25)", filter:"blur(.2px)", opacity:1 }
+        ], { duration: 380, easing: "cubic-bezier(.2,.9,.2,1)" });
+
+        throwBtn.animate([
+          { transform:"translateX(0)", opacity:1 },
+          { transform:"translateX(18px)", opacity:0 }
+        ], { duration: 380, easing: "cubic-bezier(.2,.9,.2,1)" });
+
+        setTimeout(()=> throwBtn.remove(), 360);
+      }
+    });
+
+    function openBdayPrompt(){
+      bdayOverlay.classList.add("active");
+      bdayInput.value = "";
+      bdayInput.focus({preventScroll:true});
+    }
+    function closeBdayPrompt(){
+      bdayOverlay.classList.remove("active");
+    }
+
+    openBtn.addEventListener("click", ()=>{
+      // приблизиться к печати
+      const envObj = $("#envObj");
+      envObj.classList.add("zoomToSeal");
+      setTimeout(()=>{
+        envObj.classList.remove("zoomToSeal");
+        openBdayPrompt();
+      }, 520);
+    });
+
+    bdayClose.addEventListener("click", closeBdayPrompt);
+    bdayOverlay.addEventListener("click", (e)=>{
+      if(e.target === bdayOverlay) closeBdayPrompt();
+    });
+
+    // Маска дд.мм.гггг
+    bdayInput.addEventListener("input", ()=>{
+      let v = bdayInput.value.replace(/\D/g,"").slice(0,8);
+      const dd = v.slice(0,2);
+      const mm = v.slice(2,4);
+      const yyyy = v.slice(4,8);
+      let out = dd;
+      if(mm) out += "." + mm;
+      if(yyyy) out += "." + yyyy;
+      bdayInput.value = out;
+    });
+
+    function finishLetter(){
+      // печать падает
+      sealBtn.classList.add("sealDrop");
+
+      // салют/сердца/фото
+      spawnFirework(44);
+      spawnHeartsBurst(30);
+      setTimeout(()=>spawnHeartsBurst(18), 220);
+
+      // загрузка фото один раз
+      (async ()=>{
+        if(!galleryLoaded){
+          const count = await loadGallery();
+          galleryLoaded = true;
+          if(count > 0){
+            $("#gallery").classList.add("show");
+          }
+        } else {
+          $("#gallery").classList.add("show");
+        }
+      })();
+
+      // потом всё утихает и появляется записка
+      setTimeout(()=>{
+        $("#envPanel").classList.add("fadeOut");
+        setTimeout(()=> $("#envPanel").style.display="none", 260);
+      }, 900);
+
+      setTimeout(()=>{
+        $("#note").classList.add("show");
+        setHint("Готово 💌");
+      }, 1400);
+    }
+
+    function checkBday(){
+      const v = bdayInput.value.trim();
+      const ok = (v === "01.02.2005");
+      if(ok){
+        closeBdayPrompt();
+        showToast("Верно. Печать снимается… 💗", 1200);
+        finishLetter();
+      } else {
+        showToast("Неправильно 🙂", 1100);
+        sealBtn.classList.remove("shake");
+        void sealBtn.offsetWidth;
+        sealBtn.classList.add("shake");
+      }
+    }
+    bdayOk.addEventListener("click", checkBday);
+    bdayInput.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") checkBday();
+    });
+
+    // Нажатие на печать тоже открывает ввод (приятное управление)
+    sealBtn.addEventListener("click", ()=>{
+      // если уже снята — ничего
+      if(sealBtn.classList.contains("sealDrop")) return;
+      openBdayPrompt();
+    });
+
+    // Init
+    resizeFx();
+    requestAnimationFrame(tickFx);
+    setHint("Сцена 1: подпиши бумажку");
+
+    // Небольшой анти-скролл в телеграм вебвью
+    document.addEventListener("touchmove", (e)=>{
+      // не блокируем внутри note (скролл текста)
+      const note = $("#note");
+      if(note.classList.contains("show") && note.contains(e.target)) return;
+      e.preventDefault();
+    }, {passive:false});
   </script>
 </body>
 </html>
