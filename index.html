@@ -3,1985 +3,1981 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#0f0b10" />
-  <title>Valentine Mini Game — Джама</title>
+  <meta name="theme-color" content="#f2e9dc" />
+  <title>Для Джамы 💌</title>
   <style>
+    /* =======================
+       Lightweight "paper/pixel" Valentine SPA (Telegram WebView)
+       One-file: index.html
+       Assets expected next to index.html:
+       Images/photo1.jpg ... photo4.jpg (3-4 photos)
+       Images/tex_paper.jpg (optional)
+       Images/box.png, Images/lock.png, Images/envelope.png, Images/seal.png (optional, will fallback to CSS)
+       Audio/bgm.mp3  (Je te laisserai des mots - user-owned)
+       Audio/click.mp3, Audio/woosh.mp3, Audio/lock.mp3, Audio/error.mp3, Audio/success.mp3 (optional)
+       ======================= */
+
     :root{
-      --bg0:#0f0b10;
-      --bg1:#18111d;
-      --paper:#f7f1ea;
-      --paper2:#efe7df;
-      --ink:#241a2a;
-      --muted:#6b5a73;
-      --red:#e63b50;
-      --red2:#ff6b7a;
-      --glow: rgba(255,107,122,.28);
+      --bg:#f2e9dc;
+      --ink:#2a2320;
+      --muted:#6f625a;
+      --paper:#f7f0e6;
+      --paper2:#efe2d2;
+      --accent:#d75d6a;
+      --accent2:#ff9aa7;
+      --good:#2f8f5b;
+      --bad:#bf3d3d;
+
       --radius:18px;
-      --radius2:26px;
-      --pad: clamp(14px, 3.2vw, 22px);
-      --ui: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --radius2:22px;
+
+      --shadow: 0 10px 30px rgba(0,0,0,.10);
+      --shadowSoft: 0 6px 18px rgba(0,0,0,.08);
+
+      --ease: cubic-bezier(.2,.9,.2,1);
+      --ease2: cubic-bezier(.2,.8,.2,1);
+
+      --safeTop: env(safe-area-inset-top);
+      --safeBot: env(safe-area-inset-bottom);
+
+      --pixel: 1px; /* used for scanlines */
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      font-family: var(--ui);
-      color: var(--paper);
-      background: radial-gradient(1200px 900px at 50% 20%, #22172b 0%, var(--bg0) 60%, #0b0810 100%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:var(--bg);
       overflow:hidden;
-      user-select:none;
-      -webkit-user-select:none;
-      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none; /* we handle gestures */
     }
 
-    /* ===== CRT / pixel-ish overlay (lightweight, no heavy filters) ===== */
-    .crt{
-      pointer-events:none;
+    /* Subtle paper texture + cute CRT grain */
+    .bg{
       position:fixed; inset:0;
-      mix-blend-mode: overlay;
-      opacity:.22;
-    }
-    .crt::before{
-      content:"";
-      position:absolute; inset:0;
       background:
-        repeating-linear-gradient( to bottom,
-          rgba(255,255,255,.06) 0px,
-          rgba(255,255,255,.06) 1px,
-          rgba(0,0,0,0) 2px,
-          rgba(0,0,0,0) 4px
-        );
-      opacity:.55;
+        radial-gradient(1200px 900px at 70% 0%, rgba(215,93,106,.10), transparent 55%),
+        radial-gradient(1000px 700px at 20% 100%, rgba(255,154,167,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.20)),
+        linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,0));
+      overflow:hidden;
+    }
+    .bg::before{
+      content:"";
+      position:absolute; inset:-30px;
+      background-image:
+        url("Images/tex_paper.jpg");
+      background-size: cover;
+      background-position:center;
+      opacity:.14;
+      filter: saturate(.9) contrast(1.05);
       transform: translateZ(0);
-      will-change: opacity;
-      animation: scan 4.2s linear infinite;
+      pointer-events:none;
     }
-    .crt::after{
+    .bg::after{
+      /* scanlines + mild pixel CRT */
       content:"";
       position:absolute; inset:0;
       background:
-        linear-gradient(90deg, rgba(255,0,90,.06), rgba(0,255,220,.05), rgba(255,255,255,.05));
+        repeating-linear-gradient(
+          180deg,
+          rgba(0,0,0,.035),
+          rgba(0,0,0,.035) var(--pixel),
+          rgba(255,255,255,0) calc(var(--pixel) * 2),
+          rgba(255,255,255,0) calc(var(--pixel) * 5)
+        ),
+        radial-gradient(900px 700px at 50% 40%, rgba(0,0,0,.06), transparent 60%);
       opacity:.35;
+      mix-blend-mode:multiply;
+      pointer-events:none;
       transform: translateZ(0);
-    }
-    @keyframes scan{
-      0%{ opacity:.18; }
-      45%{ opacity:.25; }
-      50%{ opacity:.18; }
-      100%{ opacity:.18; }
     }
 
-    /* ===== App shell ===== */
+    /* Root app layout */
     #app{
       position:fixed; inset:0;
-      padding: calc(var(--pad) + env(safe-area-inset-top)) var(--pad)
-               calc(var(--pad) + env(safe-area-inset-bottom)) var(--pad);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .stack{
-      width:min(560px, 100%);
-      height:min(920px, 100%);
-      position:relative;
       display:flex;
       align-items:stretch;
-      justify-content:stretch;
+      justify-content:center;
+      padding: max(14px, var(--safeTop)) 14px max(14px, var(--safeBot));
     }
 
-    .scene{
-      position:absolute; inset:0;
+    .stage{
+      width:min(520px, 100%);
+      height:100%;
       display:flex;
       flex-direction:column;
-      gap:14px;
-      opacity:0;
-      transform: translateY(10px);
-      pointer-events:none;
-      transition: opacity .32s ease, transform .32s ease;
-      will-change: opacity, transform;
-    }
-    .scene.active{
-      opacity:1;
-      transform: translateY(0);
-      pointer-events:auto;
+      gap:12px;
+      position:relative;
+      will-change: transform, opacity;
     }
 
     .topbar{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:10px;
-      padding: 10px 12px;
-      border-radius: var(--radius2);
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      backdrop-filter: none;
-    }
-    .brand{
-      display:flex;
       align-items:center;
-      gap:10px;
-      min-width:0;
+      padding: 8px 6px 0 6px;
+      user-select:none;
     }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, #fff 0%, var(--red2) 35%, var(--red) 80%);
-      box-shadow: 0 0 0 6px rgba(230,59,80,.12);
-    }
+
     .title{
       font-weight:700;
       letter-spacing:.2px;
-      font-size:14px;
-      line-height:1.2;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-size: 15px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
-    .hint{
-      font-size:12px;
-      color: rgba(255,255,255,.72);
-      white-space:nowrap;
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,.55);
+      border:1px solid rgba(42,35,32,.08);
+      border-radius: 999px;
+      box-shadow: var(--shadowSoft);
+      backdrop-filter: blur(2px);
     }
 
+    .content{
+      flex:1;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 0 14px 0;
+      overflow:hidden;
+    }
+
+    /* Paper card style */
     .card{
+      width: 100%;
+      max-width: 520px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.74)),
+        radial-gradient(600px 300px at 30% 20%, rgba(215,93,106,.10), transparent 60%);
+      border:1px solid rgba(42,35,32,.10);
       border-radius: var(--radius2);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
       padding: 14px;
       position:relative;
-      overflow:hidden;
-    }
-
-    .paper{
-      color: var(--ink);
-      background: linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
-      border: 1px solid rgba(36,26,42,.14);
-      border-radius: var(--radius2);
-      padding: 14px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.16);
-    }
-    .paper small{ color: rgba(36,26,42,.66); }
-
-    .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; }
-    .col{ display:flex; flex-direction:column; gap:8px; }
-    .center{ display:flex; align-items:center; justify-content:center; }
-
-    /* ===== Buttons ===== */
-    .btns{ display:flex; gap:10px; }
-    button{
-      border:0;
-      appearance:none;
-      font-family: var(--ui);
-      border-radius: 999px;
-      padding: 12px 14px;
-      font-weight:700;
-      font-size:14px;
-      cursor:pointer;
-      transition: transform .12s ease, background .18s ease, box-shadow .18s ease, opacity .18s ease;
-      transform: translateZ(0);
-      will-change: transform;
-    }
-    button:active{ transform: translateY(1px) scale(.99); }
-    .btn-primary{
-      color:#fff;
-      background: linear-gradient(180deg, var(--red2), var(--red));
-      box-shadow: 0 10px 22px rgba(230,59,80,.20);
-    }
-    .btn-secondary{
-      color: rgba(255,255,255,.92);
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 10px 22px rgba(0,0,0,.16);
-    }
-    .btn-ghost{
-      color: rgba(255,255,255,.85);
-      background: rgba(0,0,0,.00);
-      border: 1px dashed rgba(255,255,255,.20);
-    }
-    .btn-primary:focus, .btn-secondary:focus, .btn-ghost:focus{ outline:none; }
-    .btn-primary.glow{
-      box-shadow: 0 0 0 6px rgba(255,107,122,.12), 0 12px 24px rgba(230,59,80,.22);
-    }
-
-    /* ===== Toast ===== */
-    #toast{
-      position:fixed;
-      left:50%;
-      bottom: calc(18px + env(safe-area-inset-bottom));
-      transform: translateX(-50%) translateY(12px);
-      opacity:0;
-      pointer-events:none;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.62);
-      border: 1px solid rgba(255,255,255,.12);
-      color:#fff;
-      font-weight:700;
-      font-size:13px;
-      transition: opacity .18s ease, transform .18s ease;
-      z-index: 50;
-      max-width: min(520px, calc(100% - 28px));
-      text-align:center;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    #toast.show{
-      opacity:1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ===== Preloader ===== */
-    #preloader{
-      position:fixed; inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: radial-gradient(1100px 900px at 50% 20%, #23162a 0%, var(--bg0) 62%, #0b0810 100%);
-      z-index: 100;
-    }
-    .loadbox{
-      width:min(520px, calc(100% - 28px));
-      border-radius: var(--radius2);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      padding: 18px;
-    }
-    .loadline{
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.12);
-    }
-    .loadline > i{
-      display:block; height:100%;
-      width:0%;
-      background: linear-gradient(90deg, var(--red), var(--red2));
-      border-radius: 999px;
-      transition: width .18s ease;
-    }
-    .loadmeta{
-      display:flex; justify-content:space-between; align-items:center;
-      margin-top: 10px;
-      gap:10px;
-      color: rgba(255,255,255,.78);
-      font-size:12px;
-    }
-    .dots::after{
-      content:"";
-      display:inline-block;
-      width: 14px;
-      text-align:left;
-      animation: dots 1.2s steps(4, end) infinite;
-    }
-    @keyframes dots{
-      0%{ content:""; }
-      25%{ content:"."; }
-      50%{ content:".."; }
-      75%{ content:"..."; }
-      100%{ content:""; }
-    }
-
-    /* ===== Character / Courier ===== */
-    .courier-wrap{
-      flex: 1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-    .courier{
-      width:min(360px, 88%);
-      border-radius: var(--radius2);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      padding: 16px;
-      display:flex;
-      gap:14px;
-      align-items:center;
       transform: translateZ(0);
     }
-    .avatar{
-      width:64px; height:64px;
-      border-radius: 18px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
-        radial-gradient(50px 50px at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,0));
-      border: 1px solid rgba(255,255,255,.12);
-      position:relative;
-      overflow:hidden;
-    }
-    .avatar::before{
+    .card::before{
       content:"";
-      position:absolute; inset: 12px 18px 10px 18px;
-      border-radius: 14px 14px 18px 18px;
-      background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .avatar::after{
-      content:"";
-      position:absolute; left: 18px; right: 18px; top: 22px; height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.10);
-    }
-    .speech{
-      flex:1;
-      min-width:0;
-    }
-    .speech .name{
-      font-weight:800;
-      font-size:12px;
-      color: rgba(255,255,255,.76);
-      letter-spacing:.2px;
-      margin-bottom: 4px;
-    }
-    .speech .txt{
-      font-weight:800;
-      font-size: 18px;
-      line-height:1.18;
-      letter-spacing:.2px;
-    }
-
-    /* ===== Modal "paper for signature" ===== */
-    .modal{
       position:absolute; inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: var(--pad);
-      background: rgba(0,0,0,.22);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .22s ease;
-    }
-    .modal.show{ opacity:1; pointer-events:auto; }
-    .sheet{
-      width: min(460px, 100%);
       border-radius: var(--radius2);
-      transform: translateY(10px) rotate(-0.3deg);
-      transition: transform .22s ease;
-    }
-    .modal.show .sheet{ transform: translateY(0) rotate(-0.3deg); }
-
-    /* ===== 3D-ish objects ===== */
-    .stage{
-      flex:1;
-      position:relative;
-      border-radius: var(--radius2);
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .stage::before{
-      content:"";
-      position:absolute; inset:-2px;
       background:
-        radial-gradient(700px 420px at 50% 30%, rgba(255,107,122,.12), rgba(0,0,0,0) 60%),
-        radial-gradient(800px 600px at 50% 110%, rgba(255,255,255,.07), rgba(0,0,0,0) 60%);
+        radial-gradient(1000px 700px at 0% 0%, rgba(0,0,0,.03), transparent 45%),
+        radial-gradient(800px 600px at 100% 100%, rgba(0,0,0,.04), transparent 50%);
       pointer-events:none;
-    }
-    .object3d{
-      position:relative;
-      width: min(340px, 74vw);
-      aspect-ratio: 1 / 1;
-      transform-style: preserve-3d;
-      will-change: transform;
-      touch-action:none;
-    }
-    .object3d .face{
-      position:absolute;
-      inset: 16%;
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02)),
-        repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 6px, rgba(0,0,0,0) 6px 12px);
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 18px 40px rgba(0,0,0,.22);
-      backface-visibility: hidden;
-      overflow:hidden;
-    }
-    .pixel-edge{
-      position:absolute; inset:0;
-      border-radius: 22px;
-      border: 1px solid rgba(0,0,0,.22);
-      pointer-events:none;
-      opacity:.35;
-      background:
-        repeating-linear-gradient( to right, rgba(0,0,0,.09) 0 1px, rgba(0,0,0,0) 1px 6px),
-        repeating-linear-gradient( to bottom, rgba(0,0,0,.07) 0 1px, rgba(0,0,0,0) 1px 6px);
-      mix-blend-mode: multiply;
-    }
-    .label{
-      position:absolute; left:10%; right:10%;
-      bottom: 12%;
-      padding: 10px 12px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.14);
-      font-weight:800;
-      text-align:center;
-      letter-spacing:.2px;
-    }
-    .label b{ color: #fff; }
-    .sub{
-      margin-top: 4px;
-      font-size: 12px;
-      color: rgba(255,255,255,.74);
-      font-weight:700;
-    }
-
-    /* lock on box */
-    .lock{
-      position:absolute;
-      left:50%;
-      top:44%;
-      width: 70px;
-      height: 70px;
-      transform: translate(-50%,-50%) translateZ(34px);
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.16);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      will-change: transform, opacity;
-      animation: pulse 1.25s ease-in-out infinite;
-      box-shadow: 0 12px 26px rgba(0,0,0,.22);
-    }
-    .lock::before{
-      content:"";
-      width: 30px; height: 26px;
-      border-radius: 10px;
-      border: 2px solid rgba(255,255,255,.88);
-      position:absolute;
-      bottom: 16px;
-    }
-    .lock::after{
-      content:"";
-      width: 24px; height: 18px;
-      border-radius: 999px;
-      border: 2px solid rgba(255,255,255,.70);
-      position:absolute;
-      top: 14px;
-      clip-path: inset(0 0 40% 0);
-      opacity:.9;
-    }
-    @keyframes pulse{
-      0%,100%{ transform: translate(-50%,-50%) translateZ(34px) scale(1); box-shadow: 0 12px 26px rgba(0,0,0,.22); }
-      50%{ transform: translate(-50%,-50%) translateZ(34px) scale(1.03); box-shadow: 0 0 0 10px rgba(255,107,122,.10), 0 16px 32px rgba(0,0,0,.24); }
-    }
-
-    /* box open animation */
-    .box .lid{
-      position:absolute;
-      inset: 14% 14% 46% 14%;
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.14);
-      transform-origin: 50% 100%;
-      transform: translateZ(18px) rotateX(0deg);
-      transition: transform .7s cubic-bezier(.2,.9,.2,1);
-      overflow:hidden;
-    }
-    .box.open .lid{
-      transform: translateZ(18px) rotateX(-115deg);
-    }
-    .box .lid::after{
-      content:"";
-      position:absolute; inset:0;
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 6px, rgba(0,0,0,0) 6px 12px);
       opacity:.8;
     }
 
-    /* envelope */
-    .envelope .seal{
-      position:absolute;
-      left:50%; top:44%;
-      width: 74px; height: 74px;
-      transform: translate(-50%,-50%) translateZ(34px);
+    /* Buttons */
+    .btnrow{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .btn{
+      appearance:none; border:0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(42,35,32,.12);
+      color:var(--ink);
+      font-weight:700;
+      letter-spacing:.2px;
+      min-width: 132px;
+      box-shadow: 0 7px 16px rgba(0,0,0,.08);
+      transform: translateZ(0);
+      transition: transform 160ms var(--ease), background 160ms var(--ease), box-shadow 160ms var(--ease), opacity 220ms var(--ease);
+      user-select:none;
+      touch-action: manipulation;
+    }
+    .btn:active{ transform: translateZ(0) scale(.98); box-shadow: 0 4px 10px rgba(0,0,0,.07); }
+    .btn:hover{ background: rgba(255,255,255,.92); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(215,93,106,.22), rgba(215,93,106,.10)), rgba(255,255,255,.78);
+      border-color: rgba(215,93,106,.25);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(191,61,61,.18), rgba(191,61,61,.06)), rgba(255,255,255,.78);
+      border-color: rgba(191,61,61,.22);
+    }
+    .btn.icon{
+      min-width:auto;
+      padding: 10px 12px;
       border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,.18) 20%, rgba(0,0,0,0) 26%),
-                  linear-gradient(180deg, var(--red2), var(--red));
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: 0 14px 30px rgba(230,59,80,.20);
       display:flex;
       align-items:center;
       justify-content:center;
-      will-change: transform;
+      gap:8px;
     }
-    .envelope .seal i{
-      width: 26px; height: 26px;
-      background: rgba(255,255,255,.85);
-      clip-path: path("M13 23 C2 16 0 10 0 7 C0 3 3 0 7 0 C10 0 12 2 13 4 C14 2 16 0 19 0 C23 0 26 3 26 7 C26 10 24 16 13 23 Z");
-      opacity:.95;
-    }
-    .zoom{
-      animation: zoomIn .55s cubic-bezier(.2,.9,.2,1) forwards;
-    }
-    @keyframes zoomIn{
-      from{ transform: translateZ(0) scale(1); }
-      to{ transform: translateZ(0) scale(1.14); }
+    .btn.disabled, .btn:disabled{
+      opacity:.55;
+      pointer-events:none;
     }
 
-    /* ===== Code lock mini game ===== */
-    .overlay{
-      position:absolute; inset:0;
-      background: rgba(0,0,0,.40);
+    /* Scene transitions */
+    .scene{
+      position:absolute;
+      inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: var(--pad);
+      padding: 8px 10px 14px 10px;
+      opacity:0;
+      transform: translate3d(0,10px,0);
+      pointer-events:none;
+      transition: opacity 260ms var(--ease), transform 260ms var(--ease);
+      will-change: opacity, transform;
+    }
+    .scene.active{
+      opacity:1;
+      transform: translate3d(0,0,0);
+      pointer-events:auto;
+    }
+
+    /* Courier character panel */
+    .courierWrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+      width:100%;
+      max-width:520px;
+    }
+    .courier{
+      width: 220px;
+      height: 220px;
+      border-radius: 28px;
+      background:
+        radial-gradient(90px 90px at 45% 35%, rgba(255,255,255,.75), rgba(255,255,255,.10) 70%),
+        linear-gradient(180deg, rgba(42,35,32,.10), rgba(42,35,32,.03)),
+        rgba(255,255,255,.55);
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+      transform: translateZ(0);
+    }
+    .courier::before{
+      /* stylized silhouette (no logos) */
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(55px 70px at 55% 35%, rgba(42,35,32,.25), rgba(42,35,32,0) 70%),
+        radial-gradient(95px 85px at 50% 70%, rgba(42,35,32,.22), rgba(42,35,32,0) 72%),
+        linear-gradient(90deg, rgba(42,35,32,.06), rgba(42,35,32,0));
+      opacity:.75;
+      filter: contrast(1.06);
+    }
+    .bubble{
+      width:100%;
+      max-width:520px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.74);
+      border:1px solid rgba(42,35,32,.10);
+      box-shadow: var(--shadowSoft);
+      text-align:center;
+      font-weight:700;
+      user-select:none;
+    }
+    .sub{
+      font-size: 13px;
+      color:var(--muted);
+      font-weight:600;
+      margin-top:6px;
+    }
+
+    /* Modal (paper sheet) */
+    .modal{
+      position:fixed; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,.16);
       opacity:0;
       pointer-events:none;
-      transition: opacity .22s ease;
-      z-index: 20;
+      transition: opacity 220ms var(--ease);
+      will-change: opacity;
+      z-index:30;
     }
-    .overlay.show{ opacity:1; pointer-events:auto; }
-    .panel{
-      width: min(520px, 100%);
-      border-radius: var(--radius2);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      overflow:hidden;
-    }
-    .panel-h{
-      padding: 14px 14px 10px 14px;
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .panel-h .h1{
-      font-weight:900;
-      font-size: 14px;
-      letter-spacing:.3px;
-    }
-    .panel-h .h2{
-      font-size: 12px;
-      color: rgba(255,255,255,.70);
-      font-weight:700;
-    }
-    .wheels{
-      display:grid;
-      grid-template-columns: 1fr 1.2fr 1fr;
-      gap: 10px;
-      padding: 14px;
-    }
-    .wheel{
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      height: 190px;
-      overflow:hidden;
+    .modal.show{ opacity:1; pointer-events:auto; }
+    .sheet{
+      width:min(520px, 100%);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.76));
+      border: 1px solid rgba(42,35,32,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
+      padding: 16px;
       position:relative;
-      touch-action:none;
+      transform: translate3d(0,12px,0);
+      transition: transform 220ms var(--ease);
     }
-    .wheel::before{
+    .modal.show .sheet{ transform: translate3d(0,0,0); }
+
+    .sheet h3{
+      margin:0 0 8px 0;
+      font-size: 16px;
+      letter-spacing:.1px;
+    }
+    .sheet p{
+      margin:0;
+      color:var(--muted);
+      font-weight:600;
+      font-size: 13px;
+      line-height:1.45;
+    }
+
+    /* 3D-ish object stage (GPU friendly: only transform) */
+    .objArea{
+      width: 100%;
+      max-width: 520px;
+      height: min(460px, 60vh);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin: 0 auto;
+      perspective: 900px;
+      perspective-origin: 50% 45%;
+      transform: translateZ(0);
+    }
+
+    .obj{
+      width:min(330px, 78vw);
+      height:min(330px, 78vw);
+      max-width: 340px;
+      max-height: 340px;
+      position:relative;
+      transform-style:preserve-3d;
+      will-change: transform;
+      user-select:none;
+      touch-action: none;
+      image-rendering: pixelated; /* requested mild pixel feel */
+      filter: saturate(1.02) contrast(1.03);
+    }
+
+    /* Box fallback art */
+    .box{
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.06)),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.03), rgba(0,0,0,.03) 6px, rgba(255,255,255,0) 6px, rgba(255,255,255,0) 12px),
+        linear-gradient(180deg, #e8d0b6, #d9b997);
+      border: 1px solid rgba(42,35,32,.16);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:absolute; inset:0;
+      transform: translateZ(0);
+    }
+    .box::before{
       content:"";
-      position:absolute; left:0; right:0;
-      top: 50%;
-      height: 42px;
-      transform: translateY(-50%);
-      border-top: 1px solid rgba(255,255,255,.16);
-      border-bottom: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
+      position:absolute; inset:0;
+      background:
+        linear-gradient(90deg, rgba(42,35,32,.08), rgba(42,35,32,0) 45%),
+        radial-gradient(180px 130px at 30% 20%, rgba(255,255,255,.20), transparent 70%);
+      opacity:.8;
       pointer-events:none;
     }
-    .wheel-list{
-      position:absolute; left:0; right:0; top: 50%;
-      transform: translateY(-50%);
-      will-change: transform;
-      transition: transform .18s ease;
+    .label{
+      position:absolute;
+      left: 14px; right: 14px; top: 14px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      border:1px solid rgba(42,35,32,.12);
+      font-weight:800;
+      text-align:center;
+      letter-spacing:.3px;
+      box-shadow: var(--shadowSoft);
+      transform: translateZ(40px);
+      user-select:none;
     }
-    .wheel-item{
-      height: 42px;
+
+    .lockHotspot{
+      position:absolute;
+      left:50%;
+      top:58%;
+      width: 92px;
+      height: 92px;
+      transform: translate(-50%,-50%) translateZ(60px);
+      border-radius: 22px;
+      background: rgba(255,255,255,.45);
+      border:1px solid rgba(215,93,106,.24);
+      box-shadow: 0 10px 24px rgba(215,93,106,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition: transform 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+      will-change: transform;
+      overflow:hidden;
+    }
+    .lockHotspot:active{
+      transform: translate(-50%,-50%) translateZ(60px) scale(.98);
+    }
+    .lockHotspot::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(70px 70px at 50% 45%, rgba(255,154,167,.35), transparent 60%),
+        radial-gradient(70px 70px at 55% 55%, rgba(215,93,106,.22), transparent 65%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .lockIcon{
+      width: 44px; height: 44px;
+      opacity:.85;
+      transform: translateZ(0);
+      background-size: contain;
+      background-repeat:no-repeat;
+      background-position:center;
+      filter: contrast(1.1);
+    }
+    .pulse{
+      animation: pulse 1.35s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{ box-shadow: 0 10px 24px rgba(215,93,106,.14); }
+      50%{ box-shadow: 0 12px 30px rgba(215,93,106,.24); }
+    }
+
+    /* Envelope fallback */
+    .envelope{
+      position:absolute; inset:0;
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.06)),
+        linear-gradient(180deg, #f0d9df, #e3b7c1);
+      border: 1px solid rgba(42,35,32,.14);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      transform: translateZ(0);
+    }
+    .envelope::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(45deg, rgba(42,35,32,.06), transparent 55%),
+        linear-gradient(-45deg, rgba(42,35,32,.06), transparent 55%),
+        radial-gradient(150px 100px at 50% 25%, rgba(255,255,255,.22), transparent 70%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .sealSpot{
+      position:absolute;
+      left:50%;
+      top:55%;
+      width: 92px;
+      height: 92px;
+      transform: translate(-50%,-50%) translateZ(70px);
+      border-radius: 26px;
+      background: rgba(255,255,255,.45);
+      border:1px solid rgba(215,93,106,.22);
+      box-shadow: 0 10px 22px rgba(215,93,106,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .seal{
+      width: 56px; height: 56px;
+      border-radius: 18px;
+      background:
+        radial-gradient(18px 18px at 35% 35%, rgba(255,255,255,.55), rgba(255,255,255,0) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.04)),
+        #d75d6a;
+      border:1px solid rgba(42,35,32,.16);
+      box-shadow: 0 10px 18px rgba(0,0,0,.10);
+      position:relative;
+      transform: translateZ(0);
+    }
+    .seal::after{
+      content:"❤";
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,.92);
+      font-weight:900;
+      font-size: 22px;
+      text-shadow: 0 2px 0 rgba(0,0,0,.10);
+    }
+
+    /* Drawer panels (mini games) */
+    .panel{
+      width:min(520px, 100%);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.76));
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: 0 16px 42px rgba(0,0,0,.16);
+      padding: 14px;
+    }
+    .panel h3{
+      margin:0 0 10px 0;
+      font-size: 16px;
+      letter-spacing:.1px;
+    }
+    .hint{
+      font-size: 12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-top: 6px;
+      line-height:1.35;
+    }
+
+    /* Lock wheels */
+    .wheels{
+      display:flex;
+      gap: 10px;
+      justify-content:center;
+      align-items:stretch;
+      margin: 12px 0 8px 0;
+    }
+    .wheel{
+      flex:1;
+      min-width: 0;
+      height: 150px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.65);
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      overflow:hidden;
+      position:relative;
+      touch-action: none;
+    }
+    .wheel::before{
+      /* center highlight */
+      content:"";
+      position:absolute; left:0; right:0; top:50%;
+      height: 46px;
+      transform: translateY(-50%);
+      background: linear-gradient(180deg, rgba(215,93,106,.14), rgba(215,93,106,.06));
+      border-top:1px solid rgba(215,93,106,.14);
+      border-bottom:1px solid rgba(215,93,106,.14);
+      pointer-events:none;
+      opacity:.95;
+    }
+    .wheelList{
+      position:absolute; inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      justify-content:flex-start;
+      will-change: transform;
+      transform: translate3d(0,0,0);
+    }
+    .wheelItem{
+      height: 46px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:900;
       letter-spacing:.2px;
-      color: rgba(255,255,255,.86);
-      font-size: 14px;
+      color: rgba(42,35,32,.78);
+      text-transform: none;
+      user-select:none;
     }
-    .wheel-item.dim{ color: rgba(255,255,255,.52); font-weight:800; }
+    .wheelItem.dim{
+      color: rgba(42,35,32,.38);
+      font-weight:800;
+    }
 
-    .panel-f{
-      padding: 12px 14px 14px 14px;
+    /* Calendar-style date input (simple custom) */
+    .dateRow{
       display:flex;
       gap:10px;
-      justify-content:space-between;
       align-items:center;
-      border-top: 1px solid rgba(255,255,255,.10);
+      justify-content:center;
+      margin-top: 10px;
+      flex-wrap:wrap;
     }
-    .panel-f .left, .panel-f .right{ display:flex; gap:10px; }
+    .field{
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.65);
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+      min-width: 220px;
+      font-weight:800;
+      letter-spacing:.2px;
+      user-select:none;
+    }
+    .field small{
+      display:block;
+      font-size: 11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom: 6px;
+      letter-spacing:.1px;
+    }
+    .field span{
+      display:block;
+      font-size: 14px;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: calc(18px + var(--safeBot));
+      transform: translate3d(-50%, 14px, 0);
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: 0 14px 34px rgba(0,0,0,.16);
+      opacity:0;
+      pointer-events:none;
+      transition: transform 200ms var(--ease), opacity 200ms var(--ease);
+      font-weight:900;
+      letter-spacing:.2px;
+      z-index:40;
+      max-width:min(520px, calc(100vw - 28px));
+      text-align:center;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translate3d(-50%,0,0);
+    }
+
+    /* Shake animation */
     .shake{
-      animation: shake .32s ease-in-out;
+      animation: shake 400ms var(--ease2);
     }
     @keyframes shake{
-      0%,100%{ transform: translateX(0); }
-      20%{ transform: translateX(-7px); }
-      40%{ transform: translateX(6px); }
-      60%{ transform: translateX(-5px); }
-      80%{ transform: translateX(4px); }
+      0%{ transform: translate3d(0,0,0); }
+      20%{ transform: translate3d(-6px,0,0); }
+      40%{ transform: translate3d(6px,0,0); }
+      60%{ transform: translate3d(-4px,0,0); }
+      80%{ transform: translate3d(4px,0,0); }
+      100%{ transform: translate3d(0,0,0); }
     }
 
-    /* ===== Gallery ===== */
-    .gallery{
-      margin-top: 10px;
-      border-radius: var(--radius2);
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
+    /* Preloader */
+    .preloader{
+      position:fixed; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index:50;
+      background: linear-gradient(180deg, rgba(242,233,220,.98), rgba(242,233,220,.92));
+      opacity:1;
+      transition: opacity 320ms var(--ease);
+    }
+    .preloader.hide{ opacity:0; pointer-events:none; }
+    .preCard{
+      width:min(520px, 100%);
+      padding: 16px;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+      border:1px solid rgba(42,35,32,.12);
+      box-shadow: 0 20px 50px rgba(0,0,0,.16);
+      text-align:center;
       position:relative;
-      height: min(260px, 30vh);
+      overflow:hidden;
     }
-    .gallery img{
-      position:absolute; inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      opacity:0;
-      transition: opacity .5s ease;
-      will-change: opacity;
-      image-rendering: auto;
+    .preTitle{
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      margin: 0 0 6px 0;
     }
-    .gallery img.show{ opacity:1; }
-    .gallery .badge{
-      position:absolute;
-      left: 12px; top: 12px;
-      padding: 8px 10px;
+    .preText{
+      margin:0;
+      color:var(--muted);
+      font-weight:700;
+      font-size: 13px;
+      line-height:1.4;
+    }
+    .bar{
+      margin-top: 14px;
+      height: 12px;
+      background: rgba(42,35,32,.08);
       border-radius: 999px;
-      background: rgba(0,0,0,.40);
-      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      border:1px solid rgba(42,35,32,.10);
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width: 10%;
+      background: linear-gradient(90deg, rgba(215,93,106,.55), rgba(255,154,167,.55));
+      border-radius: 999px;
+      transform: translate3d(0,0,0);
+      transition: width 200ms var(--ease);
+    }
+    .tapHint{
+      margin-top: 12px;
       font-size: 12px;
-      font-weight: 800;
-      color: rgba(255,255,255,.90);
+      color: rgba(42,35,32,.72);
+      font-weight:800;
+      opacity:.0;
+      transform: translate3d(0,6px,0);
+      transition: opacity 240ms var(--ease), transform 240ms var(--ease);
+    }
+    .tapHint.show{
+      opacity:1;
+      transform: translate3d(0,0,0);
     }
 
-    /* ===== Letter (notebook paper) ===== */
+    /* Photos carousel */
+    .photos{
+      width: 100%;
+      border-radius: 20px;
+      overflow:hidden;
+      border:1px solid rgba(42,35,32,.12);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadowSoft);
+      height: 220px;
+      position:relative;
+      transform: translateZ(0);
+    }
+    .photo{
+      position:absolute; inset:0;
+      background-size: cover;
+      background-position: center;
+      opacity:0;
+      transition: opacity 460ms var(--ease);
+      will-change: opacity;
+      transform: translateZ(0);
+    }
+    .photo.show{ opacity:1; }
+
+    /* Final letter */
     .letter{
       margin-top: 12px;
-      transform: translateY(14px);
-      opacity:0;
-      transition: transform .45s cubic-bezier(.2,.9,.2,1), opacity .45s ease;
-      will-change: transform, opacity;
-    }
-    .letter.show{
-      transform: translateY(0);
-      opacity:1;
-    }
-    .notebook{
-      background: linear-gradient(180deg, #fff 0%, #f3ece4 100%);
-      color: #241a2a;
-      border-radius: var(--radius2);
-      border: 1px solid rgba(36,26,42,.14);
-      overflow:hidden;
+      padding: 14px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80));
+      border:1px dashed rgba(42,35,32,.18);
+      box-shadow: var(--shadowSoft);
       position:relative;
-      padding: 14px 14px 12px 14px;
+      overflow:hidden;
     }
-    .notebook::before{
+    .letter::before{
+      /* "notebook" subtle lines */
       content:"";
-      position:absolute; left:0; right:0; top:0; height: 14px;
-      background: linear-gradient(180deg, rgba(230,59,80,.18), rgba(0,0,0,0));
-      opacity:.85;
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(42,35,32,.06),
+          rgba(42,35,32,.06) 1px,
+          rgba(255,255,255,0) 1px,
+          rgba(255,255,255,0) 28px
+        );
+      opacity:.22;
+      pointer-events:none;
     }
-    .notebook::after{
-      content:"";
-      position:absolute; left: 14px; top: 0; bottom: 0;
-      width: 2px;
-      background: rgba(230,59,80,.25);
-      border-radius: 2px;
-    }
-    .lines{
-      margin-top: 10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      font-weight:800;
-      letter-spacing:.1px;
-      line-height:1.25;
-    }
-    .lines p{
+    .letter pre{
+      position:relative;
       margin:0;
-      padding-left: 10px;
-      border-bottom: 1px dashed rgba(36,26,42,.16);
-      padding-bottom: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 800;
+      color: rgba(42,35,32,.78);
+      white-space: pre-wrap;
     }
 
-    /* ===== Particles canvas ===== */
-    #fx{
+    /* Particles canvas */
+    canvas#fx{
       position:fixed; inset:0;
       pointer-events:none;
-      z-index: 30;
-      opacity:0;
-      transition: opacity .22s ease;
+      z-index:20;
+      transform: translateZ(0);
     }
-    #fx.on{ opacity:1; }
 
-    /* small screens */
-    @media (max-height: 720px){
-      .wheel{ height: 172px; }
-      .wheel-item{ height: 40px; }
-      .wheel::before{ height: 40px; }
-      .wheel-list{ transition: transform .16s ease; }
+    /* Helpers */
+    .fadeIn{
+      animation: fadeIn 260ms var(--ease);
+    }
+    @keyframes fadeIn{
+      from{ opacity:0; transform: translate3d(0,10px,0); }
+      to{ opacity:1; transform: translate3d(0,0,0); }
+    }
+    .center{
+      text-align:center;
+    }
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; }
     }
   </style>
 </head>
-<body>
-  <canvas id="fx"></canvas>
-  <div class="crt"></div>
 
-  <!-- Background music (file should be рядом с index.html) -->
-  <audio id="bgm" src="Je_te_laissserai_des_mots.mp3" loop preload="auto"></audio>
+<body>
+  <div class="bg"></div>
+  <canvas id="fx"></canvas>
 
   <!-- Preloader -->
-  <div id="preloader">
-    <div class="loadbox">
-      <div class="row" style="margin-bottom:10px;">
-        <div class="brand">
-          <span class="dot"></span>
-          <div class="col" style="gap:2px;">
-            <div class="title">Мини-валентинка для Джамы</div>
-            <div class="hint"><span class="dots">загрузка</span></div>
-          </div>
-        </div>
-        <div id="pPct" class="hint" style="font-weight:800;">0%</div>
-      </div>
-      <div class="loadline"><i id="pBar"></i></div>
-      <div class="loadmeta">
-        <div id="pText">Готовим милоту…</div>
-        <div class="hint" id="pCount">0/0</div>
-      </div>
-      <div class="hint" style="margin-top:10px; line-height:1.35;">
-        На телефоне звук включится после первого касания 🙌
-      </div>
+  <div class="preloader" id="preloader">
+    <div class="preCard">
+      <div class="preTitle">Открываем посылку…</div>
+      <p class="preText">Текстуры, фотки и звук аккуратно загружаются.<br/>Внутри всё будет плавно и “физично”.</p>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="tapHint" id="tapHint">Нажми, чтобы включить музыку 🎵</div>
     </div>
   </div>
-
-  <div id="toast"></div>
 
   <div id="app">
-    <div class="stack">
-
-      <!-- Scene 1 -->
-      <section id="scene1" class="scene active">
-        <div class="topbar">
-          <div class="brand">
-            <span class="dot"></span>
-            <div class="title">Доставка • входящая посылка</div>
-          </div>
-          <div class="hint">сцена 1/3</div>
+    <div class="stage">
+      <div class="topbar">
+        <div class="title">
+          <span class="chip">💌 Для Джамы</span>
         </div>
+        <button class="btn icon" id="soundBtn" aria-label="sound">
+          🔊
+        </button>
+      </div>
 
-        <div class="courier-wrap card" style="flex:1;">
-          <div class="courier" id="courierCard">
-            <div class="avatar" aria-hidden="true"></div>
-            <div class="speech">
-              <div class="name">курьер</div>
-              <div class="txt" id="courierText">Вам посылка от фаната 😉</div>
+      <div class="content">
+        <!-- Scene 1 -->
+        <section class="scene active" id="scene1">
+          <div class="courierWrap">
+            <div class="courier" aria-hidden="true"></div>
+            <div class="bubble" id="courierBubble">
+              Вам посылка от фаната 😉
+              <div class="sub" id="courierSub">Подпишете получение?</div>
             </div>
-          </div>
 
-          <div id="signModal" class="modal">
-            <div class="sheet paper">
-              <div style="font-weight:900; font-size:14px; margin-bottom:8px;">Бумажка для подписи</div>
-              <div style="font-weight:900; font-size:18px; line-height:1.15; margin-bottom:10px;">
-                Вы принимаете посылку от фаната?
+            <div class="card">
+              <div class="center small">
+                Это мини-игра открывается в Telegram. Лучше держать вертикально 📱
               </div>
-              <small>Подпись: “Джама” (условно 😌)</small>
-              <div style="height:12px;"></div>
-              <div class="btns" id="signBtns">
-                <button class="btn-secondary" id="btnNo">Нет</button>
-                <button class="btn-primary glow" id="btnYes">Да</button>
+              <div class="btnrow">
+                <button class="btn primary" id="startSign">Подписать</button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="hint" style="text-align:center; opacity:.85;">
-          (мини-игра открывается в Telegram WebView • всё лёгкое и плавное)
-        </div>
-      </section>
-
-      <!-- Scene 2 -->
-      <section id="scene2" class="scene">
-        <div class="topbar">
-          <div class="brand">
-            <span class="dot"></span>
-            <div class="title">Посылка • замок</div>
-          </div>
-          <div class="hint">сцена 2/3</div>
-        </div>
-
-        <div class="stage">
-          <div id="box3d" class="object3d box" aria-label="Посылка">
-            <div class="face">
-              <div class="pixel-edge"></div>
-              <div class="label">
-                <div><b>для Джамы</b> 💌</div>
-                <div class="sub">потрогай и покрути коробку</div>
-              </div>
-            </div>
-            <div class="lid"></div>
-            <div class="lock" id="lockBtn" title="Нажми на замок"></div>
-          </div>
-
-          <!-- Code lock overlay -->
-          <div id="lockOverlay" class="overlay">
-            <div id="lockPanel" class="panel">
-              <div class="panel-h">
-                <div class="col" style="gap:2px;">
-                  <div class="h1">Кодовый замок</div>
-                  <div class="h2">день • месяц • год</div>
-                </div>
-                <div class="h2" id="lockHint">свайпай вверх/вниз</div>
-              </div>
-
-              <div class="wheels">
-                <div class="wheel" data-wheel="day">
-                  <div class="wheel-list" id="dayList"></div>
-                </div>
-                <div class="wheel" data-wheel="month">
-                  <div class="wheel-list" id="monthList"></div>
-                </div>
-                <div class="wheel" data-wheel="year">
-                  <div class="wheel-list" id="yearList"></div>
-                </div>
-              </div>
-
-              <div class="panel-f">
-                <div class="left">
-                  <button class="btn-secondary" id="btnBackToBox">Назад</button>
-                </div>
-                <div class="right">
-                  <button class="btn-primary glow" id="btnCodeDone">Готово</button>
+        <!-- Scene 2 -->
+        <section class="scene" id="scene2">
+          <div style="width:100%;max-width:520px;">
+            <div class="objArea">
+              <div class="obj" id="boxObj" aria-label="box">
+                <div class="box" id="boxFace"></div>
+                <div class="label">для Джамы</div>
+                <div class="lockHotspot pulse" id="lockBtn" role="button" aria-label="lock">
+                  <div class="lockIcon" id="lockIcon"></div>
                 </div>
               </div>
             </div>
+
+            <div class="card">
+              <div class="center" style="font-weight:900;">
+                Поверни посылку пальцем. Потом нажми на замок.
+              </div>
+              <div class="hint center">Подсказка: код — дата. Но какая? 😉</div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="hint" style="text-align:center; opacity:.85;">
-          Подсказка: это важная дата 😉
-        </div>
-      </section>
+        <!-- Scene 2 - Lock panel -->
+        <section class="scene" id="scene2lock">
+          <div class="panel" style="max-width:520px;">
+            <h3>Кодовый замок</h3>
+            <div class="small">Свайпай колёсики вверх/вниз. Потом жми “Готово”.</div>
 
-      <!-- Scene 3 -->
-      <section id="scene3" class="scene">
-        <div class="topbar">
-          <div class="brand">
-            <span class="dot"></span>
-            <div class="title">Конверт • печать</div>
+            <div class="wheels" id="wheels">
+              <div class="wheel" data-wheel="day"><div class="wheelList" id="wheelDay"></div></div>
+              <div class="wheel" data-wheel="month"><div class="wheelList" id="wheelMonth"></div></div>
+              <div class="wheel" data-wheel="year"><div class="wheelList" id="wheelYear"></div></div>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn" id="lockBack">Назад</button>
+              <button class="btn primary" id="lockDone">Готово</button>
+            </div>
+            <div class="hint center">Правильный код: <b>5 ноября 2025</b> (но это “сюрприз”, да 😄)</div>
           </div>
-          <div class="hint">сцена 3/3</div>
-        </div>
+        </section>
 
-        <div class="stage">
-          <div id="env3d" class="object3d envelope" aria-label="Конверт">
-            <div class="face">
-              <div class="pixel-edge"></div>
-              <div class="label">
-                <div><b>секретное письмо</b></div>
-                <div class="sub">покрути конверт пальцем</div>
+        <!-- Scene 3 -->
+        <section class="scene" id="scene3">
+          <div style="width:100%;max-width:520px;">
+            <div class="objArea">
+              <div class="obj" id="envObj" aria-label="envelope">
+                <div class="envelope" id="envFace"></div>
+                <div class="label">для Джамы</div>
+                <div class="sealSpot" id="sealSpot">
+                  <div class="seal" id="seal"></div>
+                </div>
               </div>
             </div>
-            <div class="seal" id="seal"><i aria-hidden="true"></i></div>
-          </div>
 
-          <!-- Envelope overlay: open / trash -->
-          <div id="envOverlay" class="overlay show" style="background: rgba(0,0,0,.20);">
-            <div class="panel" style="max-width:520px;">
-              <div class="panel-h">
-                <div class="col" style="gap:2px;">
-                  <div class="h1">Что делаем?</div>
-                  <div class="h2">печать держит сюрприз</div>
-                </div>
-                <div class="h2">🙂</div>
-              </div>
-              <div style="padding:14px;">
-                <div class="btns" id="envBtns" style="justify-content:center;">
-                  <button class="btn-secondary" id="btnTrash">Выбросить</button>
-                  <button class="btn-primary glow" id="btnOpen">Открыть</button>
-                </div>
-
-                <!-- Quiz -->
-                <div id="quiz" style="margin-top:12px; display:none;">
-                  <div class="paper" style="margin-top:10px;">
-                    <div style="font-weight:900; font-size:14px; margin-bottom:6px;">Проверка 😌</div>
-                    <div style="font-weight:900; font-size:18px; line-height:1.15; margin-bottom:10px;">
-                      День рождения фаната
-                    </div>
-                    <div class="row" style="gap:10px;">
-                      <input id="dob" inputmode="numeric" placeholder="дд.мм.гггг"
-                        style="
-                          flex:1;
-                          height: 46px;
-                          border-radius: 14px;
-                          border: 1px solid rgba(36,26,42,.18);
-                          background: rgba(255,255,255,.88);
-                          padding: 10px 12px;
-                          font-weight:900;
-                          font-size:16px;
-                          color: #241a2a;
-                          outline:none;
-                        "/>
-                      <button class="btn-primary glow" id="btnDobOk" style="height:46px; padding: 0 14px;">
-                        ✓
-                      </button>
-                    </div>
-                    <small id="dobHint" style="display:block; margin-top:8px; color: rgba(36,26,42,.66); font-weight:800;">
-                      Формат: 01.02.2005
-                    </small>
-                  </div>
-                </div>
-
-                <!-- Gallery + letter appear after success -->
-                <div id="final" style="display:none;">
-                  <div class="gallery" id="gallery">
-                    <span class="badge">мы</span>
-                    <!-- imgs injected -->
-                  </div>
-
-                  <div class="letter" id="letter">
-                    <div class="notebook">
-                      <div style="font-weight:1000; letter-spacing:.2px;">Письмо</div>
-                      <div class="lines" id="loveText">
-                        <!-- ПЛЕЙСХОЛДЕР: замени эти строки на свой текст -->
-                        <p>Джама, привет 🙂</p>
-                        <p>Я просто хотел оставить тебе тёплые слова…</p>
-                        <p>Пусть этот день будет мягким и светлым.</p>
-                        <p>Ты — моя любимая случайность.</p>
-                        <p>Если улыбнулась — значит всё получилось.</p>
-                        <p>С любовью, твой фанат ❤️</p>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
+            <div class="card">
+              <div class="center" style="font-weight:900;">Конверт с печатью. Поверни его, потом решай 😈</div>
+              <div class="btnrow" id="envButtons">
+                <button class="btn danger" id="throwBtn">Выбросить</button>
+                <button class="btn primary" id="openBtn">Открыть</button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="hint" style="text-align:center; opacity:.85;">
-          Секрет откроется только при правильной дате 😉
-        </div>
-      </section>
+        <!-- Scene 3 - Birthday check -->
+        <section class="scene" id="scene3check">
+          <div class="panel" style="max-width:520px;">
+            <h3>День рождения фаната</h3>
+            <div class="small">Нажми на поле — выбери дату. Затем подтверди галочкой.</div>
 
+            <div class="dateRow">
+              <div class="field" id="dateField" role="button" aria-label="date field">
+                <small>Выбранная дата</small>
+                <span id="dateText">не выбрана</span>
+              </div>
+
+              <button class="btn icon primary" id="checkDateBtn" aria-label="check">
+                ✅
+              </button>
+            </div>
+
+            <div class="hint center">Подсказка мягкая: это <b>1 февраля 2005</b>.</div>
+
+            <div class="btnrow">
+              <button class="btn" id="checkBack">Назад</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 4 - Finale -->
+        <section class="scene" id="scene4">
+          <div class="card" style="max-width:520px;">
+            <div class="center" style="font-size:18px;font-weight:900;">Открыто 💘</div>
+            <div class="small center" style="margin-top:6px;">Тут можно заменить текст на свой — просто отредактируй блок ниже.</div>
+
+            <div class="photos" id="photos">
+              <div class="photo" id="p0"></div>
+              <div class="photo" id="p1"></div>
+              <div class="photo" id="p2"></div>
+              <div class="photo" id="p3"></div>
+            </div>
+
+            <div class="letter" id="letter">
+              <pre id="loveText">Джама, привет 💌
+Я не умею красиво говорить вслух,
+поэтому спрятал это в посылке.
+
+[ЗДЕСЬ ТВОЙ ТЕКСТ — 6–10 СТРОК]
+Например:
+Ты — мой уют, мой смех и моя удача.
+Я рядом — даже когда далеко.
+Хочу чаще видеть твою улыбку.
+И да… это всё от фаната 😉</pre>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn" id="restartBtn">Ещё раз</button>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
-  <script>
-    (() => {
-      "use strict";
-
-      /* =======================
-         Settings / assets
-      ======================= */
-      const ASSET_IMAGES = [
-        "Images/photo1.jpg",
-        "Images/photo2.jpg",
-        "Images/photo3.jpg",
-        "Images/photo4.jpg",
-      ];
-
-      // IMPORTANT: user said the song will be рядом с index.html.
-      // You can rename here to your real file name.
-      const BGM_FILE = "Je_te_laissserai_des_mots.mp3"; // <-- change if needed
-
-      // Scene codes
-      const SCENES = {
-        S1: "scene1",
-        S2: "scene2",
-        S3: "scene3",
-      };
-
-      // Correct codes
-      const CODE_DAY = 5;
-      const CODE_MONTH = "Ноябрь";
-      const CODE_YEAR = 2025;
-
-      const DOB_CORRECT = "01.02.2005"; // dd.mm.yyyy
-
-      // UI nodes
-      const $ = (q, root=document) => root.querySelector(q);
-      const $$ = (q, root=document) => Array.from(root.querySelectorAll(q));
-
-      const preloader = $("#preloader");
-      const pBar = $("#pBar");
-      const pPct = $("#pPct");
-      const pText = $("#pText");
-      const pCount = $("#pCount");
-      const toast = $("#toast");
-
-      const bgm = $("#bgm");
-      bgm.src = BGM_FILE;
-
-      // Scene 1
-      const signModal = $("#signModal");
-      const btnNo = $("#btnNo");
-      const btnYes = $("#btnYes");
-      const courierText = $("#courierText");
-      let noWasPressed = false;
-
-      // Scene 2
-      const box3d = $("#box3d");
-      const lockBtn = $("#lockBtn");
-      const lockOverlay = $("#lockOverlay");
-      const lockPanel = $("#lockPanel");
-      const btnBackToBox = $("#btnBackToBox");
-      const btnCodeDone = $("#btnCodeDone");
-      const dayList = $("#dayList");
-      const monthList = $("#monthList");
-      const yearList = $("#yearList");
-
-      // Scene 3
-      const env3d = $("#env3d");
-      const envOverlay = $("#envOverlay");
-      const btnTrash = $("#btnTrash");
-      const btnOpen = $("#btnOpen");
-      const envBtns = $("#envBtns");
-      const quiz = $("#quiz");
-      const dob = $("#dob");
-      const btnDobOk = $("#btnDobOk");
-      const dobHint = $("#dobHint");
-      const seal = $("#seal");
-      const final = $("#final");
-      const gallery = $("#gallery");
-      const letter = $("#letter");
-
-      // FX
-      const fx = $("#fx");
-      const fxCtx = fx.getContext("2d", { alpha: true, desynchronized: true });
-      let fxOn = false;
-
-      // Gallery sources after preload
-      let photos = [];
-
-      /* =======================
-         Helpers
-      ======================= */
-      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-      const lerp = (a, b, t) => a + (b - a) * t;
-
-      function showToast(msg, ms=1400){
-        toast.textContent = msg;
-        toast.classList.add("show");
-        window.clearTimeout(showToast._t);
-        showToast._t = window.setTimeout(() => toast.classList.remove("show"), ms);
-      }
-
-      function setScene(id){
-        for(const s of Object.values(SCENES)){
-          const el = $("#"+s);
-          el.classList.toggle("active", s === id);
-        }
-      }
-
-      function safePlay(el){
-        // Mobile autoplay restrictions: only plays after first user interaction
-        const p = el.play();
-        if(p && typeof p.catch === "function") p.catch(() => {});
-      }
-
-      /* =======================
-         WebAudio: tiny SFX synth
-      ======================= */
-      const Audio = (() => {
-        let ctx = null;
-        let master = null;
-        let enabled = false;
-
-        function init(){
-          if(ctx) return;
-          ctx = new (window.AudioContext || window.webkitAudioContext)();
-          master = ctx.createGain();
-          master.gain.value = 0.55;
-          master.connect(ctx.destination);
-        }
-
-        function unlock(){
-          init();
-          if(!ctx) return;
-          if(ctx.state === "suspended") ctx.resume().catch(()=>{});
-          enabled = true;
-        }
-
-        function beep(type="tap"){
-          if(!enabled || !ctx) return;
-
-          const t0 = ctx.currentTime;
-          const o = ctx.createOscillator();
-          const g = ctx.createGain();
-
-          let f = 220, dur = 0.08;
-          if(type === "tap"){ f = 420; dur = 0.05; }
-          if(type === "no"){ f = 180; dur = 0.09; }
-          if(type === "open"){ f = 520; dur = 0.12; }
-          if(type === "ok"){ f = 620; dur = 0.11; }
-          if(type === "shake"){ f = 260; dur = 0.10; }
-          if(type === "win"){ f = 740; dur = 0.16; }
-
-          o.type = "triangle";
-          o.frequency.setValueAtTime(f, t0);
-
-          g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-
-          o.connect(g);
-          g.connect(master);
-
-          o.start(t0);
-          o.stop(t0 + dur + 0.02);
-        }
-
-        function whoosh(){
-          if(!enabled || !ctx) return;
-          const t0 = ctx.currentTime;
-          const n = ctx.createBufferSource();
-          const len = Math.floor(ctx.sampleRate * 0.18);
-          const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-          const data = buf.getChannelData(0);
-          for(let i=0;i<len;i++){
-            const x = i/len;
-            // soft noise envelope
-            data[i] = (Math.random()*2-1) * (1 - x) * 0.35;
-          }
-          n.buffer = buf;
-
-          const bp = ctx.createBiquadFilter();
-          bp.type = "bandpass";
-          bp.frequency.setValueAtTime(900, t0);
-          bp.Q.setValueAtTime(0.8, t0);
-
-          const g = ctx.createGain();
-          g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
-
-          n.connect(bp);
-          bp.connect(g);
-          g.connect(master);
-
-          n.start(t0);
-          n.stop(t0 + 0.2);
-        }
-
-        return { unlock, beep, whoosh };
-      })();
-
-      /* =======================
-         Placeholder image (white bg + red heart)
-      ======================= */
-      function makeHeartPlaceholder(size=640){
-        const c = document.createElement("canvas");
-        c.width = c.height = size;
-        const g = c.getContext("2d");
-
-        // white paper with slight warm tint
-        g.fillStyle = "#ffffff";
-        g.fillRect(0,0,size,size);
-        g.fillStyle = "rgba(230,59,80,0.06)";
-        g.fillRect(0,0,size,size);
-
-        // subtle pixel grid
-        g.globalAlpha = 0.10;
-        g.fillStyle = "#000";
-        for(let y=0; y<size; y+=8){
-          g.fillRect(0,y,size,1);
-        }
-        for(let x=0; x<size; x+=8){
-          g.fillRect(x,0,1,size);
-        }
-        g.globalAlpha = 1;
-
-        // heart
-        g.save();
-        g.translate(size/2, size/2 + 18);
-        const s = size * 0.27;
-        g.fillStyle = "#e63b50";
-        g.beginPath();
-        g.moveTo(0, s*0.90);
-        g.bezierCurveTo(-s*1.10, s*0.12, -s*0.95, -s*0.95, 0, -s*0.42);
-        g.bezierCurveTo(s*0.95, -s*0.95, s*1.10, s*0.12, 0, s*0.90);
-        g.closePath();
-        g.fill();
-
-        // highlight
-        g.globalAlpha = 0.25;
-        g.fillStyle = "#fff";
-        g.beginPath();
-        g.arc(-s*0.28, -s*0.24, s*0.22, 0, Math.PI*2);
-        g.fill();
-        g.restore();
-
-        return c.toDataURL("image/png");
-      }
-
-      /* =======================
-         Preload images with fallback
-      ======================= */
-      function preloadImages(urls){
-        const total = urls.length;
-        let done = 0;
-        const out = new Array(total);
-
-        pCount.textContent = `0/${total}`;
-        pText.textContent = "Подгружаем фотографии…";
-
-        return new Promise(resolve => {
-          if(total === 0) resolve([]);
-
-          urls.forEach((url, i) => {
-            const img = new Image();
-            img.decoding = "async";
-            img.loading = "eager";
-            img.onload = () => {
-              out[i] = url;
-              done++;
-              update();
-              if(done === total) resolve(out);
-            };
-            img.onerror = () => {
-              out[i] = makeHeartPlaceholder(720);
-              done++;
-              update();
-              if(done === total) resolve(out);
-            };
-            img.src = url;
-          });
-
-          function update(){
-            const pct = Math.round((done/total)*100);
-            pBar.style.width = pct + "%";
-            pPct.textContent = pct + "%";
-            pCount.textContent = `${done}/${total}`;
-          }
-        });
-      }
-
-      /* =======================
-         Rotation controller (phys-ish drag with inertia)
-      ======================= */
-      class RotationController{
-        constructor(el, opts={}){
-          this.el = el;
-          this.rx = opts.rx ?? -10;
-          this.ry = opts.ry ?? 18;
-          this.vx = 0;
-          this.vy = 0;
-          this.dragging = false;
-
-          this.maxVel = opts.maxVel ?? 6.0;
-          this.dragFactor = opts.dragFactor ?? 0.22;
-          this.damp = opts.damp ?? 0.92;
-          this.spring = opts.spring ?? 0.08;
-          this.rxMin = opts.rxMin ?? -26;
-          this.rxMax = opts.rxMax ?? 26;
-
-          this._pid = null;
-          this._lx = 0; this._ly = 0; this._lt = 0;
-
-          this._onDown = this.onDown.bind(this);
-          this._onMove = this.onMove.bind(this);
-          this._onUp = this.onUp.bind(this);
-
-          el.addEventListener("pointerdown", this._onDown, { passive:false });
-          window.addEventListener("pointermove", this._onMove, { passive:false });
-          window.addEventListener("pointerup", this._onUp, { passive:true });
-          window.addEventListener("pointercancel", this._onUp, { passive:true });
-        }
-
-        onDown(e){
-          if(e.button !== undefined && e.button !== 0) return;
-          this.dragging = true;
-          this._pid = e.pointerId;
-          this.el.setPointerCapture?.(e.pointerId);
-          this._lx = e.clientX; this._ly = e.clientY; this._lt = performance.now();
-          this.vx = 0; this.vy = 0;
-          Audio.beep("tap");
-          e.preventDefault();
-        }
-
-        onMove(e){
-          if(!this.dragging || (this._pid !== null && e.pointerId !== this._pid)) return;
-
-          const now = performance.now();
-          const dt = Math.max(8, now - this._lt);
-          const dx = e.clientX - this._lx;
-          const dy = e.clientY - this._ly;
-
-          this.ry += dx * this.dragFactor;
-          this.rx -= dy * this.dragFactor;
-
-          // velocity estimation (deg per frame-ish)
-          const vx = (dx / dt) * 16 * this.dragFactor;
-          const vy = (-dy / dt) * 16 * this.dragFactor;
-
-          this.vy = clamp(lerp(this.vy, vx, 0.6), -this.maxVel, this.maxVel);
-          this.vx = clamp(lerp(this.vx, vy, 0.6), -this.maxVel, this.maxVel);
-
-          this._lx = e.clientX; this._ly = e.clientY; this._lt = now;
-          e.preventDefault();
-        }
-
-        onUp(e){
-          if(!this.dragging) return;
-          if(this._pid !== null && e.pointerId !== this._pid) return;
-          this.dragging = false;
-          this._pid = null;
-        }
-
-        tick(){
-          if(!this.dragging){
-            this.ry += this.vy;
-            this.rx += this.vx;
-
-            this.vx *= this.damp;
-            this.vy *= this.damp;
-
-            // spring clamp rx to keep it comfy
-            if(this.rx < this.rxMin){
-              const d = (this.rxMin - this.rx);
-              this.vx += d * this.spring;
-            } else if(this.rx > this.rxMax){
-              const d = (this.rxMax - this.rx);
-              this.vx += d * this.spring;
-            }
-          } else {
-            // hard clamp while dragging
-            this.rx = clamp(this.rx, this.rxMin, this.rxMax);
-          }
-
-          this.el.style.transform = `rotateX(${this.rx}deg) rotateY(${this.ry}deg)`;
-        }
-      }
-
-      /* =======================
-         Wheel picker
-      ======================= */
-      class Wheel{
-        constructor(root, listEl, items, initialIndex=0){
-          this.root = root;
-          this.listEl = listEl;
-          this.items = items;
-          this.index = clamp(initialIndex, 0, items.length-1);
-
-          this.itemH = 42;
-          this.dragging = false;
-          this._pid = null;
-          this._sy = 0;
-          this._dy = 0;
-          this._lt = 0;
-          this._vy = 0;
-
-          this.render();
-          this.apply();
-
-          root.addEventListener("pointerdown", this.onDown.bind(this), { passive:false });
-          window.addEventListener("pointermove", this.onMove.bind(this), { passive:false });
-          window.addEventListener("pointerup", this.onUp.bind(this), { passive:true });
-          window.addEventListener("pointercancel", this.onUp.bind(this), { passive:true });
-        }
-
-        render(){
-          const frag = document.createDocumentFragment();
-
-          // add padding items for dim look (simple)
-          const pad = 3;
-          const all = [
-            ...Array(pad).fill(""),
-            ...this.items,
-            ...Array(pad).fill("")
-          ];
-
-          this._pad = pad;
-          this.listEl.innerHTML = "";
-          all.forEach((v) => {
-            const div = document.createElement("div");
-            div.className = "wheel-item" + (v === "" ? " dim" : "");
-            div.textContent = v === "" ? " " : v;
-            frag.appendChild(div);
-          });
-          this.listEl.appendChild(frag);
-
-          // compute from DOM (support small screens)
-          const one = this.listEl.querySelector(".wheel-item");
-          if(one){
-            const h = one.getBoundingClientRect().height;
-            if(h > 0) this.itemH = h;
-          }
-        }
-
-        apply(instant=false){
-          const y = -(this.index) * this.itemH;
-          if(instant){
-            const prev = this.listEl.style.transition;
-            this.listEl.style.transition = "none";
-            this.listEl.style.transform = `translateY(${y}px)`;
-            this.listEl.offsetHeight; // reflow
-            this.listEl.style.transition = prev || "";
-          } else {
-            this.listEl.style.transform = `translateY(${y}px)`;
-          }
-        }
-
-        value(){
-          return this.items[this.index];
-        }
-
-        onDown(e){
-          this.dragging = true;
-          this._pid = e.pointerId;
-          this.root.setPointerCapture?.(e.pointerId);
-          this._sy = e.clientY;
-          this._dy = 0;
-          this._vy = 0;
-          this._lt = performance.now();
-          Audio.beep("tap");
-          e.preventDefault();
-        }
-
-        onMove(e){
-          if(!this.dragging || (this._pid !== null && e.pointerId !== this._pid)) return;
-          const now = performance.now();
-          const dt = Math.max(8, now - this._lt);
-          const dy = e.clientY - this._sy;
-
-          // instantaneous velocity (px/ms)
-          const vy = (dy - this._dy) / dt;
-          this._vy = lerp(this._vy, vy, 0.7);
-
-          this._dy = dy;
-          this._lt = now;
-          e.preventDefault();
-        }
-
-        onUp(e){
-          if(!this.dragging) return;
-          if(this._pid !== null && e.pointerId !== this._pid) return;
-
-          this.dragging = false;
-          this._pid = null;
-
-          // snap
-          let steps = Math.round(this._dy / this.itemH);
-          // flick adds a step
-          steps += Math.round(this._vy * 2.2);
-
-          this.index = clamp(this.index + steps, 0, this.items.length - 1);
-          this.apply();
-          Audio.beep("tap");
-        }
-      }
-
-      /* =======================
-         Particles (hearts + confetti)
-      ======================= */
-      const FX = (() => {
-        let w=0,h=0,dpr=1;
-        let particles = [];
-        let tPrev = 0;
-        let running = false;
-
-        function resize(){
-          dpr = Math.min(2, window.devicePixelRatio || 1);
-          w = Math.floor(window.innerWidth * dpr);
-          h = Math.floor(window.innerHeight * dpr);
-          fx.width = w; fx.height = h;
-        }
-
-        function heartPath(ctx, x, y, s){
-          ctx.beginPath();
-          // lightweight heart
-          ctx.moveTo(x, y + s*0.35);
-          ctx.bezierCurveTo(x - s*0.75, y - s*0.05, x - s*0.65, y - s*0.75, x, y - s*0.35);
-          ctx.bezierCurveTo(x + s*0.65, y - s*0.75, x + s*0.75, y - s*0.05, x, y + s*0.35);
-          ctx.closePath();
-        }
-
-        function burst(){
-          particles = [];
-          const n = 120;
-          const cx = w*0.5, cy = h*0.42;
-          for(let i=0;i<n;i++){
-            const a = Math.random()*Math.PI*2;
-            const sp = (0.7 + Math.random()*1.8) * dpr;
-            particles.push({
-              x: cx, y: cy,
-              vx: Math.cos(a)*sp*(1.6+Math.random()*2.2),
-              vy: Math.sin(a)*sp*(1.2+Math.random()*2.0) - (1.8*dpr),
-              g: (0.065 + Math.random()*0.055) * dpr,
-              s: (6 + Math.random()*10) * dpr,
-              r: Math.random()*Math.PI*2,
-              vr: (Math.random()*2-1) * 0.09,
-              life: 1.0,
-              kind: Math.random() < 0.45 ? "heart" : "rect"
-            });
-          }
-        }
-
-        function start(){
-          resize();
-          window.addEventListener("resize", resize, { passive:true });
-          burst();
-          tPrev = performance.now();
-          running = true;
-          tick(tPrev);
-        }
-
-        function stop(){
-          running = false;
-          fxCtx.clearRect(0,0,w,h);
-        }
-
-        function tick(t){
-          if(!running) return;
-          const dt = Math.min(32, t - tPrev);
-          tPrev = t;
-
-          fxCtx.clearRect(0,0,w,h);
-          fxCtx.save();
-          fxCtx.globalCompositeOperation = "source-over";
-
-          for(const p of particles){
-            p.vy += p.g * (dt/16);
-            p.x += p.vx * (dt/16);
-            p.y += p.vy * (dt/16);
-            p.r += p.vr * (dt/16);
-            p.life -= 0.0065 * (dt/16);
-
-            const alpha = clamp(p.life, 0, 1);
-            if(alpha <= 0) continue;
-
-            fxCtx.save();
-            fxCtx.translate(p.x, p.y);
-            fxCtx.rotate(p.r);
-
-            if(p.kind === "heart"){
-              fxCtx.globalAlpha = alpha * 0.95;
-              fxCtx.fillStyle = "rgba(230,59,80,0.95)";
-              heartPath(fxCtx, 0, 0, p.s);
-              fxCtx.fill();
-
-              fxCtx.globalAlpha = alpha * 0.22;
-              fxCtx.fillStyle = "#fff";
-              fxCtx.beginPath();
-              fxCtx.arc(-p.s*0.18, -p.s*0.18, p.s*0.16, 0, Math.PI*2);
-              fxCtx.fill();
-            } else {
-              fxCtx.globalAlpha = alpha * 0.9;
-              fxCtx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.85)" : "rgba(255,107,122,0.85)";
-              fxCtx.fillRect(-p.s*0.6, -p.s*0.25, p.s*1.2, p.s*0.5);
-            }
-
-            fxCtx.restore();
-          }
-          fxCtx.restore();
-
-          requestAnimationFrame(tick);
-        }
-
-        return { start, stop, burst };
-      })();
-
-      /* =======================
-         Build wheel lists
-      ======================= */
-      const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-      const days = Array.from({length:31}, (_,i)=> String(i+1));
-      const years = Array.from({length:7}, (_,i)=> String(2020+i));
-
-      function initWheels(){
-        // default near-correct (nice UX)
-        dayList.innerHTML = "";
-        monthList.innerHTML = "";
-        yearList.innerHTML = "";
-
-        const wheelDay = new Wheel($(".wheel[data-wheel='day']"), dayList, days, 4); // 5
-        const wheelMonth = new Wheel($(".wheel[data-wheel='month']"), monthList, months, 10); // Ноябрь
-        const wheelYear = new Wheel($(".wheel[data-wheel='year']"), yearList, years, 5); // 2025
-
-        return { wheelDay, wheelMonth, wheelYear };
-      }
-
-      /* =======================
-         Main logic
-      ======================= */
-      let rotBox, rotEnv, wheels;
-      let rafId = 0;
-
-      function startRAF(){
-        const tick = () => {
-          rotBox?.tick();
-          rotEnv?.tick();
-          rafId = requestAnimationFrame(tick);
-        };
-        cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(tick);
-      }
-
-      function openSignModal(){
-        signModal.classList.add("show");
-      }
-      function closeSignModal(){
-        signModal.classList.remove("show");
-      }
-
-      function scene1Init(){
-        // show modal after a tiny delay (feels staged)
-        setTimeout(openSignModal, 250);
-      }
-
-      function scene2Init(){
-        // Setup rotation
-        rotBox = new RotationController(box3d, {
-          rx: -10, ry: 18,
-          maxVel: 6.2, dragFactor: 0.24,
-          damp: 0.92, spring: 0.11,
-          rxMin: -24, rxMax: 24
-        });
-
-        wheels = initWheels();
-      }
-
-      function scene3Init(){
-        rotEnv = new RotationController(env3d, {
-          rx: -10, ry: 18,
-          maxVel: 6.2, dragFactor: 0.24,
-          damp: 0.92, spring: 0.11,
-          rxMin: -24, rxMax: 24
-        });
-      }
-
-      function lockOpen(){
-        lockOverlay.classList.add("show");
-        Audio.beep("open");
-        // freeze box inertia a bit (gentle)
-        if(rotBox){ rotBox.vx *= 0.2; rotBox.vy *= 0.2; }
-      }
-      function lockClose(){
-        lockOverlay.classList.remove("show");
-        Audio.beep("tap");
-      }
-
-      function checkLockCode(){
-        const day = parseInt(wheels.wheelDay.value(),10);
-        const month = wheels.wheelMonth.value();
-        const year = parseInt(wheels.wheelYear.value(),10);
-
-        const ok = (day === CODE_DAY && month === CODE_MONTH && year === CODE_YEAR);
-        if(!ok){
-          lockPanel.classList.remove("shake");
-          void lockPanel.offsetWidth;
-          lockPanel.classList.add("shake");
-          Audio.beep("shake");
-          return false;
-        }
-        return true;
-      }
-
-      function openBoxToEnvelope(){
-        lockClose();
-        Audio.beep("win");
-        Audio.whoosh();
-
-        box3d.classList.add("open");
-
-        // short dramatic pause -> next scene
-        setTimeout(() => {
-          setScene(SCENES.S3);
-          // keep overlay visible at scene3 start (already show)
-          envOverlay.classList.add("show");
-          showToast("Ого… там письмо 👀", 1200);
-        }, 820);
-      }
-
-      function normalizeDOB(v){
-        // keep digits & dots
-        v = (v || "").trim();
-        // If user types 01022005 -> format
-        const digits = v.replace(/\D/g,"");
-        if(digits.length === 8){
-          return digits.slice(0,2)+"."+digits.slice(2,4)+"."+digits.slice(4,8);
-        }
-        // If user uses slashes
-        v = v.replace(/\//g,".");
-        // pad basic dd.mm.yyyy if possible
-        const parts = v.split(".").filter(Boolean);
-        if(parts.length === 3){
-          const dd = parts[0].padStart(2,"0");
-          const mm = parts[1].padStart(2,"0");
-          const yy = parts[2].length === 2 ? ("20"+parts[2]) : parts[2];
-          return `${dd}.${mm}.${yy}`;
-        }
-        return v;
-      }
-
-      function dobWrong(){
-        // shake seal & hint
-        seal.classList.remove("shake");
-        void seal.offsetWidth;
-        seal.classList.add("shake");
-        Audio.beep("shake");
-
-        dobHint.textContent = "Мягкая подсказка: это начало февраля 🙂";
-        dobHint.style.color = "rgba(230,59,80,.80)";
-        setTimeout(() => {
-          dobHint.textContent = "Формат: 01.02.2005";
-          dobHint.style.color = "rgba(36,26,42,.66)";
-        }, 1400);
-      }
-
-      function dobCorrect(){
-        Audio.beep("win");
-        Audio.whoosh();
-
-        // seal "slides off"
-        seal.style.transition = "transform .55s cubic-bezier(.2,.9,.2,1), opacity .55s ease";
-        seal.style.transform = "translate(-50%,-50%) translateZ(34px) translateY(120px) rotate(18deg)";
-        seal.style.opacity = "0";
-
-        // confetti hearts
-        fx.classList.add("on");
-        if(!fxOn){
-          fxOn = true;
-          FX.start();
-        } else {
-          FX.burst();
-        }
-
-        // show final block
-        setTimeout(() => {
-          final.style.display = "block";
-          buildGallery();
-          // show first image
-          cycleGallery(true);
-          // letter slide in after a bit
-          setTimeout(() => letter.classList.add("show"), 520);
-        }, 520);
-
-        showToast("Открыто ❤️", 1400);
-
-        // calm down FX later
-        setTimeout(() => {
-          fx.classList.remove("on");
-        }, 3200);
-      }
-
-      let galleryIdx = 0;
-      let galleryTimer = 0;
-
-      function buildGallery(){
-        gallery.querySelectorAll("img").forEach(n => n.remove());
-        const srcs = photos.slice(0,4);
-        srcs.forEach((src, i) => {
-          const img = document.createElement("img");
-          img.alt = "photo " + (i+1);
-          img.src = src;
-          img.decoding = "async";
-          img.loading = "eager";
-          gallery.appendChild(img);
-        });
-
-        // restart loop
-        clearInterval(galleryTimer);
-        galleryIdx = 0;
-        galleryTimer = setInterval(() => cycleGallery(false), 3400);
-      }
-
-      function cycleGallery(instant){
-        const imgs = Array.from(gallery.querySelectorAll("img"));
-        if(imgs.length === 0) return;
-        imgs.forEach((im, i) => im.classList.toggle("show", i === galleryIdx));
-        galleryIdx = (galleryIdx + 1) % imgs.length;
-        if(instant) galleryIdx = 1 % imgs.length;
-      }
-
-      /* =======================
-         Event wiring
-      ======================= */
-      function wire(){
-        // One-time user interaction unlock for audio & bgm
-        const unlockOnce = () => {
-          Audio.unlock();
-          safePlay(bgm);
-          window.removeEventListener("pointerdown", unlockOnce);
-          window.removeEventListener("touchstart", unlockOnce);
-        };
-        window.addEventListener("pointerdown", unlockOnce, { passive:true });
-        window.addEventListener("touchstart", unlockOnce, { passive:true });
-
-        // Scene 1 buttons
-        btnNo.addEventListener("click", () => {
-          Audio.beep("no");
-          closeSignModal();
-
-          courierText.textContent = "Вы что, балбес? На первый раз прощаю.";
-          showToast("мм… попробуй ещё раз 😄", 1100);
-
-          // reopen modal but remove "No"
-          setTimeout(() => {
-            if(!noWasPressed){
-              noWasPressed = true;
-              btnNo.remove();
-            }
-            openSignModal();
-          }, 650);
-        });
-
-        btnYes.addEventListener("click", () => {
-          Audio.beep("ok");
-          closeSignModal();
-
-          // "courier passes box" animation by fading courier
-          const c = $("#courierCard");
-          c.style.transition = "opacity .35s ease, transform .35s ease";
-          c.style.opacity = "0";
-          c.style.transform = "translateY(8px)";
-
-          Audio.whoosh();
-          showToast("Посылка получена ✅", 1100);
-
-          setTimeout(() => {
-            setScene(SCENES.S2);
-          }, 420);
-        });
-
-        // Scene 2 interactions
-        lockBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          lockOpen();
-        });
-
-        btnBackToBox.addEventListener("click", () => lockClose());
-
-        btnCodeDone.addEventListener("click", () => {
-          const ok = checkLockCode();
-          if(ok) openBoxToEnvelope();
-        });
-
-        // Clicking outside panel closes lock (nice on mobile)
-        lockOverlay.addEventListener("click", (e) => {
-          if(e.target === lockOverlay) lockClose();
-        });
-
-        // Scene 3 buttons
-        btnTrash.addEventListener("click", () => {
-          Audio.beep("no");
-          // little shake of overlay
-          envOverlay.querySelector(".panel").classList.remove("shake");
-          void envOverlay.offsetWidth;
-          envOverlay.querySelector(".panel").classList.add("shake");
-          showToast("Щас по шее получишь", 1400);
-
-          // morph buttons: "Открыть" вытесняет "Выбросить"
-          setTimeout(() => {
-            btnTrash.style.transition = "opacity .22s ease, transform .22s ease";
-            btnTrash.style.opacity = "0";
-            btnTrash.style.transform = "translateX(8px)";
-            btnOpen.style.transition = "transform .35s cubic-bezier(.2,.9,.2,1), width .35s cubic-bezier(.2,.9,.2,1)";
-            btnOpen.style.transform = "translateX(-12px)";
-            setTimeout(() => {
-              btnTrash.remove();
-              btnOpen.style.transform = "translateX(0)";
-            }, 220);
-          }, 520);
-        });
-
-        btnOpen.addEventListener("click", () => {
-          Audio.beep("open");
-          // zoom to seal
-          env3d.classList.remove("zoom");
-          void env3d.offsetWidth;
-          env3d.classList.add("zoom");
-
-          quiz.style.display = "block";
-          final.style.display = "none";
-          letter.classList.remove("show");
-          setTimeout(() => dob.focus?.(), 80);
-        });
-
-        dob.addEventListener("input", () => {
-          // gentle auto-format
-          const v = dob.value;
-          const digits = v.replace(/\D/g,"");
-          if(digits.length === 8){
-            dob.value = normalizeDOB(v);
-          }
-        });
-
-        btnDobOk.addEventListener("click", () => {
-          Audio.beep("tap");
-          const v = normalizeDOB(dob.value);
-          dob.value = v;
-          if(v !== DOB_CORRECT){
-            dobWrong();
-            return;
-          }
-
-          // success!
-          quiz.style.display = "none";
-          dobCorrect();
-        });
-      }
-
-      /* =======================
-         Boot
-      ======================= */
-      async function boot(){
-        // Preload photos (fallback if missing)
-        const urls = ASSET_IMAGES.slice(0,4);
-        pCount.textContent = `0/${urls.length}`;
-        pText.textContent = "Подгружаем фотографии…";
-
-        photos = await preloadImages(urls);
-
-        pText.textContent = "Финальные штрихи…";
-        pBar.style.width = "100%";
-        pPct.textContent = "100%";
-        pCount.textContent = `${urls.length}/${urls.length}`;
-
-        // init scenes
-        scene1Init();
-        scene2Init();
-        scene3Init();
-        startRAF();
-        wire();
-
-        // canvas size
-        const resizeFx = () => {
-          const dpr = Math.min(2, window.devicePixelRatio || 1);
-          fx.style.width = "100%";
-          fx.style.height = "100%";
-          fx.width = Math.floor(window.innerWidth * dpr);
-          fx.height = Math.floor(window.innerHeight * dpr);
-        };
-        resizeFx();
-        window.addEventListener("resize", resizeFx, { passive:true });
-
-        // hide preloader with fade
-        preloader.style.transition = "opacity .28s ease";
-        preloader.style.opacity = "0";
-        setTimeout(() => preloader.remove(), 300);
-      }
-
-      boot().catch(err => {
-        console.error(err);
-        pText.textContent = "Что-то пошло не так, но мы держимся 🙂";
+  <!-- Signature modal -->
+  <div class="modal" id="signModal" aria-hidden="true">
+    <div class="sheet" id="signSheet">
+      <h3>Вы принимаете посылку от фаната?</h3>
+      <p>Подпись нужна формально. Но отказ… может быть опасен.</p>
+      <div class="btnrow" id="signButtons">
+        <button class="btn danger" id="noBtn">Нет</button>
+        <button class="btn primary" id="yesBtn">Да</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden native date picker -->
+  <input id="nativeDate" type="date" style="position:fixed; left:-9999px; top:-9999px; opacity:0;" />
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ============================
+     Utilities
+  ============================ */
+  const $ = (s, el=document) => el.querySelector(s);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const now = () => performance.now();
+
+  function rafThrottle(fn){
+    let queued = false;
+    let lastArgs = null;
+    return (...args) => {
+      lastArgs = args;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        fn(...lastArgs);
       });
+    };
+  }
 
-    })();
-  </script>
+  /* ============================
+     Telegram WebView small helpers
+     (No dependency. If TG object exists we can expand.)
+  ============================ */
+  try{
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg){
+      tg.ready();
+      tg.expand();
+      // tg.disableVerticalSwipes?.(); // optional, not always available
+    }
+  }catch(e){}
+
+  /* ============================
+     Asset config (edit filenames if needed)
+  ============================ */
+  const assets = {
+    photos: [
+      "Images/photo1.jpg",
+      "Images/photo2.jpg",
+      "Images/photo3.jpg",
+      "Images/photo4.jpg"
+    ],
+    textures: [
+      "Images/tex_paper.jpg",
+      "Images/box.png",
+      "Images/lock.png",
+      "Images/envelope.png",
+      "Images/seal.png"
+    ],
+    audio: {
+      bgm: "Audio/bgm.mp3",
+      click: "Audio/click.mp3",
+      woosh: "Audio/woosh.mp3",
+      lock: "Audio/lock.mp3",
+      error: "Audio/error.mp3",
+      success: "Audio/success.mp3"
+    }
+  };
+
+  // Use only 3–4 photos max; if some missing, it will silently skip.
+  // You can remove items or keep 4.
+
+  /* ============================
+     Preloader (images + audio warm-up)
+  ============================ */
+  const preloader = $("#preloader");
+  const barFill = $("#barFill");
+  const tapHint = $("#tapHint");
+
+  let audioUnlocked = false;
+
+  function loadImage(url){
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.loading = "eager";
+      img.onload = () => resolve({url, ok:true, img});
+      img.onerror = () => resolve({url, ok:false, img:null});
+      img.src = url;
+    });
+  }
+
+  async function preloadAll(){
+    const list = [
+      ...assets.photos.slice(0,4),
+      ...assets.textures
+    ];
+    const unique = Array.from(new Set(list));
+    let done = 0;
+    const total = unique.length || 1;
+
+    const update = rafThrottle(() => {
+      const pct = Math.round((done/total)*100);
+      barFill.style.width = `${clamp(pct, 8, 100)}%`;
+    });
+
+    const results = [];
+    for (const url of unique){
+      // sequential keeps memory low & avoids burst on mobile webview
+      const res = await loadImage(url);
+      results.push(res);
+      done++;
+      update();
+    }
+
+    // Set icons if provided
+    const lockUrl = assets.textures[2]; // Images/lock.png
+    $("#lockIcon").style.backgroundImage = `url("${lockUrl}")`;
+
+    return results;
+  }
+
+  /* ============================
+     Audio engine (lightweight)
+     - HTMLAudio for BGM + few SFX
+     - Plays only after user gesture (WebView restriction)
+  ============================ */
+  const audio = {
+    bgm: null,
+    sfx: new Map(),
+    enabled: true
+  };
+
+  function makeAudio(src, {loop=false, volume=1}={}){
+    const a = new Audio();
+    a.src = src;
+    a.loop = loop;
+    a.preload = "auto";
+    a.volume = volume;
+    a.playsInline = true;
+    return a;
+  }
+
+  function initAudio(){
+    // create but do not autoplay (needs gesture)
+    audio.bgm = makeAudio(assets.audio.bgm, {loop:true, volume:0.18});
+
+    for (const [k, src] of Object.entries(assets.audio)){
+      if (k === "bgm") continue;
+      audio.sfx.set(k, makeAudio(src, {loop:false, volume:0.55}));
+    }
+  }
+
+  function unlockAudio(){
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    try{
+      // Tiny silent play trick
+      const test = makeAudio(assets.audio.click, {loop:false, volume:0.01});
+      test.play().then(() => {
+        test.pause();
+        test.currentTime = 0;
+      }).catch(()=>{});
+    }catch(e){}
+
+    // Start BGM quietly
+    if (audio.enabled){
+      audio.bgm.play().catch(()=>{});
+    }
+    tapHint.classList.remove("show");
+  }
+
+  function playSfx(name){
+    if (!audioUnlocked || !audio.enabled) return;
+    const a = audio.sfx.get(name);
+    if (!a) return;
+    try{
+      a.currentTime = 0;
+      a.play().catch(()=>{});
+    }catch(e){}
+  }
+
+  function setSoundEnabled(on){
+    audio.enabled = on;
+    $("#soundBtn").textContent = on ? "🔊" : "🔈";
+    if (!audioUnlocked) return;
+    if (on){
+      audio.bgm.play().catch(()=>{});
+    }else{
+      audio.bgm.pause();
+    }
+  }
+
+  /* ============================
+     Scenes control
+  ============================ */
+  const scenes = {
+    s1: $("#scene1"),
+    s2: $("#scene2"),
+    s2lock: $("#scene2lock"),
+    s3: $("#scene3"),
+    s3check: $("#scene3check"),
+    s4: $("#scene4"),
+  };
+
+  function showScene(key){
+    for (const [k, el] of Object.entries(scenes)){
+      if (k === key) el.classList.add("active");
+      else el.classList.remove("active");
+    }
+  }
+
+  /* ============================
+     Toast
+  ============================ */
+  const toast = $("#toast");
+  let toastTimer = 0;
+  function showToast(text, ms=1400){
+    toast.textContent = text;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), ms);
+  }
+
+  /* ============================
+     FX: hearts/confetti particles (canvas)
+     GPU-friendly drawing; only when needed
+  ============================ */
+  const fx = $("#fx");
+  const ctx = fx.getContext("2d", {alpha:true});
+  let W=0,H=0, DPR=1;
+
+  function resizeFX(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = fx.width = Math.floor(innerWidth * DPR);
+    H = fx.height = Math.floor(innerHeight * DPR);
+    fx.style.width = innerWidth + "px";
+    fx.style.height = innerHeight + "px";
+  }
+  window.addEventListener("resize", resizeFX, {passive:true});
+  resizeFX();
+
+  const particles = [];
+  let fxRunning = false;
+
+  function spawnBurst(x,y, count=40){
+    for (let i=0;i<count;i++){
+      const t = Math.random();
+      particles.push({
+        x, y,
+        vx: (Math.random()*2-1) * (3 + Math.random()*5),
+        vy: (Math.random()*-1) * (4 + Math.random()*6),
+        g: 0.22 + Math.random()*0.12,
+        life: 70 + Math.random()*40,
+        r: 4 + Math.random()*4,
+        kind: (t<0.55) ? "heart" : "dot",
+        rot: Math.random()*Math.PI*2,
+        vr: (Math.random()*2-1)*0.08,
+        a: 1
+      });
+    }
+    fxRunning = true;
+  }
+
+  function drawHeart(cx, cy, s, rot, alpha){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "rgba(215,93,106,.95)";
+    ctx.beginPath();
+    const k = s;
+    // simple heart path
+    ctx.moveTo(0, k*0.25);
+    ctx.bezierCurveTo(k*0.5, -k*0.35, k*1.05, k*0.15, 0, k*0.85);
+    ctx.bezierCurveTo(-k*1.05, k*0.15, -k*0.5, -k*0.35, 0, k*0.25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function fxLoop(){
+    if (!fxRunning) return;
+    ctx.clearRect(0,0,W,H);
+
+    let alive = 0;
+    for (let i=0;i<particles.length;i++){
+      const p = particles[i];
+      p.life -= 1;
+      if (p.life <= 0) continue;
+
+      p.vy += p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+
+      const fade = clamp(p.life/80, 0, 1);
+      p.a = fade;
+
+      const x = p.x * DPR;
+      const y = p.y * DPR;
+
+      if (p.kind === "heart"){
+        drawHeart(x, y, p.r * DPR, p.rot, p.a);
+      }else{
+        ctx.globalAlpha = p.a;
+        ctx.fillStyle = "rgba(255,154,167,.92)";
+        ctx.beginPath();
+        ctx.arc(x, y, (p.r*0.6)*DPR, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      alive++;
+    }
+
+    // compact array
+    if (alive === 0){
+      particles.length = 0;
+      fxRunning = false;
+      ctx.clearRect(0,0,W,H);
+      return;
+    }else{
+      // remove dead occasionally
+      if (particles.length > alive + 30){
+        const keep = [];
+        for (const p of particles) if (p.life > 0) keep.push(p);
+        particles.length = 0;
+        particles.push(...keep);
+      }
+    }
+
+    requestAnimationFrame(fxLoop);
+  }
+
+  /* ============================
+     "Physical" drag rotation (inertia + damping + spring-ish clamp)
+     - for box and envelope
+     - Only transform updates, per rAF
+  ============================ */
+  function makeRotator(el, opts={}){
+    const state = {
+      rx: 0, ry: 0,     // current angles
+      vx: 0, vy: 0,     // angular velocities
+      tx: 0, ty: 0,     // target angles (for spring)
+      dragging: false,
+      lastX: 0, lastY: 0,
+      lastT: 0
+    };
+
+    const conf = {
+      maxSpeed: 1.6,     // clamp angular speed
+      dragGain: 0.32,    // gesture sensitivity
+      damp: 0.92,        // velocity damping
+      spring: 0.16,      // pull to target
+      maxTilt: 18,       // limit pitch (rx)
+      ...opts
+    };
+
+    function applyTransform(){
+      // rx limited for nicer look
+      state.rx = clamp(state.rx, -conf.maxTilt, conf.maxTilt);
+      el.style.transform = `rotateX(${state.rx}deg) rotateY(${state.ry}deg) translateZ(0)`;
+    }
+
+    function tick(){
+      // spring towards target (adds "elastic")
+      const ax = (state.tx - state.rx) * conf.spring;
+      const ay = (state.ty - state.ry) * conf.spring;
+
+      state.vx = (state.vx + ax) * conf.damp;
+      state.vy = (state.vy + ay) * conf.damp;
+
+      // clamp speed
+      state.vx = clamp(state.vx, -conf.maxSpeed, conf.maxSpeed);
+      state.vy = clamp(state.vy, -conf.maxSpeed, conf.maxSpeed);
+
+      state.rx += state.vx;
+      state.ry += state.vy;
+
+      applyTransform();
+
+      // stop when slow
+      if (!state.dragging && (Math.abs(state.vx)+Math.abs(state.vy) < 0.02) && (Math.abs(state.tx-state.rx)+Math.abs(state.ty-state.ry) < 0.2)){
+        return; // end loop
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function startLoop(){
+      requestAnimationFrame(tick);
+    }
+
+    function onDown(ev){
+      unlockAudio();
+      state.dragging = true;
+      const p = getPoint(ev);
+      state.lastX = p.x;
+      state.lastY = p.y;
+      state.lastT = now();
+      // lock target to current to avoid jump
+      state.tx = state.rx;
+      state.ty = state.ry;
+      startLoop();
+      ev.preventDefault?.();
+    }
+
+    function onMove(ev){
+      if (!state.dragging) return;
+      const p = getPoint(ev);
+      const t = now();
+      const dt = Math.max(8, t - state.lastT); // ms
+      const dx = p.x - state.lastX;
+      const dy = p.y - state.lastY;
+
+      state.lastX = p.x;
+      state.lastY = p.y;
+      state.lastT = t;
+
+      // convert gesture to angle changes
+      const g = conf.dragGain;
+      state.ty += dx * g;     // yaw
+      state.tx += -dy * g;    // pitch
+
+      // velocity approximation
+      const s = 16/dt;
+      state.vy = clamp((dx * g) * s, -conf.maxSpeed, conf.maxSpeed);
+      state.vx = clamp((-dy * g) * s, -conf.maxSpeed, conf.maxSpeed);
+    }
+
+    function onUp(){
+      if (!state.dragging) return;
+      state.dragging = false;
+      // keep target where it is -> inertia carries then settles
+      state.tx = state.rx;
+      state.ty = state.ry;
+    }
+
+    el.addEventListener("pointerdown", onDown, {passive:false});
+    window.addEventListener("pointermove", onMove, {passive:false});
+    window.addEventListener("pointerup", onUp, {passive:true});
+    window.addEventListener("pointercancel", onUp, {passive:true});
+
+    function getPoint(ev){
+      if (ev.touches && ev.touches[0]) return {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+      return {x: ev.clientX, y: ev.clientY};
+    }
+
+    return {
+      setAngles(rx, ry){
+        state.rx = rx; state.ry = ry;
+        state.tx = rx; state.ty = ry;
+        applyTransform();
+      }
+    };
+  }
+
+  const boxRot = makeRotator($("#boxObj"), { maxTilt: 14, dragGain: 0.26, damp: 0.90, spring: 0.18, maxSpeed: 1.45 });
+  const envRot = makeRotator($("#envObj"), { maxTilt: 16, dragGain: 0.28, damp: 0.90, spring: 0.18, maxSpeed: 1.55 });
+
+  /* ============================
+     Scene 2 lock wheels (swipe vertical)
+  ============================ */
+  const months = [
+    "января","февраля","марта","апреля","мая","июня",
+    "июля","августа","сентября","октября","ноября","декабря"
+  ];
+  const correctLock = { day: 5, month: "ноября", year: 2025 };
+
+  // Build wheel lists with some buffer items for smooth scroll illusion
+  function buildWheel(el, values){
+    el.innerHTML = "";
+    // add padding items at top/bottom
+    const pad = 3;
+    for (let i=0;i<pad;i++){
+      const d = document.createElement("div");
+      d.className = "wheelItem dim";
+      d.textContent = "·";
+      el.appendChild(d);
+    }
+    for (const v of values){
+      const it = document.createElement("div");
+      it.className = "wheelItem";
+      it.textContent = v;
+      el.appendChild(it);
+    }
+    for (let i=0;i<pad;i++){
+      const d = document.createElement("div");
+      d.className = "wheelItem dim";
+      d.textContent = "·";
+      el.appendChild(d);
+    }
+  }
+
+  const dayVals = Array.from({length:31}, (_,i)=> String(i+1));
+  const yearVals = [];
+  for (let y=2020;y<=2026;y++) yearVals.push(String(y));
+
+  buildWheel($("#wheelDay"), dayVals);
+  buildWheel($("#wheelMonth"), months);
+  buildWheel($("#wheelYear"), yearVals);
+
+  function makeWheel(wheelEl, values, initialIndex){
+    const list = wheelEl.querySelector(".wheelList");
+    const itemH = 46;
+    const pad = 3;
+    let idx = clamp(initialIndex, 0, values.length-1);
+    let y = -(idx * itemH); // list translate
+    let vy = 0;
+    let dragging = false;
+    let lastY = 0;
+    let lastT = 0;
+    let rafId = 0;
+
+    function apply(){
+      list.style.transform = `translate3d(0, ${y + pad*itemH}px, 0)`;
+    }
+
+    function snap(){
+      const target = -(idx * itemH);
+      y = lerp(y, target, 0.22);
+      vy *= 0.72;
+      if (Math.abs(y - target) < 0.5 && Math.abs(vy) < 0.08){
+        y = target; vy = 0;
+        apply();
+        rafId = 0;
+        return;
+      }
+      apply();
+      rafId = requestAnimationFrame(snap);
+    }
+
+    function startSnap(){
+      if (rafId) return;
+      rafId = requestAnimationFrame(snap);
+    }
+
+    function onDown(ev){
+      unlockAudio();
+      dragging = true;
+      lastY = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+      lastT = now();
+      vy = 0;
+      if (rafId){ cancelAnimationFrame(rafId); rafId=0; }
+      ev.preventDefault?.();
+    }
+    function onMove(ev){
+      if (!dragging) return;
+      const cy = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+      const t = now();
+      const dt = Math.max(8, t-lastT);
+      const dy = cy - lastY;
+      lastY = cy; lastT = t;
+
+      y += dy * 0.95;
+      // soft clamp beyond ends with rubber band
+      const minY = -((values.length-1) * itemH);
+      const maxY = 0;
+      if (y > maxY) y = maxY + (y-maxY)*0.25;
+      if (y < minY) y = minY + (y-minY)*0.25;
+
+      vy = (dy / dt) * 16; // ~ per frame
+      apply();
+      ev.preventDefault?.();
+    }
+    function onUp(){
+      if (!dragging) return;
+      dragging = false;
+
+      // inertia then snap
+      const minY = -((values.length-1) * itemH);
+      const maxY = 0;
+
+      // project inertia quickly
+      y += clamp(vy, -3.0, 3.0) * itemH * 0.55;
+      y = clamp(y, minY, maxY);
+
+      idx = clamp(Math.round(-y / itemH), 0, values.length-1);
+      startSnap();
+    }
+
+    wheelEl.addEventListener("pointerdown", onDown, {passive:false});
+    window.addEventListener("pointermove", onMove, {passive:false});
+    window.addEventListener("pointerup", onUp, {passive:true});
+    window.addEventListener("pointercancel", onUp, {passive:true});
+
+    function setIndex(i){
+      idx = clamp(i, 0, values.length-1);
+      y = -(idx*itemH);
+      apply();
+    }
+    function value(){
+      return values[idx];
+    }
+
+    setIndex(idx);
+    return { setIndex, value, getIndex:()=>idx };
+  }
+
+  // Default wheel positions
+  const wheelDay = makeWheel($('[data-wheel="day"]'), dayVals, 4); // show 5 by default-ish
+  const wheelMonth = makeWheel($('[data-wheel="month"]'), months, 10); // ноябрь
+  const wheelYear = makeWheel($('[data-wheel="year"]'), yearVals, 5); // 2025
+
+  /* ============================
+     Photo carousel (fade)
+  ============================ */
+  const photoEls = [$("#p0"), $("#p1"), $("#p2"), $("#p3")];
+  let photoUrls = assets.photos.slice(0,4);
+  let photoIndex = 0;
+  let photoTimer = 0;
+
+  function startCarousel(){
+    // assign backgrounds (only those that exist will show; missing will be black but still ok)
+    photoEls.forEach((el, i) => {
+      el.style.backgroundImage = `url("${photoUrls[i] || ""}")`;
+      el.classList.remove("show");
+    });
+    photoIndex = 0;
+    if (photoEls[0]) photoEls[0].classList.add("show");
+
+    clearInterval(photoTimer);
+    photoTimer = setInterval(() => {
+      const next = (photoIndex + 1) % Math.max(1, photoUrls.length);
+      if (photoEls[photoIndex]) photoEls[photoIndex].classList.remove("show");
+      if (photoEls[next]) photoEls[next].classList.add("show");
+      photoIndex = next;
+    }, 2200);
+  }
+
+  /* ============================
+     Scene logic
+  ============================ */
+  const signModal = $("#signModal");
+  const signButtons = $("#signButtons");
+  const courierBubble = $("#courierBubble");
+  const courierSub = $("#courierSub");
+
+  let noWasPressed = false;
+
+  function openSign(){
+    playSfx("woosh");
+    signModal.classList.add("show");
+    signModal.setAttribute("aria-hidden","false");
+  }
+  function closeSign(){
+    signModal.classList.remove("show");
+    signModal.setAttribute("aria-hidden","true");
+  }
+
+  $("#startSign").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("click");
+    openSign();
+  });
+
+  $("#noBtn").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("error");
+    closeSign();
+
+    // Courier says the phrase, then modal returns without "Нет"
+    courierBubble.classList.add("fadeIn");
+    courierBubble.textContent = "Вы что, балбес? На первый раз прощаю.";
+    courierSub.textContent = "";
+
+    noWasPressed = true;
+
+    setTimeout(() => {
+      courierBubble.classList.remove("fadeIn");
+      courierBubble.textContent = "Вам посылка от фаната 😉";
+      courierSub.textContent = "Подпишете получение?";
+      // remove "Нет" button
+      const noBtn = $("#noBtn");
+      if (noBtn) noBtn.remove();
+      openSign();
+    }, 1200);
+  });
+
+  $("#yesBtn").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("woosh");
+
+    // Courier "hands over box": small fx + move to scene 2
+    closeSign();
+    courierBubble.classList.add("fadeIn");
+    courierBubble.textContent = "Вот. Берегите 😌";
+    courierSub.textContent = "";
+
+    setTimeout(() => {
+      playSfx("click");
+      showScene("s2");
+      boxRot.setAngles(0, -10);
+    }, 520);
+  });
+
+  // Scene 2: lock button
+  $("#lockBtn").addEventListener("click", (ev) => {
+    unlockAudio();
+    playSfx("click");
+    // open lock mini game
+    showScene("s2lock");
+    // set wheels close to something
+    // keep current wheel positions as is
+  });
+
+  $("#lockBack").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("woosh");
+    showScene("s2");
+  });
+
+  function lockSuccess(){
+    // lock click + open box -> show envelope
+    playSfx("success");
+    const boxObj = $("#boxObj");
+    boxObj.classList.add("shake");
+    setTimeout(() => boxObj.classList.remove("shake"), 450);
+
+    // pulse off
+    $("#lockBtn").classList.remove("pulse");
+
+    // transition to scene 3
+    setTimeout(() => {
+      showScene("s3");
+      envRot.setAngles(0, 10);
+      // small "burst"
+      spawnBurst(innerWidth*0.5, innerHeight*0.45, 34);
+      requestAnimationFrame(fxLoop);
+    }, 520);
+  }
+
+  function lockFail(){
+    playSfx("error");
+    const panel = $("#scene2lock .panel");
+    panel.classList.add("shake");
+    setTimeout(()=>panel.classList.remove("shake"), 420);
+  }
+
+  $("#lockDone").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("lock");
+    const d = parseInt(wheelDay.value(), 10);
+    const m = wheelMonth.value();
+    const y = parseInt(wheelYear.value(), 10);
+
+    if (d === correctLock.day && m === correctLock.month && y === correctLock.year){
+      lockSuccess();
+    }else{
+      lockFail();
+    }
+  });
+
+  // Scene 3: Throw/Open
+  const envButtons = $("#envButtons");
+  const throwBtn = $("#throwBtn");
+  const openBtn = $("#openBtn");
+  let throwPunished = false;
+
+  throwBtn.addEventListener("click", () => {
+    unlockAudio();
+    playSfx("error");
+
+    // Shake everything lightly
+    $("#envObj").classList.add("shake");
+    setTimeout(()=>$("#envObj").classList.remove("shake"), 420);
+
+    showToast("Щас по шее получишь", 1200);
+
+    if (!throwPunished){
+      throwPunished = true;
+
+      // Replace layout: Open button slides left and "eats" Throw button
+      // We'll animate by fading throw away and expanding open
+      throwBtn.classList.add("disabled");
+      throwBtn.style.opacity = "0";
+      throwBtn.style.transform = "translate3d(0,0,0) scale(.95)";
+
+      openBtn.style.minWidth = "280px";
+      openBtn.style.transform = "translate3d(-10px,0,0)";
+      openBtn.style.transition = "transform 260ms var(--ease), min-width 260ms var(--ease)";
+
+      setTimeout(() => {
+        throwBtn.remove();
+        openBtn.style.transform = "translate3d(0,0,0)";
+      }, 280);
+    }
+  });
+
+  openBtn.addEventListener("click", () => {
+    unlockAudio();
+    playSfx("woosh");
+    // "camera" zoom to seal -> go to date check
+    showScene("s3check");
+  });
+
+  $("#checkBack").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("woosh");
+    showScene("s3");
+  });
+
+  // Date picker
+  const nativeDate = $("#nativeDate");
+  const dateField = $("#dateField");
+  const dateText = $("#dateText");
+  let chosenDate = null;
+
+  dateField.addEventListener("click", () => {
+    unlockAudio();
+    playSfx("click");
+    // open native picker (best for Telegram WebView)
+    nativeDate.focus();
+    nativeDate.click();
+  });
+
+  nativeDate.addEventListener("change", () => {
+    if (!nativeDate.value) return;
+    chosenDate = nativeDate.value; // YYYY-MM-DD
+    // format RU
+    const [yy, mm, dd] = chosenDate.split("-").map(n=>parseInt(n,10));
+    const mName = months[(mm-1)] || "";
+    dateText.textContent = `${dd} ${mName} ${yy}`;
+  });
+
+  function dateFail(){
+    playSfx("error");
+    const panel = $("#scene3check .panel");
+    panel.classList.add("shake");
+    setTimeout(()=>panel.classList.remove("shake"), 420);
+    showToast("Хмм… почти. Попробуй ещё раз 😌", 1400);
+  }
+
+  function dateSuccess(){
+    playSfx("success");
+
+    // seal "falls off" visual: just toast + fx burst + move to finale
+    spawnBurst(innerWidth*0.5, innerHeight*0.42, 60);
+    requestAnimationFrame(fxLoop);
+
+    // small pause for drama
+    setTimeout(() => {
+      showScene("s4");
+      startCarousel();
+    }, 520);
+  }
+
+  $("#checkDateBtn").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("click");
+
+    // correct: 2005-02-01
+    if (chosenDate === "2005-02-01"){
+      dateSuccess();
+    }else{
+      dateFail();
+    }
+  });
+
+  $("#restartBtn").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("woosh");
+    // reset state
+    throwPunished = false;
+    chosenDate = null;
+    nativeDate.value = "";
+    dateText.textContent = "не выбрана";
+    // restore throw button if removed
+    if (!$("#throwBtn")){
+      const newThrow = document.createElement("button");
+      newThrow.className = "btn danger";
+      newThrow.id = "throwBtn";
+      newThrow.textContent = "Выбросить";
+      envButtons.prepend(newThrow);
+
+      // re-bind quickly
+      newThrow.addEventListener("click", () => {
+        unlockAudio();
+        playSfx("error");
+        $("#envObj").classList.add("shake");
+        setTimeout(()=>$("#envObj").classList.remove("shake"), 420);
+        showToast("Щас по шее получишь", 1200);
+
+        if (!throwPunished){
+          throwPunished = true;
+          newThrow.classList.add("disabled");
+          newThrow.style.opacity = "0";
+          newThrow.style.transform = "translate3d(0,0,0) scale(.95)";
+          openBtn.style.minWidth = "280px";
+          openBtn.style.transform = "translate3d(-10px,0,0)";
+          openBtn.style.transition = "transform 260ms var(--ease), min-width 260ms var(--ease)";
+          setTimeout(() => {
+            newThrow.remove();
+            openBtn.style.transform = "translate3d(0,0,0)";
+          }, 280);
+        }
+      });
+    }
+    // restore open btn sizing
+    openBtn.style.minWidth = "";
+    openBtn.style.transform = "";
+    openBtn.style.transition = "";
+
+    // reset lock pulse
+    $("#lockBtn").classList.add("pulse");
+
+    // scene back to 1 or 2? We'll go to 1 for full loop
+    showScene("s1");
+  });
+
+  // Sound toggle
+  $("#soundBtn").addEventListener("click", () => {
+    unlockAudio();
+    playSfx("click");
+    setSoundEnabled(!audio.enabled);
+  });
+
+  // Tap anywhere on preloader to unlock audio
+  preloader.addEventListener("click", () => {
+    unlockAudio();
+    playSfx("click");
+    // allow to hide preloader once loaded
+    if (preloader.classList.contains("ready")){
+      preloader.classList.add("hide");
+    }
+  });
+
+  /* ============================
+     Boot
+  ============================ */
+  initAudio();
+
+  // If paper texture missing, bg::before will fail silently (ok).
+  // Start preloading:
+  (async () => {
+    const results = await preloadAll();
+
+    // Mark photos that actually loaded; shrink carousel list if needed
+    const okPhotos = [];
+    for (const u of assets.photos.slice(0,4)){
+      const r = results.find(x => x.url === u);
+      if (!r || r.ok) okPhotos.push(u); // if not found, keep anyway
+    }
+    // Keep at least 3 if possible; but don't exceed 4
+    photoUrls = okPhotos.slice(0,4);
+    // Fallback: if none, just keep original array
+    if (photoUrls.length === 0) photoUrls = assets.photos.slice(0,4);
+
+    // Make hint appear; user should tap to enable music
+    tapHint.classList.add("show");
+
+    // Ready to close preloader after first interaction
+    preloader.classList.add("ready");
+    barFill.style.width = "100%";
+
+    // If user already interacted before preload finished, hide now
+    if (audioUnlocked){
+      preloader.classList.add("hide");
+    }
+  })();
+
+  // Safety: prevent scroll rubber-banding in mobile webview
+  document.addEventListener("touchmove", (e) => e.preventDefault(), {passive:false});
+
+})();
+</script>
 </body>
 </html>
