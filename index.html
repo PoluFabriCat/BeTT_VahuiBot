@@ -3,161 +3,128 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-  <meta name="theme-color" content="#0e0f12" />
+  <meta name="theme-color" content="#0b0c0f" />
   <title>Валентинка для Джамы</title>
   <style>
-    /* =========================================================
-       VALENTINE SPA — single file
-       Images expected in ./Images/ (next to index.html)
-       Optional audio expected in ./Audio/ (next to index.html)
-       ========================================================= */
-
     :root{
-      --bg0:#0b0c0f;
-      --bg1:#12141a;
+      --bg:#0b0c0f;
+      --ink:#1b1c20;
       --paper:#f2efe5;
       --paper2:#eae4d5;
-      --ink:#1b1c20;
-      --muted:#60636f;
-      --accent:#ff4d7d;
-      --accent2:#ffb3c7;
+
+      --cardboard:#c7a07a;
+      --cardboard2:#ad8460;
+      --cardboardDark:#7a5a3f;
+
+      --pink:#ff4d7d;
+      --pink2:#ffb3c7;
+
       --good:#3ee59a;
       --bad:#ff6b6b;
 
-      --radius:18px;
-      --radius2:26px;
-      --shadow: 0 12px 34px rgba(0,0,0,.32);
-      --shadow2: 0 10px 22px rgba(0,0,0,.22);
-      --stroke: rgba(20,22,28,.25);
+      --radius:22px;
+      --radius2:28px;
 
-      --uiScale: 1;
       --safeTop: env(safe-area-inset-top, 0px);
       --safeBottom: env(safe-area-inset-bottom, 0px);
       --safeLeft: env(safe-area-inset-left, 0px);
       --safeRight: env(safe-area-inset-right, 0px);
+
+      --shadow: 0 18px 40px rgba(0,0,0,.42);
+      --shadow2: 0 10px 22px rgba(0,0,0,.28);
+      --stroke: rgba(0,0,0,.18);
     }
 
-    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-    html,body{height:100%; margin:0; background: radial-gradient(1400px 900px at 50% -10%, #20253a 0%, #0b0c0f 55%, #07080b 100%);}
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+    html,body{height:100%; margin:0; background: var(--bg); overflow:hidden;}
     body{
       font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--paper);
-      overflow:hidden;
-      touch-action: none; /* we manage gestures */
+      color:#f6f6f8;
+      user-select:none;
+      touch-action: pan-x pan-y; /* не блокируем нативные инпуты/дату */
+      overscroll-behavior: none;
     }
 
-    /* Subtle "cute CRT" overlay */
+    /* Милый “старый телек” — аккуратно, без неона/стекла */
     .crt{
-      position:fixed; inset:0; pointer-events:none; z-index:50;
-      opacity:.20;
-      mix-blend-mode: soft-light;
+      position:fixed; inset:0; pointer-events:none; z-index:60;
+      opacity:.16;
+      mix-blend-mode:multiply;
       background:
         repeating-linear-gradient(
           to bottom,
           rgba(255,255,255,.03) 0px,
           rgba(255,255,255,.03) 1px,
-          rgba(0,0,0,.0) 3px,
-          rgba(0,0,0,.0) 6px
+          rgba(0,0,0,0) 3px,
+          rgba(0,0,0,0) 6px
         );
-      filter: blur(.2px);
-      animation: crtFlicker 5.5s infinite linear;
+      animation: flick 6.5s linear infinite;
     }
-    .crt::before{
-      content:"";
-      position:absolute; inset:-20%;
-      background: radial-gradient(closest-side at 50% 40%, rgba(255,180,210,.08), rgba(0,0,0,0) 60%);
-      transform: rotate(1.5deg);
-    }
-    .crt::after{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        linear-gradient(90deg, rgba(255,0,100,.05), rgba(0,255,240,.05));
-      mix-blend-mode: overlay;
-      opacity:.25;
-      animation: chroma 7s infinite linear;
-    }
-    @keyframes crtFlicker{
-      0%,100%{opacity:.18}
-      25%{opacity:.22}
-      55%{opacity:.16}
-      78%{opacity:.24}
-    }
-    @keyframes chroma{
-      0%{transform:translateX(-1.2%)}
-      50%{transform:translateX(1.2%)}
-      100%{transform:translateX(-1.2%)}
+    @keyframes flick{
+      0%,100%{opacity:.14}
+      30%{opacity:.18}
+      55%{opacity:.12}
+      80%{opacity:.19}
     }
 
-    /* App root */
-    #app{
-      position:fixed; inset:0;
-      padding: calc(14px + var(--safeTop)) calc(14px + var(--safeRight)) calc(14px + var(--safeBottom)) calc(14px + var(--safeLeft));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    /* Paper textures using CSS noise + grain */
-    .paperTex{
+    /* Бумажные карточки: матовые, текстурные */
+    .paper{
       position:relative;
       background:
-        radial-gradient(180px 140px at 20% 15%, rgba(255,255,255,.65), rgba(255,255,255,0) 65%),
-        radial-gradient(220px 160px at 80% 10%, rgba(255,215,230,.22), rgba(255,255,255,0) 70%),
         linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
-      color: var(--ink);
-      border:1px solid rgba(40,42,52,.25);
-      box-shadow: var(--shadow);
+      color: rgba(20,20,24,.92);
+      border: 1px solid rgba(0,0,0,.14);
       border-radius: var(--radius2);
+      box-shadow: var(--shadow2);
       overflow:hidden;
     }
-    .paperTex::before{
+    .paper::before{
       content:"";
-      position:absolute; inset:0;
-      pointer-events:none;
+      position:absolute; inset:0; pointer-events:none;
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E") repeat;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E") repeat;
       mix-blend-mode:multiply;
       opacity:.45;
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
-    .paperTex::after{
+    .paper::after{
       content:"";
-      position:absolute; inset:0;
-      pointer-events:none;
+      position:absolute; inset:0; pointer-events:none;
       background:
-        radial-gradient(800px 520px at 50% 0%, rgba(0,0,0,.06), rgba(0,0,0,0) 55%),
-        radial-gradient(700px 450px at 0% 100%, rgba(0,0,0,.05), rgba(0,0,0,0) 60%),
-        radial-gradient(700px 450px at 100% 100%, rgba(0,0,0,.05), rgba(0,0,0,0) 60%);
+        radial-gradient(900px 520px at 50% 0%, rgba(0,0,0,.06), rgba(0,0,0,0) 60%),
+        radial-gradient(700px 420px at 0% 100%, rgba(0,0,0,.05), rgba(0,0,0,0) 62%),
+        radial-gradient(700px 420px at 100% 100%, rgba(0,0,0,.05), rgba(0,0,0,0) 62%);
       opacity:.9;
     }
 
-    /* Main stage card */
+    #app{
+      position:fixed; inset:0;
+      padding: calc(14px + var(--safeTop)) calc(14px + var(--safeRight)) calc(14px + var(--safeBottom)) calc(14px + var(--safeLeft));
+      display:flex; align-items:center; justify-content:center;
+    }
     .stage{
       width:min(430px, 100%);
       height:min(820px, 100%);
-      max-height: 100%;
       display:flex;
       flex-direction:column;
       gap:12px;
       position:relative;
     }
 
-    /* Top title bar */
+    /* Заголовок — бумажный, без стекла */
     .topbar{
       display:flex; align-items:center; justify-content:space-between;
       padding: 10px 12px;
-      border-radius: 18px;
-      background: rgba(18,20,26,.65);
-      border: 1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 10px 22px rgba(0,0,0,.22);
-      user-select:none;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, #f3f0e7 0%, #ebe3d5 100%);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: var(--shadow2);
+      color: rgba(20,20,24,.86);
     }
-    .topbar .brand{
+    .brand{
       display:flex; align-items:center; gap:10px;
-      color: rgba(240,240,245,.92);
-      font-weight: 700;
+      font-weight: 900;
       letter-spacing:.2px;
       font-size: 14px;
     }
@@ -165,24 +132,23 @@
       font-size:12px;
       padding:6px 10px;
       border-radius:999px;
-      color:#fff;
-      background: linear-gradient(135deg, rgba(255,77,125,.95), rgba(255,179,199,.85));
-      box-shadow: 0 10px 18px rgba(255,77,125,.18);
-      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(20,20,24,.85);
+      background: linear-gradient(180deg, rgba(255,179,199,.85), rgba(255,179,199,.62));
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      font-weight: 900;
     }
 
-    /* Scene container */
     .viewport{
       position:relative;
       flex:1;
       border-radius: var(--radius2);
       overflow:hidden;
-      box-shadow: var(--shadow2);
-      border: 1px solid rgba(255,255,255,.06);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.04);
       background:
-        radial-gradient(1200px 700px at 50% 0%, rgba(255,77,125,.16), rgba(0,0,0,0) 55%),
-        radial-gradient(900px 540px at 10% 95%, rgba(80,160,255,.12), rgba(0,0,0,0) 55%),
-        linear-gradient(180deg, rgba(18,20,26,.55), rgba(10,11,15,.85));
+        radial-gradient(900px 600px at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #14151a 0%, #0c0d11 100%);
     }
 
     .scene{
@@ -198,319 +164,391 @@
       transition: opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1);
     }
     .scene.active{
-      opacity:1;
-      transform: translateY(0px);
+      opacity:1; transform: translateY(0);
       pointer-events:auto;
     }
+    .center{flex:1; display:flex; align-items:center; justify-content:center; position:relative;}
 
-    .center{
-      display:flex; align-items:center; justify-content:center;
-      flex:1;
-      position:relative;
-    }
-
-    /* Speech bubble */
+    /* Реплики — бумажные стикеры */
     .bubble{
       align-self:center;
       max-width: 92%;
       padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(245,246,250,.92);
-      box-shadow: 0 16px 36px rgba(0,0,0,.25);
-      backdrop-filter: blur(8px);
-      line-height:1.2;
-      user-select:none;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f3f0e7, #ebe3d5);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: var(--shadow2);
+      color: rgba(20,20,24,.88);
     }
-    .bubble .who{font-size:12px; opacity:.72; margin-bottom:6px;}
-    .bubble .txt{font-size:16px; font-weight:650;}
-    .bubble.small .txt{font-size:14px; font-weight:600;}
-    .bubble.shake{animation: shake .35s ease;}
+    .bubble .who{font-size:12px; opacity:.7; font-weight:900; margin-bottom:6px;}
+    .bubble .txt{font-size:16px; font-weight:900; letter-spacing:.1px;}
+    .bubble.small .txt{font-size:14px;}
+    .shake{animation: shake .35s ease;}
     @keyframes shake{
       0%{transform:translateX(0)}
-      20%{transform:translateX(-6px)}
-      40%{transform:translateX(6px)}
-      60%{transform:translateX(-5px)}
-      80%{transform:translateX(4px)}
+      25%{transform:translateX(-6px)}
+      55%{transform:translateX(6px)}
+      75%{transform:translateX(-4px)}
       100%{transform:translateX(0)}
     }
 
-    /* Button row */
-    .row{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      flex-wrap:wrap;
-    }
+    .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
 
+    /* Кнопки — матовые, “картонные” */
     .btn{
-      position:relative;
       border:none;
       padding: 12px 16px;
-      border-radius: 18px;
-      color: rgba(250,250,255,.95);
-      font-weight: 750;
+      border-radius: 20px;
+      font-weight: 950;
       font-size: 14px;
-      letter-spacing: .2px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 12px 26px rgba(0,0,0,.25);
-      transition: transform .12s ease, filter .12s ease, background .18s ease, opacity .22s ease;
+      letter-spacing:.2px;
+      cursor:pointer;
       user-select:none;
       touch-action: manipulation;
-      cursor:pointer;
+      color: rgba(20,20,24,.88);
+      background: linear-gradient(180deg, #f3f0e7, #e9e1d3);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+      transition: transform .12s ease, filter .12s ease, opacity .22s ease;
     }
-    .btn:active{ transform: translateY(1px) scale(.99); filter: brightness(1.05); }
+    .btn:active{transform: translateY(1px) scale(.99); filter: brightness(.98);}
     .btn.primary{
-      background: linear-gradient(135deg, rgba(255,77,125,.95), rgba(255,179,199,.88));
-      border: 1px solid rgba(255,255,255,.18);
-      color:#1a1115;
-      box-shadow: 0 16px 30px rgba(255,77,125,.18), 0 12px 26px rgba(0,0,0,.22);
+      background: linear-gradient(180deg, rgba(255,179,199,.95), rgba(255,179,199,.70));
+      border: 1px solid rgba(0,0,0,.12);
     }
-    .btn.ghost{ background: rgba(0,0,0,.12); }
     .btn.danger{
-      background: linear-gradient(135deg, rgba(255,107,107,.92), rgba(255,179,199,.65));
-      border:1px solid rgba(255,255,255,.15);
-      color:#1a1115;
+      background: linear-gradient(180deg, rgba(255,185,185,.92), rgba(255,185,185,.70));
+      border: 1px solid rgba(0,0,0,.12);
     }
+    .btn.ghost{
+      background: linear-gradient(180deg, rgba(245,240,230,.70), rgba(235,227,210,.70));
+      border: 1px dashed rgba(0,0,0,.20);
+    }
+    .btn.wide{min-width: 160px;}
     .btn.hidden{opacity:0; pointer-events:none; transform: translateX(12px) scale(.98);}
-    .btn.wide{ min-width: 160px; }
 
-    /* Modal paper sheet */
+    /* Модалки */
     .modalWrap{
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center;
       padding: 16px;
-      background: rgba(0,0,0,.32);
-      opacity:0;
-      pointer-events:none;
+      background: rgba(0,0,0,.35);
+      opacity:0; pointer-events:none;
       transition: opacity .28s ease;
+      z-index: 10;
     }
     .modalWrap.show{opacity:1; pointer-events:auto;}
     .modal{
-      width:min(380px, 100%);
-      padding: 16px 16px 14px 16px;
+      width:min(390px, 100%);
+      padding: 16px;
       border-radius: var(--radius2);
       transform: translateY(10px) scale(.99);
       transition: transform .35s cubic-bezier(.2,.8,.2,1);
     }
-    .modalWrap.show .modal{ transform: translateY(0) scale(1); }
-    .modal h3{
-      margin:0 0 8px 0;
-      font-size: 16px;
-      letter-spacing:.2px;
-    }
-    .modal p{
-      margin:0 0 14px 0;
-      color: rgba(20,20,24,.78);
-      font-weight: 600;
-      line-height:1.25;
-    }
+    .modalWrap.show .modal{transform: translateY(0) scale(1);}
+    .modal h3{margin:0 0 8px 0; font-size:16px; font-weight:950;}
+    .modal p{margin:0 0 14px 0; font-size:13px; font-weight:800; color: rgba(20,20,24,.70);}
 
     /* =========================================================
-       3D-ish objects (box & envelope) with paper/cardboard vibe
+       REAL CSS-3D OBJECTS
        ========================================================= */
     .objectStage{
-      width: 100%;
-      height: 100%;
+      width:100%;
+      height:100%;
       display:flex; align-items:center; justify-content:center;
       position:relative;
     }
-    .objectHint{
-      position:absolute;
-      top: 10px; left: 10px; right: 10px;
+    .hintPill{
+      position:absolute; top: 10px; left: 10px; right: 10px;
       display:flex; justify-content:center;
       pointer-events:none;
-      opacity:.86;
     }
-    .hintPill{
+    .hintPill span{
       padding: 8px 12px;
-      font-size: 12px;
-      font-weight:700;
-      color: rgba(250,250,255,.90);
-      background: rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.10);
       border-radius: 999px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 12px 22px rgba(0,0,0,.20);
+      background: linear-gradient(180deg, #f3f0e7, #ebe3d5);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+      color: rgba(20,20,24,.80);
+      font-weight: 900;
+      font-size: 12px;
     }
 
-    .object3d{
-      width: min(310px, 86vw);
+    /* Common 3D stage */
+    .objWrap{
+      width: min(330px, 86vw);
       aspect-ratio: 1 / 1;
       position:relative;
+      perspective: 900px;
+      filter: drop-shadow(0 28px 28px rgba(0,0,0,.45));
+      touch-action: none;
+    }
+    .obj{
+      width:100%; height:100%;
+      position:absolute; inset:0;
       transform-style: preserve-3d;
       will-change: transform;
-      filter: drop-shadow(0 26px 28px rgba(0,0,0,.32));
-      touch-action: none;
-      user-select:none;
     }
 
-    /* Pixel-ish edge */
-    .pixelEdge{
-      position:absolute; inset:0;
-      border-radius: 26px;
-      overflow:hidden;
+    /* Pixel-ish edge overlay to sell style */
+    .pixelFrame{
+      position:absolute; inset:0; border-radius: 28px; pointer-events:none;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.10);
     }
-    .pixelEdge::after{
+    .pixelFrame::after{
       content:"";
-      position:absolute; inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(0deg, rgba(0,0,0,.16), rgba(0,0,0,0) 35%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 35%);
-      opacity:.8;
+      position:absolute; inset: 6px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.06);
+      opacity:.9;
     }
 
-    /* Cardboard box faces */
-    .boxFace{
+    /* 3D Box (cube-ish) */
+    .cube{
+      --size: 260px;
+      --depth: 150px;
+      width: var(--size);
+      height: var(--size);
       position:absolute;
-      inset: 9%;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      transform-style: preserve-3d;
+    }
+    .face{
+      position:absolute;
+      width: var(--size);
+      height: var(--size);
       border-radius: 22px;
-      background:
-        radial-gradient(220px 140px at 25% 20%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
-        radial-gradient(220px 140px at 75% 15%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%),
-        linear-gradient(135deg, #caa57f 0%, #b88f69 55%, #a37c5a 100%);
       border: 1px solid rgba(0,0,0,.18);
       overflow:hidden;
+      background:
+        linear-gradient(180deg, var(--cardboard), var(--cardboard2));
     }
-    .boxFace::before{
+    .face::before{
       content:"";
       position:absolute; inset:0;
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E") repeat;
-      opacity:.55;
-      mix-blend-mode:multiply;
-      transform: scale(1.08);
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E") repeat;
+      mix-blend-mode:multiply; opacity:.55;
+      transform: scale(1.06);
+      pointer-events:none;
     }
-
-    /* Tape stripe */
-    .tape{
-      position:absolute; left: 12%; right:12%; top: 46%;
-      height: 16%;
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,240,200,.75), rgba(230,205,160,.75));
-      border:1px solid rgba(0,0,0,.14);
-      transform: rotate(-3deg);
-      box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -2px 0 rgba(0,0,0,.12);
+    .face::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(220px 160px at 25% 15%, rgba(255,255,255,.18), rgba(255,255,255,0) 62%),
+        radial-gradient(240px 180px at 80% 20%, rgba(255,255,255,.12), rgba(255,255,255,0) 65%),
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,0) 40%);
       opacity:.95;
+      pointer-events:none;
     }
 
-    /* Label "для Джамы" */
+    /* Faces placement */
+    .front { transform: rotateY(0deg) translateZ(calc(var(--depth) / 2)); }
+    .back  { transform: rotateY(180deg) translateZ(calc(var(--depth) / 2)); }
+    .right { transform: rotateY(90deg) translateZ(calc(var(--depth) / 2)); }
+    .left  { transform: rotateY(-90deg) translateZ(calc(var(--depth) / 2)); }
+    .top   { transform: rotateX(90deg) translateZ(calc(var(--depth) / 2)); }
+    .bottom{ transform: rotateX(-90deg) translateZ(calc(var(--depth) / 2)); }
+
+    /* Make side faces “darker” */
+    .right, .left { background: linear-gradient(180deg, #b08863, #8f6a49); }
+    .back { background: linear-gradient(180deg, #b18a64, #916a49); }
+    .bottom { background: linear-gradient(180deg, #9a7350, #7a5a3f); }
+    .top { background: linear-gradient(180deg, #d3b08d, #b99570); }
+
+    /* Front content: label + tape + lock */
     .label{
-      position:absolute; left: 16%; right:16%; top: 18%;
+      position:absolute; left: 14%; right:14%; top: 14%;
       padding: 10px 12px;
       border-radius: 16px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.72), rgba(240,235,220,.85));
+      background: linear-gradient(180deg, rgba(255,255,255,.74), rgba(240,235,220,.90));
       border: 1px solid rgba(0,0,0,.12);
-      color: rgba(22,22,26,.90);
-      font-weight: 800;
+      box-shadow: 0 10px 18px rgba(0,0,0,.16);
       text-align:center;
-      letter-spacing: .2px;
-      box-shadow: 0 10px 18px rgba(0,0,0,.14);
+      font-weight: 950;
+      color: rgba(20,20,24,.88);
     }
     .label small{
       display:block;
       margin-top:4px;
-      font-weight:700;
-      color: rgba(40,40,48,.55);
       font-size:12px;
+      font-weight:900;
+      color: rgba(30,30,34,.58);
     }
-
-    /* Lock button */
-    .lock{
-      position:absolute;
-      width: 84px;
-      height: 84px;
-      left: 50%;
-      top: 62%;
-      transform: translate(-50%,-50%);
-      border-radius: 22px;
-      background:
-        radial-gradient(22px 18px at 30% 30%, rgba(255,255,255,.65), rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, #f1dca5, #d9b96a);
-      border: 1px solid rgba(0,0,0,.16);
-      box-shadow: 0 18px 26px rgba(0,0,0,.20);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      touch-action: manipulation;
-      user-select:none;
-      will-change: transform;
-      animation: pulse 1.25s infinite ease-in-out;
-    }
-    .lock::before{
-      content:"";
-      width: 30px; height: 22px;
-      border-radius: 12px 12px 10px 10px;
-      border: 6px solid rgba(30,24,10,.55);
-      border-bottom: 0;
-      transform: translateY(-14px);
+    .tape{
+      position:absolute; left: 12%; right:12%; top: 46%;
+      height: 16%;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,240,200,.82), rgba(230,205,160,.80));
+      border:1px solid rgba(0,0,0,.12);
+      transform: rotate(-3deg);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.20), inset 0 -2px 0 rgba(0,0,0,.10);
       opacity:.95;
     }
-    .lock::after{
-      content:"";
+
+    /* 3D lock: small “block” extruded */
+    .lock3d{
       position:absolute;
-      width: 22px; height: 30px;
+      left:50%; top: 64%;
+      width: 92px; height: 92px;
+      transform: translate(-50%,-50%);
+      transform-style: preserve-3d;
+      cursor:pointer;
+      touch-action: manipulation;
+      z-index: 5;
+    }
+    .lockBody{
+      position:absolute; inset:0;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f2ddaa, #d9b96a);
+      border: 1px solid rgba(0,0,0,.16);
+      box-shadow: 0 14px 22px rgba(0,0,0,.22);
+      transform: translateZ(10px);
+    }
+    .lockBody::before{
+      content:"";
+      position:absolute; inset:10px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.08);
+      border: 1px dashed rgba(0,0,0,.18);
+    }
+    .lockBack{
+      position:absolute; inset:0;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #caa95f, #b08a3c);
+      border: 1px solid rgba(0,0,0,.16);
+      transform: translateZ(-10px);
+    }
+    .lockSide{
+      position:absolute;
+      left:0; top:0;
+      width: 20px; height: 92px;
+      background: linear-gradient(180deg, #caa95f, #9e7a2f);
+      border: 1px solid rgba(0,0,0,.16);
+      transform-origin: left center;
+      transform: rotateY(90deg) translateZ(10px);
+      border-radius: 10px;
+    }
+    .lockSide.r{
+      left:auto; right:0;
+      transform-origin: right center;
+      transform: rotateY(-90deg) translateZ(10px);
+    }
+    .lockShackle{
+      position:absolute;
+      left:50%; top: 18%;
+      width: 36px; height: 26px;
+      transform: translate(-50%,-50%) translateZ(12px);
+      border-radius: 16px 16px 12px 12px;
+      border: 6px solid rgba(30,24,10,.55);
+      border-bottom: 0;
+      opacity:.95;
+    }
+    .lockKeyhole{
+      position:absolute;
+      left:50%; top: 62%;
+      width: 20px; height: 28px;
+      transform: translate(-50%,-50%) translateZ(12px);
       border-radius: 10px;
       background: rgba(30,24,10,.55);
-      transform: translateY(8px);
-      box-shadow: inset 0 2px 0 rgba(255,255,255,.18);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.16);
     }
-    @keyframes pulse{
+    .lock3d.pulse{
+      animation: lockPulse 1.25s infinite ease-in-out;
+    }
+    @keyframes lockPulse{
       0%,100%{transform: translate(-50%,-50%) scale(1)}
       50%{transform: translate(-50%,-50%) scale(1.06)}
     }
 
-    /* Envelope */
+    /* =========================================================
+       3D Envelope (thick card)
+       ========================================================= */
+    .env3d{
+      --size: 270px;
+      --thick: 46px;
+      width: var(--size);
+      height: var(--size);
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      transform-style: preserve-3d;
+    }
     .envFace{
       position:absolute;
-      inset: 10%;
+      width: var(--size);
+      height: var(--size);
       border-radius: 24px;
-      background:
-        radial-gradient(220px 160px at 25% 15%, rgba(255,255,255,.40), rgba(255,255,255,0) 62%),
-        linear-gradient(135deg, #f6e6ea 0%, #f2d2da 55%, #e7bcc8 100%);
       border: 1px solid rgba(0,0,0,.16);
       overflow:hidden;
+      background: linear-gradient(180deg, #f6e6ea 0%, #e7bcc8 100%);
     }
     .envFace::before{
       content:"";
       position:absolute; inset:0;
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E") repeat;
-      opacity:.60;
-      mix-blend-mode:multiply;
-      transform: scale(1.08);
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E") repeat;
+      mix-blend-mode:multiply; opacity:.55; transform: scale(1.06);
+      pointer-events:none;
     }
-    .envFlap{
-      position:absolute; left: 14%; right:14%; top: 18%;
+    .envFront{ transform: translateZ(calc(var(--thick)/2)); }
+    .envBack{ transform: rotateY(180deg) translateZ(calc(var(--thick)/2)); background: linear-gradient(180deg, #f1d3dc, #d9a9b8); }
+    .envSide{
+      position:absolute;
+      background: linear-gradient(180deg, #d9a9b8, #b98797);
+      border: 1px solid rgba(0,0,0,.16);
+      border-radius: 14px;
+    }
+    .envSide.top{
+      width: var(--size); height: var(--thick);
+      left:0; top:0;
+      transform-origin: top center;
+      transform: rotateX(90deg) translateZ(calc(var(--thick)/2));
+    }
+    .envSide.bottom{
+      width: var(--size); height: var(--thick);
+      left:0; bottom:0;
+      transform-origin: bottom center;
+      transform: rotateX(-90deg) translateZ(calc(var(--thick)/2));
+    }
+    .envSide.left{
+      width: var(--thick); height: var(--size);
+      left:0; top:0;
+      transform-origin: left center;
+      transform: rotateY(-90deg) translateZ(calc(var(--thick)/2));
+    }
+    .envSide.right{
+      width: var(--thick); height: var(--size);
+      right:0; top:0;
+      transform-origin: right center;
+      transform: rotateY(90deg) translateZ(calc(var(--thick)/2));
+    }
+
+    /* flap + seal on front face */
+    .flap{
+      position:absolute; left: 14%; right:14%; top: 16%;
       height: 44%;
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.40), rgba(0,0,0,.04));
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.44), rgba(0,0,0,.06));
       clip-path: polygon(50% 85%, 0% 0%, 100% 0%);
       opacity:.9;
+      transform-origin: 50% 0%;
     }
     .seal{
-      position:absolute; left:50%; top: 58%;
-      width: 84px; height: 84px;
+      position:absolute; left:50%; top: 60%;
+      width: 86px; height: 86px;
       transform: translate(-50%,-50%);
       border-radius: 24px;
-      background:
-        radial-gradient(22px 18px at 35% 30%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, #ff6c90, #ff3f73);
+      background: linear-gradient(180deg, #ff6c90, #ff3f73);
       border: 1px solid rgba(0,0,0,.18);
-      box-shadow: 0 18px 26px rgba(255,77,125,.20), 0 14px 24px rgba(0,0,0,.20);
+      box-shadow: 0 16px 22px rgba(0,0,0,.22);
       display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      touch-action: manipulation;
     }
-    .seal b{
-      color: rgba(15,10,12,.75);
-      font-size: 18px;
-      letter-spacing:.6px;
-      transform: translateY(1px);
-    }
+    .seal b{color: rgba(20,10,14,.72); font-size:18px; font-weight:950;}
     .seal.wiggle{ animation: sealWiggle .35s ease; }
     @keyframes sealWiggle{
       0%{transform:translate(-50%,-50%) rotate(0)}
@@ -520,13 +558,8 @@
     }
 
     /* =========================================================
-       Lock minigame (3 reels)
+       Lock minigame (reels)
        ========================================================= */
-    .lockUI{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
     .reels{
       display:grid;
       grid-template-columns: 1fr 1.2fr 1fr;
@@ -539,26 +572,24 @@
       overflow:hidden;
       border: 1px solid rgba(0,0,0,.14);
       background:
-        radial-gradient(160px 120px at 30% 20%, rgba(255,255,255,.58), rgba(255,255,255,0) 65%),
-        linear-gradient(180deg, rgba(255,255,255,.84), rgba(240,235,220,.94));
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(240,235,220,.96));
       box-shadow: 0 12px 22px rgba(0,0,0,.14);
       touch-action: none;
-      user-select:none;
     }
     .reel::before{
       content:"";
       position:absolute; inset:0;
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E") repeat;
-      opacity:.40; mix-blend-mode:multiply;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E") repeat;
+      mix-blend-mode:multiply;
+      opacity:.40;
       pointer-events:none;
     }
     .reelHeader{
       position:absolute; top: 10px; left:10px; right:10px;
-      font-weight: 850;
+      font-weight: 950;
       font-size: 12px;
-      color: rgba(30,30,34,.65);
-      letter-spacing:.2px;
+      color: rgba(30,30,34,.62);
       text-align:center;
       pointer-events:none;
     }
@@ -567,9 +598,8 @@
       height: 46px;
       transform: translateY(-50%);
       border-radius: 16px;
-      border: 1px dashed rgba(20,20,26,.28);
-      background: rgba(255,255,255,.36);
-      box-shadow: inset 0 2px 0 rgba(255,255,255,.40), inset 0 -2px 0 rgba(0,0,0,.06);
+      border: 1px dashed rgba(20,20,26,.25);
+      background: rgba(255,255,255,.50);
       pointer-events:none;
     }
     .reelList{
@@ -594,13 +624,12 @@
       border-radius: 10px;
     }
     .reelItem.dim{opacity:.38; filter: blur(.1px);}
-    .lockFooter{
-      display:flex; justify-content:space-between; gap:10px;
-    }
+
+    .lockFooter{display:flex; gap:10px;}
     .lockFooter .btn{flex:1}
 
     /* =========================================================
-       Date check (birthday)
+       Date check
        ========================================================= */
     .dateCard{
       display:flex;
@@ -608,68 +637,60 @@
       gap:10px;
       padding: 14px 14px 12px 14px;
       border-radius: 22px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 16px 36px rgba(0,0,0,.25);
+      background: linear-gradient(180deg, #f3f0e7, #ebe3d5);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: var(--shadow2);
+      color: rgba(20,20,24,.88);
+      position:relative;
+      overflow:hidden;
     }
-    .dateRow{
-      display:flex; gap:10px; flex-wrap:wrap;
-      align-items:center; justify-content:center;
+    .dateCard::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E") repeat;
+      mix-blend-mode:multiply; opacity:.35;
+      pointer-events:none;
     }
+    .dateRow{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center;}
     .chip{
       padding: 10px 12px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      color: rgba(250,250,255,.92);
-      font-weight: 800;
-      letter-spacing:.2px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      user-select:none;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(240,235,220,.92));
+      font-weight: 950;
+      display:flex; align-items:center; gap:10px;
     }
     .chip input{
-      appearance:none;
-      border:none;
-      outline:none;
+      border:none; outline:none;
       background: transparent;
-      color: rgba(250,250,255,.92);
-      font-weight: 850;
+      font-weight: 950;
       font-size: 14px;
+      color: rgba(20,20,24,.85);
       min-width: 168px;
     }
     .hint{
       text-align:center;
       font-size: 12px;
-      font-weight: 650;
-      color: rgba(255,255,255,.72);
+      font-weight: 850;
+      color: rgba(20,20,24,.72);
       line-height:1.2;
-      user-select:none;
+      min-height: 16px;
     }
 
     /* =========================================================
-       Photo carousel (3-4 images) + letter sheet
+       Gallery
        ========================================================= */
-    .gallery{
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      padding-bottom: 8px;
-    }
+    .gallery{display:flex; flex-direction:column; gap:10px; align-items:center; justify-content:center;}
     .photoFrame{
       width: min(360px, 100%);
       aspect-ratio: 9/12;
-      border-radius: 24px;
+      border-radius: 26px;
       overflow:hidden;
       position:relative;
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 18px 32px rgba(0,0,0,.25);
-      background: rgba(0,0,0,.14);
+      border: 1px solid rgba(0,0,0,.18);
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, #1a1b20, #0c0d11);
     }
     .photoFrame img{
       position:absolute; inset:0;
@@ -678,182 +699,121 @@
       opacity:0;
       transform: scale(1.02);
       transition: opacity .8s ease, transform 1.1s cubic-bezier(.2,.8,.2,1);
-      filter: saturate(1.02) contrast(1.02);
     }
-    .photoFrame img.show{
-      opacity:1;
-      transform: scale(1);
-    }
+    .photoFrame img.show{opacity:1; transform: scale(1);}
     .photoOverlay{
-      position:absolute; inset:0;
-      pointer-events:none;
+      position:absolute; inset:0; pointer-events:none;
       background:
         radial-gradient(900px 650px at 50% 0%, rgba(255,255,255,.08), rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.30));
+        linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.30));
     }
-    .dots{
-      display:flex; gap:8px;
-      justify-content:center;
-      align-items:center;
-      user-select:none;
-    }
+    .dots{display:flex; gap:8px; justify-content:center; align-items:center;}
     .dot{
       width: 8px; height: 8px;
       border-radius: 99px;
-      background: rgba(255,255,255,.20);
-      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(0,0,0,.20);
       transition: transform .15s ease, background .15s ease;
     }
-    .dot.on{
-      background: rgba(255,179,199,.85);
-      transform: scale(1.35);
+    .dot.on{background: rgba(255,179,199,.95); transform: scale(1.35);}
+
+    .letter{width:min(390px,100%); padding: 14px;}
+    .letter .title{font-weight: 950; font-size: 16px; margin-bottom: 8px;}
+    .foot{
+      display:flex; justify-content:center;
+      color: rgba(255,255,255,.50);
+      font-weight:800;
+      font-size:11px;
+      padding-bottom: 2px;
     }
 
-    .letter{
-      width: min(380px, 100%);
-      padding: 14px 14px 12px 14px;
-    }
-    .letter .title{
-      font-weight: 950;
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    .lines{
-      display:flex; flex-direction:column; gap:8px;
-    }
-    .line{
-      height: 12px;
-      border-radius: 8px;
-      background: linear-gradient(90deg, rgba(30,30,36,.12), rgba(30,30,36,.08), rgba(30,30,36,.12));
-      border: 1px solid rgba(0,0,0,.08);
-    }
-    .line.short{ width: 72%; }
-    .line.mid{ width: 88%; }
-    .line.long{ width: 96%; }
-
-    /* =========================================================
-       Loader
-       ========================================================= */
+    /* Loader */
     .loader{
-      position:fixed; inset:0;
+      position:fixed; inset:0; z-index:90;
       display:flex; align-items:center; justify-content:center;
-      z-index:80;
-      background:
-        radial-gradient(900px 600px at 50% 0%, rgba(255,77,125,.18), rgba(0,0,0,0) 55%),
-        linear-gradient(180deg, rgba(10,11,15,.92), rgba(8,8,11,.98));
+      background: linear-gradient(180deg, #101116, #08080b);
       transition: opacity .45s ease, transform .55s ease;
     }
     .loader.hide{opacity:0; pointer-events:none; transform: translateY(-6px);}
     .loaderCard{
       width: min(380px, 92vw);
       padding: 16px;
-      border-radius: 26px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 24px 46px rgba(0,0,0,.35);
+      border-radius: 28px;
+      background: linear-gradient(180deg, #f3f0e7, #ebe3d5);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: var(--shadow);
       text-align:center;
-      user-select:none;
-    }
-    .loaderTitle{
-      font-weight: 950;
-      letter-spacing: .2px;
-      font-size: 16px;
-      margin-bottom: 6px;
-      color: rgba(250,250,255,.95);
-    }
-    .loaderSub{
-      font-weight: 650;
-      font-size: 12px;
-      color: rgba(255,255,255,.70);
-      margin-bottom: 14px;
-      line-height:1.25;
-    }
-    .bar{
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(20,20,24,.88);
+      position:relative;
       overflow:hidden;
-      box-shadow: inset 0 2px 0 rgba(255,255,255,.05);
+    }
+    .loaderCard::before{
+      content:"";
+      position:absolute; inset:0; pointer-events:none;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E") repeat;
+      mix-blend-mode:multiply; opacity:.35;
+    }
+    .loaderTitle{font-weight: 950; font-size:16px; margin-bottom:6px;}
+    .loaderSub{font-weight: 850; font-size:12px; color: rgba(20,20,24,.70); margin-bottom:14px; line-height:1.25;}
+    .bar{
+      height: 12px; border-radius: 999px;
+      background: rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.10);
+      overflow:hidden;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.10);
     }
     .bar > i{
-      display:block;
-      height:100%;
-      width: 0%;
+      display:block; height:100%; width:0%;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(255,77,125,.95), rgba(255,179,199,.85));
-      box-shadow: 0 10px 18px rgba(255,77,125,.18);
+      background: linear-gradient(180deg, rgba(255,179,199,.95), rgba(255,179,199,.70));
       transition: width .22s ease;
     }
     .tapToStart{
       margin-top: 12px;
       padding: 10px 12px;
-      border-radius: 18px;
-      background: rgba(0,0,0,.16);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.88);
-      font-weight: 850;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,179,199,.75), rgba(255,179,199,.55));
+      border: 1px solid rgba(0,0,0,.10);
+      font-weight: 950;
       font-size: 12px;
-      letter-spacing:.2px;
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:10px;
-      opacity:.0;
-      transform: translateY(6px);
+      display:inline-flex; align-items:center; gap:10px;
+      opacity:0; transform: translateY(6px);
       transition: opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1);
     }
     .tapToStart.show{opacity:1; transform: translateY(0);}
     .tapDot{
       width:10px;height:10px;border-radius:999px;
-      background: rgba(255,179,199,.95);
+      background: rgba(255,77,125,.95);
       box-shadow: 0 0 0 6px rgba(255,77,125,.12);
       animation: tapPulse 1.1s infinite ease-in-out;
     }
-    @keyframes tapPulse{
-      0%,100%{transform: scale(1)}
-      50%{transform: scale(1.35)}
-    }
+    @keyframes tapPulse{0%,100%{transform: scale(1)}50%{transform: scale(1.35)}}
 
-    /* Particles canvas */
     canvas#fx{
-      position:absolute; inset:0;
-      pointer-events:none;
-      z-index: 6;
+      position:absolute; inset:0; pointer-events:none; z-index: 6;
     }
 
-    /* Small footer */
-    .foot{
-      display:flex; justify-content:center;
-      color: rgba(255,255,255,.55);
-      font-weight:650;
-      font-size:11px;
-      padding-bottom: 2px;
-      user-select:none;
-    }
-
-    /* Reduced motion */
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
     }
   </style>
 </head>
+
 <body>
   <div class="loader" id="loader">
     <div class="loaderCard">
       <div class="loaderTitle">Подготовка посылки…</div>
-      <div class="loaderSub">Текстуры, фото и звуки грузятся внутри Telegram. <br/>Потом нужно будет один раз тапнуть, чтобы включить музыку.</div>
+      <div class="loaderSub">Загружаю фото и звуки. Потом один раз тапни — чтобы Telegram разрешил музыку.</div>
       <div class="bar"><i id="barFill"></i></div>
       <div class="tapToStart" id="tapToStart"><span class="tapDot"></span>Тапни, чтобы начать</div>
     </div>
   </div>
 
-  <div id="app" aria-label="valentine-spa">
+  <div id="app">
     <div class="stage">
       <div class="topbar">
-        <div class="brand">
-          <span style="opacity:.9;">📦</span>
-          <span>Мини-игра-валентинка</span>
-        </div>
+        <div class="brand">📦 Валентинка</div>
         <div class="badge" id="sceneBadge">Сцена 1/3</div>
       </div>
 
@@ -861,7 +821,7 @@
         <canvas id="fx"></canvas>
 
         <!-- SCENE 1 -->
-        <section class="scene" id="scene1" aria-label="scene-1">
+        <section class="scene" id="scene1">
           <div class="bubble" id="courierBubble">
             <div class="who">Курьер</div>
             <div class="txt" id="courierText">Вам посылка от фаната 😉</div>
@@ -869,103 +829,102 @@
 
           <div class="center">
             <div class="objectStage">
-              <div class="objectHint"><div class="hintPill">Тут всё бумажное, но “живое” 🙂</div></div>
-              <!-- Stylized courier card -->
-              <div class="paperTex" style="width:min(360px,100%); padding:14px; border-radius:26px;">
+              <div class="hintPill"><span>Стиль: бумага + картон + “милый ТВ-шум”</span></div>
+
+              <div class="paper" style="width:min(360px,100%); padding:14px;">
                 <div style="display:flex; gap:12px; align-items:center;">
-                  <div style="width:78px;height:78px;border-radius:22px;background:rgba(0,0,0,.10);border:1px solid rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
-                    <div style="width:54px;height:54px;border-radius:20px;background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));border:1px solid rgba(0,0,0,.10);"></div>
-                    <div style="position:absolute;bottom:8px;left:10px;right:10px;height:8px;border-radius:6px;background:rgba(0,0,0,.12);"></div>
+                  <div style="width:78px;height:78px;border-radius:22px;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+                    <div style="width:54px;height:54px;border-radius:20px;background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.08));border:1px solid rgba(0,0,0,.10);"></div>
+                    <div style="position:absolute;bottom:8px;left:10px;right:10px;height:8px;border-radius:6px;background:rgba(0,0,0,.10);"></div>
                   </div>
                   <div style="flex:1;">
-                    <div style="font-weight:950;font-size:16px;letter-spacing:.2px;">Курьер</div>
-                    <div style="margin-top:4px;color:rgba(0,0,0,.62);font-weight:700;font-size:12px;line-height:1.2;">
-                      Тихо, без логотипов. Просто доставляю странные романтичные штуки.
+                    <div style="font-weight:950;font-size:16px;">Курьер</div>
+                    <div style="margin-top:4px;color:rgba(0,0,0,.62);font-weight:850;font-size:12px;line-height:1.2;">
+                      Просто доставляю. Никаких логотипов. Только романтика 😌
                     </div>
                   </div>
                 </div>
-                <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
-                  <div style="height:10px;flex:1;border-radius:999px;background:rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.08);overflow:hidden;">
-                    <div style="height:100%;width:78%;border-radius:999px;background:linear-gradient(90deg, rgba(255,77,125,.85), rgba(255,179,199,.78));"></div>
+              </div>
+
+              <div class="modalWrap" id="signModal">
+                <div class="modal paper">
+                  <h3>Бумажка для подписи</h3>
+                  <p>Вы принимаете посылку от фаната?</p>
+                  <div class="row" id="signButtons">
+                    <button class="btn ghost wide" id="btnNo">Нет</button>
+                    <button class="btn primary wide" id="btnYes">Да</button>
                   </div>
-                  <div style="font-weight:950;color:rgba(0,0,0,.55);font-size:12px;">78%</div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div class="modalWrap" id="signModal">
-            <div class="modal paperTex" id="signPaper">
-              <h3>Бумажка для подписи</h3>
-              <p>Вы принимаете посылку от фаната?</p>
-              <div class="row" id="signButtons">
-                <button class="btn ghost wide" id="btnNo">Нет</button>
-                <button class="btn primary wide" id="btnYes">Да</button>
-              </div>
             </div>
           </div>
         </section>
 
         <!-- SCENE 2 -->
-        <section class="scene" id="scene2" aria-label="scene-2">
+        <section class="scene" id="scene2">
           <div class="bubble small" id="boxBubble">
             <div class="who">Подсказка</div>
-            <div class="txt">Покрути коробку пальцем. Потом нажми на замок.</div>
+            <div class="txt">Теперь это реально 3D: 6 граней. Крути пальцем. Нажми на замок.</div>
           </div>
 
           <div class="center">
             <div class="objectStage">
-              <div class="objectHint"><div class="hintPill">Перетаскивай: вращение с инерцией</div></div>
+              <div class="hintPill"><span>Перетаскивай: вращение + инерция</span></div>
 
-              <div class="object3d" id="box3d" aria-label="3d-box">
-                <div class="pixelEdge"></div>
-                <div class="boxFace">
-                  <div class="label">
-                    для Джамы
-                    <small>от фаната 😉</small>
+              <div class="objWrap" id="boxWrap">
+                <div class="obj" id="boxObj">
+                  <div class="cube" id="cube">
+                    <div class="face front" id="boxFront">
+                      <div class="label">для Джамы <small>от фаната 😉</small></div>
+                      <div class="tape"></div>
+
+                      <div class="lock3d pulse" id="lockBtn" aria-label="lock">
+                        <div class="lockBack"></div>
+                        <div class="lockSide"></div>
+                        <div class="lockSide r"></div>
+                        <div class="lockBody"></div>
+                        <div class="lockShackle"></div>
+                        <div class="lockKeyhole"></div>
+                      </div>
+                    </div>
+
+                    <div class="face back"></div>
+                    <div class="face right"></div>
+                    <div class="face left"></div>
+                    <div class="face top"></div>
+                    <div class="face bottom"></div>
                   </div>
-                  <div class="tape"></div>
-                  <div class="lock" id="lockBtn" aria-label="lock"></div>
                 </div>
+                <div class="pixelFrame"></div>
               </div>
 
               <div class="modalWrap" id="lockModal">
-                <div class="modal paperTex">
-                  <div class="lockUI">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-                      <div>
-                        <div style="font-weight:950;font-size:16px;margin-bottom:2px;">Кодовый замок</div>
-                        <div style="font-weight:700;color:rgba(20,20,24,.62);font-size:12px;line-height:1.2;">
-                          3 колёсика — день, месяц, год. Свайпай вверх/вниз.
-                        </div>
-                      </div>
-                      <div style="font-weight:950;color:rgba(20,20,24,.55);font-size:12px;padding:8px 10px;border-radius:14px;border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.04);">
-                        🔒
-                      </div>
-                    </div>
+                <div class="modal paper">
+                  <h3>Кодовый замок</h3>
+                  <p>3 колёсика — день, месяц, год. Свайпай вверх/вниз. Потом “Готово”.</p>
 
-                    <div class="reels" id="reels">
-                      <div class="reel" data-reel="day">
-                        <div class="reelHeader">ДЕНЬ</div>
-                        <div class="windowLine"></div>
-                        <div class="reelList" id="reelDay"></div>
-                      </div>
-                      <div class="reel" data-reel="month">
-                        <div class="reelHeader">МЕСЯЦ</div>
-                        <div class="windowLine"></div>
-                        <div class="reelList" id="reelMonth"></div>
-                      </div>
-                      <div class="reel" data-reel="year">
-                        <div class="reelHeader">ГОД</div>
-                        <div class="windowLine"></div>
-                        <div class="reelList" id="reelYear"></div>
-                      </div>
+                  <div class="reels" id="reels">
+                    <div class="reel" data-reel="day">
+                      <div class="reelHeader">ДЕНЬ</div>
+                      <div class="windowLine"></div>
+                      <div class="reelList" id="reelDay"></div>
                     </div>
+                    <div class="reel" data-reel="month">
+                      <div class="reelHeader">МЕСЯЦ</div>
+                      <div class="windowLine"></div>
+                      <div class="reelList" id="reelMonth"></div>
+                    </div>
+                    <div class="reel" data-reel="year">
+                      <div class="reelHeader">ГОД</div>
+                      <div class="windowLine"></div>
+                      <div class="reelList" id="reelYear"></div>
+                    </div>
+                  </div>
 
-                    <div class="lockFooter">
-                      <button class="btn ghost" id="lockBack">Назад</button>
-                      <button class="btn primary" id="lockDone">Готово</button>
-                    </div>
+                  <div class="lockFooter" style="margin-top:12px;">
+                    <button class="btn ghost" id="lockBack">Назад</button>
+                    <button class="btn primary" id="lockDone">Готово</button>
                   </div>
                 </div>
               </div>
@@ -979,41 +938,47 @@
         </section>
 
         <!-- SCENE 3 -->
-        <section class="scene" id="scene3" aria-label="scene-3">
+        <section class="scene" id="scene3">
           <div class="bubble small" id="envBubble">
             <div class="who">Посылка</div>
-            <div class="txt">Внутри — письмо. Но сначала… печать.</div>
+            <div class="txt">Конверт тоже 3D. Открывать будем по-честному 😌</div>
           </div>
 
           <div class="center">
             <div class="objectStage">
-              <div class="objectHint"><div class="hintPill">Тут тоже можно вращать конверт</div></div>
+              <div class="hintPill"><span>Крути конверт пальцем — он “толстый”</span></div>
 
-              <div class="object3d" id="env3d" aria-label="3d-envelope">
-                <div class="pixelEdge"></div>
-                <div class="envFace">
-                  <div class="envFlap"></div>
-                  <div class="seal" id="sealBtn"><b>♥</b></div>
+              <div class="objWrap" id="envWrap">
+                <div class="obj" id="envObj">
+                  <div class="env3d" id="env3d">
+                    <div class="envFace envFront" id="envFront">
+                      <div class="flap" id="flap"></div>
+                      <div class="seal" id="sealBtn"><b>♥</b></div>
+                    </div>
+                    <div class="envFace envBack"></div>
+                    <div class="envSide top"></div>
+                    <div class="envSide bottom"></div>
+                    <div class="envSide left"></div>
+                    <div class="envSide right"></div>
+                  </div>
                 </div>
+                <div class="pixelFrame"></div>
               </div>
 
-              <!-- Date check overlay (hidden at first) -->
               <div class="modalWrap" id="dateModal">
-                <div class="modal" style="padding:0; border-radius: 26px; background:transparent; box-shadow:none; border:none;">
+                <div class="modal" style="padding:0; background:transparent; box-shadow:none; border:none;">
                   <div class="dateCard">
                     <div style="text-align:center;font-weight:950;font-size:16px;">День рождения фаната</div>
-                    <div class="hint">Откроется календарь. Выбери дату и нажми “ОК”, потом — галочку.</div>
+                    <div class="hint">Нажми на дату — откроется календарь. Потом нажми “✓”.</div>
 
                     <div class="dateRow">
                       <label class="chip" style="cursor:pointer;">
-                        📅
-                        <input id="dateInput" type="date" />
+                        📅 <input id="dateInput" type="date" />
                       </label>
-                      <button class="btn primary" id="dateCheck" style="min-width: 76px; border-radius: 18px;">✓</button>
+                      <button class="btn primary" id="dateCheck" style="min-width:76px;">✓</button>
                     </div>
 
-                    <div class="hint" id="dateHint" style="min-height: 16px;"></div>
-
+                    <div class="hint" id="dateHint"></div>
                     <div class="row">
                       <button class="btn ghost wide" id="dateCancel">Назад</button>
                     </div>
@@ -1021,11 +986,10 @@
                 </div>
               </div>
 
-              <!-- Final content (hidden until success) -->
-              <div class="modalWrap" id="finalModal" style="background: rgba(0,0,0,.26);">
+              <div class="modalWrap" id="finalModal">
                 <div class="modal" style="width:min(410px,100%); padding:0; background:transparent; box-shadow:none; border:none;">
                   <div class="gallery">
-                    <div class="photoFrame" aria-label="photos">
+                    <div class="photoFrame">
                       <img id="ph0" alt="photo 1" />
                       <img id="ph1" alt="photo 2" />
                       <img id="ph2" alt="photo 3" />
@@ -1034,14 +998,12 @@
                     </div>
                     <div class="dots" id="dots"></div>
 
-                    <div class="letter paperTex" id="letter">
+                    <div class="paper letter" id="letter">
                       <div class="title">Письмо 📝</div>
-                      <!-- Placeholder lines (replace with your text) -->
-                      <div style="font-weight:700;color:rgba(20,20,24,.70);font-size:12px;margin-bottom:10px;line-height:1.25;">
-                        Заменишь этот плейсхолдер на свой текст (6–10 строк). Можно прямо в HTML ниже.
+                      <div style="font-weight:850;color:rgba(20,20,24,.70);font-size:12px;margin-bottom:10px;line-height:1.25;">
+                        Заменишь на свой текст (6–10 строк) прямо в блоке ниже.
                       </div>
-
-                      <div id="letterText" style="font-weight:800;color:rgba(20,20,24,.84);line-height:1.35;font-size:14px;">
+                      <div id="letterText" style="font-weight:900;color:rgba(20,20,24,.86);line-height:1.35;font-size:14px;">
                         <div>Джама, привет…</div>
                         <div>Это маленькая посылка,</div>
                         <div>в которой спрятано чуть-чуть</div>
@@ -1049,13 +1011,6 @@
                         <div>Если ты читаешь это —</div>
                         <div>значит ты всё сделала правильно. ♥</div>
                         <div>…</div>
-                      </div>
-
-                      <div style="margin-top:12px;" class="lines" aria-hidden="true">
-                        <div class="line long"></div>
-                        <div class="line mid"></div>
-                        <div class="line long"></div>
-                        <div class="line short"></div>
                       </div>
                     </div>
 
@@ -1077,7 +1032,7 @@
 
       </div>
 
-      <div class="foot">Лучше в вертикальной ориентации • внутри Telegram WebView</div>
+      <div class="foot">Вертикальная ориентация • Telegram WebView</div>
     </div>
   </div>
 
@@ -1085,24 +1040,17 @@
 
   <script>
     /* =========================================================
-       CONFIG — change filenames here
+       CONFIG
        ========================================================= */
     const CONFIG = {
       images: [
-        // Put your 3–4 photos here (in Images/ directory)
         "Images/photo1.jpg",
         "Images/photo2.jpg",
         "Images/photo3.jpg",
         "Images/photo4.jpg"
       ],
-      // Optional: if you have a paper texture image you want to reuse.
-      // Not required; style already includes procedural texture.
       audio: {
-        // Background music (optional). If file missing, app still runs.
-        // Put your track in Audio/JeTeLaisseraiDesMots.mp3 (or change name).
         bgm: "Audio/JeTeLaisseraiDesMots.mp3",
-
-        // Short SFX (optional). If missing, we synthesize with WebAudio.
         click: "Audio/click.mp3",
         paper: "Audio/paper.mp3",
         lock: "Audio/lock.mp3",
@@ -1110,89 +1058,52 @@
         wrong: "Audio/wrong.mp3",
         whoosh: "Audio/whoosh.mp3"
       },
-
-      // Correct codes:
-      lockCode: { day: 5, monthIndex: 10, year: 2025 }, // 5 November 2025 (monthIndex 10 if Jan=0)
-      fanBirthday: "2005-02-01", // yyyy-mm-dd
-
-      // Performance: cap particle count
+      lockCode: { day: 5, monthIndex: 10, year: 2025 }, // 5 Nov 2025
+      fanBirthday: "2005-02-01",
       maxParticles: 90
     };
 
-    /* =========================================================
-       Helpers
-       ========================================================= */
-    const $ = (id) => document.getElementById(id);
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const $ = (id)=>document.getElementById(id);
+    const clamp = (v,a,b)=>Math.max(a, Math.min(b,v));
     const lerp = (a,b,t)=>a+(b-a)*t;
     const now = ()=>performance.now();
 
-    function supportsWebP(){
-      const canvas = document.createElement("canvas");
-      return canvas.toDataURL("image/webp").startsWith("data:image/webp");
-    }
-
-    // Prevent iOS bounce scroll inside Telegram webview
-    document.addEventListener("touchmove", (e)=> e.preventDefault(), {passive:false});
-
     /* =========================================================
-       Minimal Audio Engine:
-       - Tries to load files
-       - If missing, falls back to synthesized SFX
-       - BGM starts after first user tap (required by mobile)
+       Audio (как раньше, но без глобальных preventDefault, чтобы всё работало)
        ========================================================= */
     class AudioEngine{
       constructor(){
-        this.ctx = null;
-        this.unlocked = false;
-        this.buffers = new Map();
-        this.bgmEl = null;
-        this.bgmGain = 0.26;
-        this.sfxGain = 0.70;
-        this.master = null;
-        this.sfxBus = null;
-        this.bgmBus = null;
+        this.ctx=null; this.unlocked=false;
+        this.buffers=new Map();
+        this.bgmEl=null;
+        this.bgmGain=0.24;
+        this.sfxGain=0.70;
+        this.master=null; this.sfxBus=null;
       }
-
       async init(){
         if (this.ctx) return;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        this.ctx = new AudioContext();
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
         this.master = this.ctx.createGain();
         this.master.gain.value = 0.85;
         this.master.connect(this.ctx.destination);
-
         this.sfxBus = this.ctx.createGain();
         this.sfxBus.gain.value = this.sfxGain;
         this.sfxBus.connect(this.master);
 
-        this.bgmBus = this.ctx.createGain();
-        this.bgmBus.gain.value = this.bgmGain;
-        this.bgmBus.connect(this.master);
-
-        // Attempt to prefetch SFX buffers
         const sfxKeys = ["click","paper","lock","success","wrong","whoosh"];
-        await Promise.all(sfxKeys.map(k => this._tryLoadBuffer(k, CONFIG.audio[k])));
+        await Promise.all(sfxKeys.map(k=>this._tryLoadBuffer(k, CONFIG.audio[k])));
       }
-
       async unlock(){
         if (!this.ctx) await this.init();
         if (!this.ctx) return;
-
-        if (this.ctx.state !== "running"){
-          try{ await this.ctx.resume(); }catch(e){}
-        }
-
-        // "Warm-up" tiny silent beep
-        this._beep(0.0001, 220, 0.01, 0.0);
-        this.unlocked = true;
-
-        // Start BGM if available
+        try{ if (this.ctx.state!=="running") await this.ctx.resume(); }catch(e){}
+        this._beep(0.0001,220,0.01,0);
+        this.unlocked=true;
         this.startBGM();
       }
-
-      async _tryLoadBuffer(key, url){
+      async _tryLoadBuffer(key,url){
         if (!url) return;
         try{
           const res = await fetch(url, {cache:"force-cache"});
@@ -1200,802 +1111,574 @@
           const arr = await res.arrayBuffer();
           const buf = await this.ctx.decodeAudioData(arr);
           this.buffers.set(key, buf);
-        }catch(e){
-          // ignore
-        }
+        }catch(e){}
       }
-
-      _playBuffer(key, volume=1){
+      _playBuffer(key, vol=1){
         if (!this.ctx || !this.unlocked) return false;
         const buf = this.buffers.get(key);
         if (!buf) return false;
         const src = this.ctx.createBufferSource();
-        src.buffer = buf;
-
         const g = this.ctx.createGain();
-        g.gain.value = volume;
-
-        src.connect(g);
-        g.connect(this.sfxBus);
-
+        g.gain.value = vol;
+        src.buffer = buf;
+        src.connect(g); g.connect(this.sfxBus);
         src.start();
         return true;
       }
-
-      /* Synth SFX (cute/soft, not harsh) */
-      _beep(vol, freq, dur, type=0){
+      _beep(vol,freq,dur,type=0){
         if (!this.ctx || !this.unlocked) return;
         const osc = this.ctx.createOscillator();
         const g = this.ctx.createGain();
         osc.type = type===0 ? "sine" : (type===1 ? "triangle" : "square");
         osc.frequency.value = freq;
-
         g.gain.value = 0;
-        osc.connect(g);
-        g.connect(this.sfxBus);
-
+        osc.connect(g); g.connect(this.sfxBus);
         const t0 = this.ctx.currentTime;
         g.gain.setValueAtTime(0, t0);
-        g.gain.linearRampToValueAtTime(vol, t0 + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-
+        g.gain.linearRampToValueAtTime(vol, t0+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
         osc.start(t0);
-        osc.stop(t0 + dur + 0.02);
+        osc.stop(t0+dur+0.02);
       }
-
       sfx(name){
-        // Try file buffer first; fallback to synth
-        const ok = this._playBuffer(name, 1);
-
-        if (ok) return;
-
-        if (!this.unlocked) return;
-
+        const ok = this._playBuffer(name,1);
+        if (ok || !this.unlocked) return;
         switch(name){
-          case "click":
-            this._beep(0.06, 520, 0.06, 1);
-            this._beep(0.03, 760, 0.04, 0);
-            break;
-          case "paper":
-            // soft rustle: quick filtered noise emulation via many tiny beeps
-            this._beep(0.03, 240, 0.06, 1);
-            this._beep(0.02, 310, 0.05, 1);
-            this._beep(0.02, 420, 0.05, 1);
-            break;
-          case "lock":
-            this._beep(0.06, 220, 0.08, 1);
-            this._beep(0.05, 320, 0.10, 0);
-            break;
-          case "wrong":
-            this._beep(0.05, 180, 0.10, 2);
-            this._beep(0.04, 140, 0.10, 2);
-            break;
-          case "success":
-            this._beep(0.06, 520, 0.08, 0);
-            this._beep(0.05, 660, 0.10, 1);
-            this._beep(0.04, 820, 0.12, 0);
-            break;
-          case "whoosh":
-            this._beep(0.03, 240, 0.18, 1);
-            this._beep(0.02, 180, 0.20, 1);
-            break;
+          case "click":  this._beep(0.06,520,0.06,1); this._beep(0.03,760,0.04,0); break;
+          case "paper":  this._beep(0.03,240,0.06,1); this._beep(0.02,310,0.05,1); this._beep(0.02,420,0.05,1); break;
+          case "lock":   this._beep(0.06,220,0.08,1); this._beep(0.05,320,0.10,0); break;
+          case "wrong":  this._beep(0.05,180,0.10,2); this._beep(0.04,140,0.10,2); break;
+          case "success":this._beep(0.06,520,0.08,0); this._beep(0.05,660,0.10,1); this._beep(0.04,820,0.12,0); break;
+          case "whoosh": this._beep(0.03,240,0.18,1); this._beep(0.02,180,0.20,1); break;
         }
       }
-
       async startBGM(){
         if (!this.unlocked) return;
         const url = CONFIG.audio.bgm;
         if (!url) return;
-
-        // Use HTMLAudioElement for streaming
         if (!this.bgmEl){
           this.bgmEl = new Audio(url);
           this.bgmEl.loop = true;
           this.bgmEl.preload = "auto";
           this.bgmEl.volume = this.bgmGain;
-
-          // On iOS, HTMLAudio volume is OK. If blocked, it will just fail quietly.
-          try{ await this.bgmEl.play(); }catch(e){}
-        } else {
-          try{ await this.bgmEl.play(); }catch(e){}
         }
+        try{ await this.bgmEl.play(); }catch(e){}
       }
     }
-
     const audio = new AudioEngine();
 
     /* =========================================================
-       Loader / Preload images + first tap to unlock audio
+       Loader / Preload
        ========================================================= */
     const loader = $("loader");
     const barFill = $("barFill");
     const tapToStart = $("tapToStart");
 
-    const PRELOAD = {
-      total: 0,
-      done: 0,
-      setProgress(p){
-        barFill.style.width = `${Math.round(p*100)}%`;
-      }
-    };
+    const PRELOAD = { total:0, done:0, set(p){ barFill.style.width = `${Math.round(p*100)}%`; } };
 
     async function preloadImages(urls){
-      const unique = urls.filter(Boolean).slice(0,4);
-      PRELOAD.total += unique.length;
-
-      const results = await Promise.all(unique.map((u)=>new Promise((resolve)=>{
+      const list = urls.filter(Boolean).slice(0,4);
+      PRELOAD.total += list.length;
+      await Promise.all(list.map(u => new Promise(resolve=>{
         const img = new Image();
-        img.decoding = "async";
-        img.loading = "eager";
-        img.onload = ()=>{ PRELOAD.done++; PRELOAD.setProgress(PRELOAD.done / PRELOAD.total); resolve({url:u, ok:true}); };
-        img.onerror = ()=>{ PRELOAD.done++; PRELOAD.setProgress(PRELOAD.done / PRELOAD.total); resolve({url:u, ok:false}); };
-        img.src = u;
+        img.decoding="async";
+        img.onload=()=>{ PRELOAD.done++; PRELOAD.set(PRELOAD.done/PRELOAD.total); resolve(true); };
+        img.onerror=()=>{ PRELOAD.done++; PRELOAD.set(PRELOAD.done/PRELOAD.total); resolve(false); };
+        img.src=u;
       })));
-
-      return results;
     }
-
     async function preload(){
-      // We "preload" audio by just initializing context and trying to fetch SFX once unlocked.
-      PRELOAD.total = 1; // baseline
+      PRELOAD.total = 1;
       PRELOAD.done = 0;
-      PRELOAD.setProgress(0);
-
-      // Preload images
-      const imgs = CONFIG.images.slice(0,4);
-      PRELOAD.total = imgs.length + 1;
-
-      await preloadImages(imgs);
+      PRELOAD.set(0);
+      PRELOAD.total = CONFIG.images.slice(0,4).length + 1;
+      await preloadImages(CONFIG.images.slice(0,4));
       PRELOAD.done++;
-      PRELOAD.setProgress(PRELOAD.done / PRELOAD.total);
-
-      // After assets, show "tap to start"
+      PRELOAD.set(PRELOAD.done/PRELOAD.total);
       tapToStart.classList.add("show");
     }
 
     /* =========================================================
-       Scene routing
+       Scenes
        ========================================================= */
     const scenes = [
-      { id:"scene1", el:$("scene1") },
-      { id:"scene2", el:$("scene2") },
-      { id:"scene3", el:$("scene3") },
+      { el:$("scene1") },
+      { el:$("scene2") },
+      { el:$("scene3") },
     ];
     let sceneIndex = 0;
-
-    function setBadge(i){
-      $("sceneBadge").textContent = `Сцена ${i+1}/3`;
-    }
+    function setBadge(i){ $("sceneBadge").textContent = `Сцена ${i+1}/3`; }
     function showScene(i){
       sceneIndex = clamp(i,0,2);
-      scenes.forEach((s, idx)=> s.el.classList.toggle("active", idx===sceneIndex));
+      scenes.forEach((s,idx)=>s.el.classList.toggle("active", idx===sceneIndex));
       setBadge(sceneIndex);
     }
 
     /* =========================================================
-       Physics-y rotation controller (touch drag with inertia)
+       Inertial rotation for 3D object container (applies to #boxObj / #envObj)
+       NOTE: This rotates whole 3D object (cube), not a flat image.
        ========================================================= */
     class InertialRotator{
       constructor(el){
         this.el = el;
-        this.active = false;
-        this.dragging = false;
-
-        this.rotX = 10; // degrees
-        this.rotY = -18;
-
-        this.vx = 0; // deg/s
-        this.vy = 0;
-
-        this.maxSpeed = 240; // deg/s
-        this.damping = 10.5; // higher = more damping
-        this.spring = 42; // return to gentle X range
-        this.xMin = -18;
-        this.xMax = 28;
-
-        this.lastT = 0;
-
-        this._px = 0;
-        this._py = 0;
-
-        this._raf = null;
-
-        this._onDown = (e)=> this.onDown(e);
-        this._onMove = (e)=> this.onMove(e);
-        this._onUp = (e)=> this.onUp(e);
-
-        this.enable();
-      }
-
-      enable(){
-        if (this.active) return;
-        this.active = true;
-        this.el.addEventListener("pointerdown", this._onDown, {passive:false});
-        window.addEventListener("pointermove", this._onMove, {passive:false});
-        window.addEventListener("pointerup", this._onUp, {passive:false});
-        window.addEventListener("pointercancel", this._onUp, {passive:false});
+        this.dragging=false;
+        this.rotX = 14;
+        this.rotY = -22;
+        this.vx=0; this.vy=0;
+        this.maxSpeed=260;
+        this.damping=10.8;
+        this.spring=46;
+        this.xMin=-18; this.xMax=30;
+        this._px=0; this._py=0;
         this.lastT = now();
+        this._raf=null;
+
+        this._down=(e)=>this.onDown(e);
+        this._move=(e)=>this.onMove(e);
+        this._up=()=>this.onUp();
+
+        this.el.addEventListener("pointerdown", this._down, {passive:false});
+        window.addEventListener("pointermove", this._move, {passive:false});
+        window.addEventListener("pointerup", this._up, {passive:true});
+        window.addEventListener("pointercancel", this._up, {passive:true});
+
+        this.apply();
         this.loop();
       }
-
-      disable(){
-        this.active = false;
-        this.dragging = false;
-        this.el.removeEventListener("pointerdown", this._onDown);
-        window.removeEventListener("pointermove", this._onMove);
-        window.removeEventListener("pointerup", this._onUp);
-        window.removeEventListener("pointercancel", this._onUp);
-        if (this._raf) cancelAnimationFrame(this._raf);
-        this._raf = null;
-      }
-
-      reset(){
-        this.rotX = 10;
-        this.rotY = -18;
-        this.vx = 0;
-        this.vy = 0;
-        this.apply();
-      }
-
+      reset(){ this.rotX=14; this.rotY=-22; this.vx=this.vy=0; this.apply(); }
       onDown(e){
-        if (!this.active) return;
-        // Only primary pointer
         if (e.isPrimary === false) return;
-        this.dragging = true;
-        this.el.setPointerCapture?.(e.pointerId);
-        this._px = e.clientX;
-        this._py = e.clientY;
-        this.vx = 0; this.vy = 0;
-        audio.sfx("click");
-      }
+        // if pressed on interactive element (lock/seal/buttons), skip rotation
+        const t = e.target;
+        if (t.closest && (t.closest("#lockBtn") || t.closest("#sealBtn") || t.closest("button") || t.closest("input"))) return;
 
+        this.dragging=true;
+        this.el.setPointerCapture?.(e.pointerId);
+        this._px=e.clientX; this._py=e.clientY;
+        this.vx=this.vy=0;
+        audio.sfx("click");
+        e.preventDefault();
+      }
       onMove(e){
         if (!this.dragging) return;
-        const dx = e.clientX - this._px;
-        const dy = e.clientY - this._py;
-        this._px = e.clientX;
-        this._py = e.clientY;
+        const dx=e.clientX - this._px;
+        const dy=e.clientY - this._py;
+        this._px=e.clientX; this._py=e.clientY;
 
-        // Pixels -> degrees
-        const scale = 0.22;
-        this.rotY += dx * scale;
-        this.rotX -= dy * scale;
+        const scale=0.22;
+        this.rotY += dx*scale;
+        this.rotX -= dy*scale;
 
-        // Add velocity (deg/s approximation)
-        // We'll compute in loop using delta time; here store instantaneous
-        const instantVX = (-dy * scale) * 60;
-        const instantVY = (dx * scale) * 60;
+        const instantVX = (-dy*scale)*60;
+        const instantVY = (dx*scale)*60;
         this.vx = clamp(lerp(this.vx, instantVX, 0.35), -this.maxSpeed, this.maxSpeed);
         this.vy = clamp(lerp(this.vy, instantVY, 0.35), -this.maxSpeed, this.maxSpeed);
 
-        // Soft clamp X with elasticity
         if (this.rotX < this.xMin) this.rotX = lerp(this.rotX, this.xMin, 0.35);
         if (this.rotX > this.xMax) this.rotX = lerp(this.rotX, this.xMax, 0.35);
 
         this.apply();
+        e.preventDefault();
       }
-
-      onUp(e){
+      onUp(){
         if (!this.dragging) return;
-        this.dragging = false;
+        this.dragging=false;
         audio.sfx("paper");
       }
-
       loop(){
-        if (!this.active) return;
-        const t = now();
-        const dt = Math.min(0.033, (t - this.lastT)/1000);
-        this.lastT = t;
+        const t=now();
+        const dt=Math.min(0.033, (t-this.lastT)/1000);
+        this.lastT=t;
 
         if (!this.dragging){
-          // Apply damping to velocities (exponential)
-          const damp = Math.exp(-this.damping * dt);
-          this.vx *= damp;
-          this.vy *= damp;
+          const damp = Math.exp(-this.damping*dt);
+          this.vx *= damp; this.vy *= damp;
+          this.rotX += this.vx*dt;
+          this.rotY += this.vy*dt;
 
-          // Integrate
-          this.rotX += this.vx * dt;
-          this.rotY += this.vy * dt;
+          if (this.rotX < this.xMin){ this.vx += (this.xMin - this.rotX)*this.spring*dt; }
+          else if (this.rotX > this.xMax){ this.vx += (this.xMax - this.rotX)*this.spring*dt; }
 
-          // Spring X back into range
-          if (this.rotX < this.xMin){
-            const diff = (this.xMin - this.rotX);
-            this.vx += diff * this.spring * dt;
-          } else if (this.rotX > this.xMax){
-            const diff = (this.xMax - this.rotX);
-            this.vx += diff * this.spring * dt;
-          }
-
-          // Keep speed bounded
           this.vx = clamp(this.vx, -this.maxSpeed, this.maxSpeed);
           this.vy = clamp(this.vy, -this.maxSpeed, this.maxSpeed);
 
-          // tiny snap to still
-          if (Math.abs(this.vx) < 0.02) this.vx = 0;
-          if (Math.abs(this.vy) < 0.02) this.vy = 0;
+          if (Math.abs(this.vx) < 0.02) this.vx=0;
+          if (Math.abs(this.vy) < 0.02) this.vy=0;
 
-          if (this.vx !== 0 || this.vy !== 0){
-            this.apply();
-          }
+          if (this.vx || this.vy) this.apply();
         }
-
-        this._raf = requestAnimationFrame(()=>this.loop());
+        this._raf=requestAnimationFrame(()=>this.loop());
       }
-
       apply(){
-        // slight perspective / depth
         this.el.style.transform =
-          `rotateX(${this.rotX.toFixed(2)}deg) rotateY(${this.rotY.toFixed(2)}deg)`;
+          `translateZ(0) rotateX(${this.rotX.toFixed(2)}deg) rotateY(${this.rotY.toFixed(2)}deg)`;
       }
     }
 
     /* =========================================================
-       Reel (slot) controller with touch drag & snapping
+       Reels (slot) - unchanged but reliable
        ========================================================= */
     class Reel{
       constructor(rootEl, listEl, values, formatter){
-        this.root = rootEl;
-        this.list = listEl;
-        this.values = values;
-        this.formatter = formatter || ((v)=>String(v));
-        this.index = 0;
+        this.root=rootEl; this.list=listEl;
+        this.values=values;
+        this.formatter=formatter||((v)=>String(v));
+        this.index=0;
+        this.offset=0;
+        this.velocity=0;
+        this.dragging=false;
 
-        this.offset = 0;   // px offset (positive pushes down)
-        this.velocity = 0; // px/s
-        this.dragging = false;
+        this.itemGap=18;
+        this.itemH=24;
+        this.maxVel=1800;
+        this.damping=12;
+        this.snapK=85;
 
-        this.itemGap = 18;
-        this.itemH = 24; // approximate, will measure
-        this.centerY = 0;
-
-        this.maxVel = 1800;
-        this.damping = 12;
-        this.snapK = 85;
-
-        this._py = 0;
-        this._lastT = now();
-        this._raf = null;
+        this._py=0;
+        this._lastT=now();
 
         this.populate();
         this.measure();
 
-        this._down = (e)=>this.onDown(e);
-        this._move = (e)=>this.onMove(e);
-        this._up = (e)=>this.onUp(e);
+        this._down=(e)=>this.onDown(e);
+        this._move=(e)=>this.onMove(e);
+        this._up=()=>this.onUp();
 
         this.root.addEventListener("pointerdown", this._down, {passive:false});
         window.addEventListener("pointermove", this._move, {passive:false});
-        window.addEventListener("pointerup", this._up, {passive:false});
-        window.addEventListener("pointercancel", this._up, {passive:false});
+        window.addEventListener("pointerup", this._up, {passive:true});
+        window.addEventListener("pointercancel", this._up, {passive:true});
 
         this.render();
         this.loop();
       }
-
       populate(){
-        this.list.innerHTML = "";
-        // We render 7 visible items around the current
-        for (let i=0;i<9;i++){
-          const div = document.createElement("div");
-          div.className = "reelItem";
-          div.textContent = "";
-          this.list.appendChild(div);
+        this.list.innerHTML="";
+        for(let i=0;i<9;i++){
+          const d=document.createElement("div");
+          d.className="reelItem";
+          this.list.appendChild(d);
         }
       }
-
       measure(){
-        // Use first element height if available
-        const first = this.list.querySelector(".reelItem");
+        const first=this.list.querySelector(".reelItem");
         if (first){
-          const r = first.getBoundingClientRect();
-          if (r.height > 0) this.itemH = r.height;
+          const r=first.getBoundingClientRect();
+          if (r.height>0) this.itemH=r.height;
         }
       }
-
       setIndex(idx, quiet=false){
-        const n = this.values.length;
-        this.index = ((idx % n) + n) % n;
-        if (!quiet) audio.sfx("click");
-        this.offset = 0;
-        this.velocity = 0;
+        const n=this.values.length;
+        this.index=((idx%n)+n)%n;
+        if(!quiet) audio.sfx("click");
+        this.offset=0; this.velocity=0;
         this.render();
       }
-
-      getValue(){
-        return this.values[this.index];
-      }
+      getValue(){ return this.values[this.index]; }
 
       onDown(e){
-        if (e.isPrimary === false) return;
-        this.dragging = true;
+        if (e.isPrimary===false) return;
+        this.dragging=true;
         this.root.setPointerCapture?.(e.pointerId);
-        this._py = e.clientY;
-        this.velocity = 0;
+        this._py=e.clientY;
+        this.velocity=0;
         audio.sfx("click");
+        e.preventDefault();
       }
-
       onMove(e){
-        if (!this.dragging) return;
-        const dy = e.clientY - this._py;
-        this._py = e.clientY;
+        if(!this.dragging) return;
+        const dy=e.clientY - this._py;
+        this._py=e.clientY;
 
         this.offset += dy;
-        // Update velocity approximate
-        this.velocity = clamp(lerp(this.velocity, dy * 60, 0.35), -this.maxVel, this.maxVel);
+        this.velocity = clamp(lerp(this.velocity, dy*60, 0.35), -this.maxVel, this.maxVel);
 
-        // When offset exceeds one step, change index and wrap offset
         const step = this.itemH + this.itemGap;
-        while (this.offset > step){
+        while(this.offset > step){
           this.offset -= step;
-          this.index = (this.index - 1 + this.values.length) % this.values.length; // dragging down -> previous
+          this.index = (this.index - 1 + this.values.length) % this.values.length;
           audio.sfx("paper");
         }
-        while (this.offset < -step){
+        while(this.offset < -step){
           this.offset += step;
-          this.index = (this.index + 1) % this.values.length; // dragging up -> next
+          this.index = (this.index + 1) % this.values.length;
           audio.sfx("paper");
         }
-
         this.render();
+        e.preventDefault();
       }
-
       onUp(){
-        if (!this.dragging) return;
-        this.dragging = false;
+        if(!this.dragging) return;
+        this.dragging=false;
         audio.sfx("paper");
       }
-
       loop(){
-        const t = now();
-        const dt = Math.min(0.033, (t - this._lastT)/1000);
-        this._lastT = t;
+        const t=now();
+        const dt=Math.min(0.033, (t-this._lastT)/1000);
+        this._lastT=t;
 
-        if (!this.dragging){
-          // integrate inertia
-          const damp = Math.exp(-this.damping * dt);
+        if(!this.dragging){
+          const damp=Math.exp(-this.damping*dt);
           this.velocity *= damp;
-          this.offset += this.velocity * dt;
+          this.offset += this.velocity*dt;
 
-          // Apply index changes for big offset
-          const step = this.itemH + this.itemGap;
-          while (this.offset > step){
-            this.offset -= step;
-            this.index = (this.index - 1 + this.values.length) % this.values.length;
-          }
-          while (this.offset < -step){
-            this.offset += step;
-            this.index = (this.index + 1) % this.values.length;
-          }
+          const step=this.itemH+this.itemGap;
+          while(this.offset > step){ this.offset -= step; this.index = (this.index-1+this.values.length)%this.values.length; }
+          while(this.offset < -step){ this.offset += step; this.index = (this.index+1)%this.values.length; }
 
-          // Snap offset to 0 with spring
           const snapForce = -this.offset * this.snapK;
           this.velocity += snapForce * dt;
 
-          if (Math.abs(this.offset) < 0.4 && Math.abs(this.velocity) < 8){
-            this.offset = 0;
-            this.velocity = 0;
-          }
-
+          if(Math.abs(this.offset)<0.4 && Math.abs(this.velocity)<8){ this.offset=0; this.velocity=0; }
           this.render();
         }
-
-        this._raf = requestAnimationFrame(()=>this.loop());
+        requestAnimationFrame(()=>this.loop());
       }
-
       render(){
-        const items = [...this.list.children];
-        // For 9 items: center is 4
-        const center = 4;
-        const n = this.values.length;
-
-        for (let i=0;i<items.length;i++){
-          const rel = i - center;
-          const idx = (this.index + rel + n) % n;
-          items[i].textContent = this.formatter(this.values[idx]);
-
-          // visual dimming
-          if (Math.abs(rel) >= 3) items[i].classList.add("dim");
+        const items=[...this.list.children];
+        const center=4;
+        const n=this.values.length;
+        for(let i=0;i<items.length;i++){
+          const rel=i-center;
+          const idx=(this.index+rel+n)%n;
+          items[i].textContent=this.formatter(this.values[idx]);
+          if(Math.abs(rel)>=3) items[i].classList.add("dim");
           else items[i].classList.remove("dim");
         }
-
-        this.list.style.transform = `translateY(${this.offset}px)`;
+        this.list.style.transform=`translateY(${this.offset}px)`;
       }
     }
 
     /* =========================================================
-       FX particles (hearts + confetti) — lightweight canvas
+       FX particles (same lightweight)
        ========================================================= */
     class FX{
       constructor(canvas){
-        this.c = canvas;
-        this.ctx = canvas.getContext("2d");
-        this.w = 0; this.h = 0;
-        this.dpr = Math.min(2, window.devicePixelRatio || 1);
-
-        this.particles = [];
-        this.active = false;
-
-        this._last = now();
-        this._raf = null;
-
-        this.resize = ()=> this.onResize();
-        window.addEventListener("resize", this.resize, {passive:true});
-        this.onResize();
+        this.c=canvas;
+        this.ctx=canvas.getContext("2d");
+        this.w=0; this.h=0;
+        this.dpr=Math.min(2, window.devicePixelRatio||1);
+        this.particles=[];
+        this._last=now();
+        this._raf=null;
+        window.addEventListener("resize", ()=>this.resize(), {passive:true});
+        this.resize();
       }
-
-      onResize(){
-        const r = this.c.getBoundingClientRect();
-        this.w = Math.max(1, Math.floor(r.width));
-        this.h = Math.max(1, Math.floor(r.height));
-        this.c.width = Math.floor(this.w * this.dpr);
-        this.c.height = Math.floor(this.h * this.dpr);
+      resize(){
+        const r=this.c.getBoundingClientRect();
+        this.w=Math.max(1, Math.floor(r.width));
+        this.h=Math.max(1, Math.floor(r.height));
+        this.c.width=Math.floor(this.w*this.dpr);
+        this.c.height=Math.floor(this.h*this.dpr);
         this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
       }
-
       burst(kind="hearts"){
-        // spawn particles near center
-        const count = kind==="hearts" ? 34 : 48;
-        const max = CONFIG.maxParticles;
-        const cx = this.w * 0.5;
-        const cy = this.h * 0.42;
-
-        for (let i=0;i<count;i++){
-          if (this.particles.length >= max) break;
-
-          const a = (Math.random() * Math.PI * 2);
-          const sp = (kind==="hearts" ? (90 + Math.random()*220) : (120 + Math.random()*260));
-          const vx = Math.cos(a)*sp;
-          const vy = Math.sin(a)*sp - (kind==="hearts" ? 160 : 120);
-
+        const count = kind==="hearts" ? 32 : 44;
+        const max=CONFIG.maxParticles;
+        const cx=this.w*0.5, cy=this.h*0.42;
+        for(let i=0;i<count;i++){
+          if(this.particles.length>=max) break;
+          const a=Math.random()*Math.PI*2;
+          const sp=(kind==="hearts"? (90+Math.random()*220):(120+Math.random()*260));
+          const vx=Math.cos(a)*sp;
+          const vy=Math.sin(a)*sp - (kind==="hearts"?160:120);
           this.particles.push({
-            x: cx + (Math.random()*24-12),
-            y: cy + (Math.random()*24-12),
+            x: cx+(Math.random()*24-12),
+            y: cy+(Math.random()*24-12),
             vx, vy,
-            g: kind==="hearts" ? 620 : 720,
+            g: kind==="hearts"?620:720,
             life: 1,
             rot: Math.random()*Math.PI*2,
             vr: (Math.random()*2-1)*6,
-            s: kind==="hearts" ? (10 + Math.random()*10) : (7 + Math.random()*7),
+            s: kind==="hearts"? (10+Math.random()*10):(7+Math.random()*7),
             kind
           });
         }
-
-        this.active = true;
-        if (!this._raf) this.loop();
+        if(!this._raf) this.loop();
       }
-
       loop(){
-        const t = now();
-        const dt = Math.min(0.033, (t-this._last)/1000);
-        this._last = t;
+        const t=now();
+        const dt=Math.min(0.033, (t-this._last)/1000);
+        this._last=t;
 
         this.ctx.clearRect(0,0,this.w,this.h);
 
-        for (let i=this.particles.length-1;i>=0;i--){
-          const p = this.particles[i];
-          p.vy += p.g * dt;
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          p.rot += p.vr * dt;
-          p.life -= dt * (p.kind==="hearts" ? 0.55 : 0.72);
+        for(let i=this.particles.length-1;i>=0;i--){
+          const p=this.particles[i];
+          p.vy += p.g*dt;
+          p.x += p.vx*dt;
+          p.y += p.vy*dt;
+          p.rot += p.vr*dt;
+          p.life -= dt*(p.kind==="hearts"?0.55:0.72);
 
-          const alpha = clamp(p.life, 0, 1);
-          if (alpha <= 0 || p.y > this.h + 80){
+          const alpha=clamp(p.life,0,1);
+          if(alpha<=0 || p.y>this.h+80){
             this.particles.splice(i,1);
             continue;
           }
 
           this.ctx.save();
-          this.ctx.globalAlpha = alpha;
-
-          // Simple shapes, no heavy gradients
-          this.ctx.translate(p.x, p.y);
+          this.ctx.globalAlpha=alpha;
+          this.ctx.translate(p.x,p.y);
           this.ctx.rotate(p.rot);
 
-          if (p.kind==="hearts"){
-            this.drawHeart(0,0,p.s);
-          } else {
-            this.drawConfetti(0,0,p.s);
-          }
+          if(p.kind==="hearts") this.drawHeart(0,0,p.s);
+          else this.drawConfetti(0,0,p.s);
 
           this.ctx.restore();
         }
 
-        if (this.particles.length > 0){
-          this._raf = requestAnimationFrame(()=>this.loop());
-        } else {
-          this._raf = null;
-          this.active = false;
-        }
+        if(this.particles.length>0) this._raf=requestAnimationFrame(()=>this.loop());
+        else this._raf=null;
       }
-
       drawHeart(x,y,s){
-        const ctx = this.ctx;
+        const ctx=this.ctx;
+        const t=s*0.3;
         ctx.beginPath();
-        const topCurveHeight = s * 0.3;
-        ctx.moveTo(x, y + topCurveHeight);
-        ctx.bezierCurveTo(x, y, x - s / 2, y, x - s / 2, y + topCurveHeight);
-        ctx.bezierCurveTo(x - s / 2, y + (s + topCurveHeight) / 2, x, y + (s + topCurveHeight) / 1.2, x, y + s);
-        ctx.bezierCurveTo(x, y + (s + topCurveHeight) / 1.2, x + s / 2, y + (s + topCurveHeight) / 2, x + s / 2, y + topCurveHeight);
-        ctx.bezierCurveTo(x + s / 2, y, x, y, x, y + topCurveHeight);
+        ctx.moveTo(x, y+t);
+        ctx.bezierCurveTo(x, y, x-s/2, y, x-s/2, y+t);
+        ctx.bezierCurveTo(x-s/2, y+(s+t)/2, x, y+(s+t)/1.2, x, y+s);
+        ctx.bezierCurveTo(x, y+(s+t)/1.2, x+s/2, y+(s+t)/2, x+s/2, y+t);
+        ctx.bezierCurveTo(x+s/2, y, x, y, x, y+t);
         ctx.closePath();
-
-        // Fill with a light pink-ish alpha (no fixed palette required; keep minimal)
-        ctx.fillStyle = "rgba(255,179,199,.85)";
+        ctx.fillStyle="rgba(255,179,199,.90)";
         ctx.fill();
-
-        // soft outline
-        ctx.strokeStyle = "rgba(0,0,0,.18)";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle="rgba(0,0,0,.18)";
+        ctx.lineWidth=1;
         ctx.stroke();
       }
-
       drawConfetti(x,y,s){
-        const ctx = this.ctx;
+        const ctx=this.ctx;
         ctx.beginPath();
-        ctx.rect(x - s*0.6, y - s*0.3, s*1.2, s*0.6);
-        ctx.fillStyle = "rgba(255,255,255,.72)";
+        ctx.rect(x-s*0.6, y-s*0.3, s*1.2, s*0.6);
+        ctx.fillStyle="rgba(255,255,255,.70)";
         ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,.16)";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle="rgba(0,0,0,.16)";
+        ctx.lineWidth=1;
         ctx.stroke();
       }
     }
-
     const fx = new FX($("fx"));
 
     /* =========================================================
-       Scene 1 logic
+       Scene 1
        ========================================================= */
-    const signModal = $("signModal");
-    const courierText = $("courierText");
-    const btnNo = $("btnNo");
-    const btnYes = $("btnYes");
-    let noUsed = false;
+    const signModal=$("signModal");
+    const courierText=$("courierText");
+    const courierBubble=$("courierBubble");
+    const btnNo=$("btnNo");
+    const btnYes=$("btnYes");
+    let noUsed=false;
 
-    function openSignModal(){
-      signModal.classList.add("show");
-    }
-    function closeSignModal(){
-      signModal.classList.remove("show");
-    }
+    function openSignModal(){ signModal.classList.add("show"); }
+    function closeSignModal(){ signModal.classList.remove("show"); }
 
     btnNo.addEventListener("click", ()=>{
       audio.sfx("wrong");
       closeSignModal();
-      noUsed = true;
-
-      courierText.textContent = "Вы что, балбес? На первый раз прощаю.";
-      $("courierBubble").classList.add("shake");
-      setTimeout(()=> $("courierBubble").classList.remove("shake"), 380);
-
+      noUsed=true;
+      courierText.textContent="Вы что, балбес? На первый раз прощаю.";
+      courierBubble.classList.add("shake");
+      setTimeout(()=>courierBubble.classList.remove("shake"), 380);
       setTimeout(()=>{
-        // Re-open but without "Нет"
         openSignModal();
-        btnNo.remove();
+        btnNo.remove(); // оставляем только “Да”
       }, 650);
     });
 
-    btnYes.addEventListener("click", async ()=>{
-      audio.sfx("click");
-      audio.sfx("paper");
+    btnYes.addEventListener("click", ()=>{
+      audio.sfx("click"); audio.sfx("paper");
       closeSignModal();
-
-      courierText.textContent = "Подпись есть. Передаю коробку…";
-      // quick "handoff" animation: fade courier card by dimming scene center
-      const centerCard = $("scene1").querySelector(".paperTex");
-      centerCard.style.transition = "transform .55s cubic-bezier(.2,.8,.2,1), opacity .55s ease";
-      centerCard.style.transform = "translateY(10px) scale(.98)";
-      centerCard.style.opacity = ".0";
-
-      setTimeout(()=>{
-        showScene(1);
-        // reset visuals
-        centerCard.style.transform = "";
-        centerCard.style.opacity = "";
-      }, 620);
+      courierText.textContent="Подпись есть. Передаю коробку…";
+      setTimeout(()=> showScene(1), 520);
     });
 
     /* =========================================================
-       Scene 2: box rotation + lock minigame
+       Scene 2: 3D box rotate + lock
        ========================================================= */
-    const box3d = $("box3d");
-    const lockBtn = $("lockBtn");
-    const lockModal = $("lockModal");
-    const lockBack = $("lockBack");
-    const lockDone = $("lockDone");
-    const boxReset = $("boxReset");
+    const boxObj=$("boxObj");
+    const lockBtn=$("lockBtn");
+    const lockModal=$("lockModal");
+    const lockBack=$("lockBack");
+    const lockDone=$("lockDone");
+    const boxReset=$("boxReset");
 
-    const boxRot = new InertialRotator(box3d);
+    const boxRot = new InertialRotator(boxObj);
 
-    boxReset.addEventListener("click", ()=>{
-      audio.sfx("click");
-      boxRot.reset();
-    });
+    boxReset.addEventListener("click", ()=>{ audio.sfx("click"); boxRot.reset(); });
 
     function openLock(){
       audio.sfx("lock");
       lockModal.classList.add("show");
-      // disable box rotation when modal open
-      boxRot.dragging = false;
-      box3d.style.pointerEvents = "none";
     }
-    function closeLock(){
+    function closeLockUI(){
       audio.sfx("paper");
       lockModal.classList.remove("show");
-      box3d.style.pointerEvents = "auto";
     }
 
-    lockBtn.addEventListener("click", ()=>{
-      openLock();
-    });
+    // IMPORTANT: lock press must not be “съеден” поворотом.
+    // Используем pointerup и stopPropagation + маленький threshold.
+    let lockDown = null;
+    lockBtn.addEventListener("pointerdown", (e)=>{
+      lockDown = {x:e.clientX, y:e.clientY, t: now()};
+      e.stopPropagation();
+    }, {passive:true});
 
-    lockBack.addEventListener("click", ()=>{
-      closeLock();
-    });
+    lockBtn.addEventListener("pointerup", (e)=>{
+      if(!lockDown) return;
+      const dx=Math.abs(e.clientX-lockDown.x);
+      const dy=Math.abs(e.clientY-lockDown.y);
+      const dt=now()-lockDown.t;
+      lockDown=null;
+      if(dx<8 && dy<8 && dt<600) openLock();
+      e.stopPropagation();
+    }, {passive:true});
 
-    // Reels setup
+    lockBack.addEventListener("click", ()=> closeLockUI());
+
+    // Reels
     const days = Array.from({length:31}, (_,i)=>i+1);
     const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     const years = [2020,2021,2022,2023,2024,2025,2026];
 
-    const reelDay = new Reel($("reels").querySelector('[data-reel="day"]'), $("reelDay"), days, (v)=>String(v));
-    const reelMonth = new Reel($("reels").querySelector('[data-reel="month"]'), $("reelMonth"), months, (v)=>v);
-    const reelYear = new Reel($("reels").querySelector('[data-reel="year"]'), $("reelYear"), years, (v)=>String(v));
+    const reelDay = new Reel($("reels").querySelector('[data-reel="day"]'), $("reelDay"), days, v=>String(v));
+    const reelMonth = new Reel($("reels").querySelector('[data-reel="month"]'), $("reelMonth"), months, v=>v);
+    const reelYear = new Reel($("reels").querySelector('[data-reel="year"]'), $("reelYear"), years, v=>String(v));
 
-    // Start at a plausible random-ish
-    reelDay.setIndex(0, true);
-    reelMonth.setIndex(0, true);
-    reelYear.setIndex(0, true);
+    reelDay.setIndex(0,true);
+    reelMonth.setIndex(0,true);
+    reelYear.setIndex(0,true);
 
     function lockShake(){
       audio.sfx("wrong");
-      const modal = lockModal.querySelector(".modal");
-      modal.style.animation = "shake .35s ease";
-      setTimeout(()=> modal.style.animation = "", 380);
+      const m = lockModal.querySelector(".modal");
+      m.classList.add("shake");
+      setTimeout(()=>m.classList.remove("shake"), 380);
     }
 
     async function unlockSequence(){
       audio.sfx("success");
-      audio.sfx("lock");
+      fx.burst("confetti"); fx.burst("hearts");
 
-      // Nice box "open" illusion: scale & fade lock pulse off, then transition to scene3
-      lockBtn.style.animation = "none";
-      lockBtn.style.transform = "translate(-50%,-50%) scale(.92)";
-      lockBtn.style.opacity = ".0";
+      // lock fades
+      lockBtn.classList.remove("pulse");
+      lockBtn.animate([
+        { transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+        { transform: "translate(-50%,-50%) scale(.90)", opacity: 0 }
+      ], {duration: 520, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
 
-      closeLock();
+      closeLockUI();
 
-      // small dramatic shake of the box
-      box3d.animate([
-        { transform: `${box3d.style.transform} translateZ(0)`, offset: 0 },
-        { transform: `${box3d.style.transform} translateX(-4px)`, offset: 0.25 },
-        { transform: `${box3d.style.transform} translateX(4px)`, offset: 0.55 },
-        { transform: `${box3d.style.transform} translateX(0px)`, offset: 1 }
-      ], { duration: 420, easing: "ease-out" });
-
-      fx.burst("confetti");
-      fx.burst("hearts");
-
-      // "Open" by scaling box face
-      const face = box3d.querySelector(".boxFace");
-      face.animate([
-        { transform: "scale(1)", filter: "brightness(1)" },
-        { transform: "scale(1.02)", filter: "brightness(1.05)" },
-        { transform: "scale(.92)", filter: "brightness(1.12)", opacity: 0.0 }
-      ], { duration: 780, easing: "cubic-bezier(.2,.8,.2,1)" });
+      // cube “opens” illusion: front face slightly tilts + then scene change
+      const front = $("boxFront");
+      front.animate([
+        { transform: "rotateY(0deg) translateZ(calc(var(--depth) / 2))" },
+        { transform: "rotateY(0deg) translateZ(calc(var(--depth) / 2)) rotateX(-10deg)" },
+        { transform: "rotateY(0deg) translateZ(calc(var(--depth) / 2)) rotateX(-22deg)", opacity: .0 }
+      ], {duration: 720, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
 
       audio.sfx("whoosh");
-
-      setTimeout(()=>{
-        // move to scene 3
-        showScene(2);
-
-        // restore lock for possible restart
-        lockBtn.style.opacity = "";
-        lockBtn.style.transform = "";
-        lockBtn.style.animation = "pulse 1.25s infinite ease-in-out";
-      }, 760);
+      setTimeout(()=> showScene(2), 740);
     }
 
     lockDone.addEventListener("click", ()=>{
@@ -2003,322 +1686,178 @@
       const day = reelDay.getValue();
       const month = reelMonth.getValue();
       const year = reelYear.getValue();
-
-      const ok = (
-        day === CONFIG.lockCode.day &&
-        months.indexOf(month) === CONFIG.lockCode.monthIndex &&
-        year === CONFIG.lockCode.year
-      );
-
-      if (!ok){
-        lockShake();
-        return;
-      }
-
+      const ok = (day===CONFIG.lockCode.day && months.indexOf(month)===CONFIG.lockCode.monthIndex && year===CONFIG.lockCode.year);
+      if(!ok){ lockShake(); return; }
       unlockSequence();
     });
 
     /* =========================================================
-       Scene 3: envelope rotation + throw/open + date check + final
+       Scene 3: 3D envelope rotate + buttons + date
        ========================================================= */
-    const env3d = $("env3d");
-    const sealBtn = $("sealBtn");
-    const throwBtn = $("throwBtn");
-    const openBtn = $("openBtn");
-    const envButtons = $("envButtons");
+    const envObj=$("envObj");
+    const env3d=$("env3d");
+    const sealBtn=$("sealBtn");
+    const flap=$("flap");
+    const throwBtn=$("throwBtn");
+    const openBtn=$("openBtn");
+    const envBubble=$("envBubble");
 
-    const dateModal = $("dateModal");
-    const dateInput = $("dateInput");
-    const dateCheck = $("dateCheck");
-    const dateHint = $("dateHint");
-    const dateCancel = $("dateCancel");
+    const dateModal=$("dateModal");
+    const dateInput=$("dateInput");
+    const dateCheck=$("dateCheck");
+    const dateHint=$("dateHint");
+    const dateCancel=$("dateCancel");
 
-    const finalModal = $("finalModal");
-    const restart = $("restart");
+    const finalModal=$("finalModal");
+    const restart=$("restart");
 
-    const envRot = new InertialRotator(env3d);
+    const envRot = new InertialRotator(envObj);
 
     function toast(text){
-      const b = $("envBubble");
-      const prev = $("envBubble").querySelector(".txt").textContent;
-      $("envBubble").querySelector(".txt").textContent = text;
-      b.classList.add("shake");
-      setTimeout(()=>b.classList.remove("shake"), 380);
-      setTimeout(()=> $("envBubble").querySelector(".txt").textContent = prev, 1200);
+      const prev = envBubble.querySelector(".txt").textContent;
+      envBubble.querySelector(".txt").textContent = text;
+      envBubble.classList.add("shake");
+      setTimeout(()=>envBubble.classList.remove("shake"), 380);
+      setTimeout(()=> envBubble.querySelector(".txt").textContent = prev, 1200);
     }
 
-    let throwUsed = false;
+    let throwUsed=false;
 
     throwBtn.addEventListener("click", ()=>{
-      audio.sfx("wrong");
-      audio.sfx("paper");
-
-      // shake everything slightly
-      env3d.animate([
-        { transform: `${env3d.style.transform}` },
-        { transform: `${env3d.style.transform} translateX(-4px)` },
-        { transform: `${env3d.style.transform} translateX(4px)` },
-        { transform: `${env3d.style.transform}` }
-      ], { duration: 360, easing:"ease-out" });
-
+      audio.sfx("wrong"); audio.sfx("paper");
       toast("Щас по шее получишь");
-
-      // Replace button layout: "Открыть" pushes out "Выбросить"
-      if (!throwUsed){
-        throwUsed = true;
-        // animate: hide throw button, shift open button left
+      if(!throwUsed){
+        throwUsed=true;
         throwBtn.classList.add("hidden");
-        openBtn.animate([
-          { transform: "translateX(0)" },
-          { transform: "translateX(-14px)" },
-          { transform: "translateX(0)" }
-        ], { duration: 480, easing:"cubic-bezier(.2,.8,.2,1)" });
-
-        setTimeout(()=>{
-          // remove throw button from layout
-          throwBtn.remove();
-        }, 260);
+        setTimeout(()=> throwBtn.remove(), 260);
       }
     });
 
     function openDateCheck(){
-      audio.sfx("click");
-      audio.sfx("paper");
-      dateHint.textContent = "";
+      audio.sfx("click"); audio.sfx("paper");
+      dateHint.textContent="";
       dateModal.classList.add("show");
-      env3d.style.pointerEvents = "none";
-      envRot.dragging = false;
-
-      // focus date input; on mobile it will open native picker
-      setTimeout(()=>{ try{ dateInput.focus(); }catch(e){} }, 120);
+      setTimeout(()=>{ try{ dateInput.focus(); }catch(e){} }, 80);
     }
-
     function closeDateCheck(){
       audio.sfx("paper");
       dateModal.classList.remove("show");
-      env3d.style.pointerEvents = "auto";
     }
 
     openBtn.addEventListener("click", ()=>{
       audio.sfx("whoosh");
-
-      // camera "zoom" to seal
-      env3d.animate([
-        { transform: `${env3d.style.transform} scale(1)` },
-        { transform: `${env3d.style.transform} scale(1.06)` }
-      ], { duration: 520, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards" });
-
-      setTimeout(()=>{
-        // show date modal
-        openDateCheck();
-      }, 380);
+      // zoom feel
+      envObj.animate([
+        { transform: envObj.style.transform },
+        { transform: envObj.style.transform + " scale(1.06)" }
+      ], {duration: 460, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
+      setTimeout(()=> openDateCheck(), 260);
     });
 
     dateCancel.addEventListener("click", ()=>{
       closeDateCheck();
-      // zoom back a bit
-      env3d.animate([
-        { transform: `${env3d.style.transform} scale(1.06)` },
-        { transform: `${env3d.style.transform} scale(1)` }
-      ], { duration: 460, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards" });
+      envObj.animate([
+        { transform: envObj.style.transform + " scale(1.06)" },
+        { transform: envObj.style.transform }
+      ], {duration: 420, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
     });
 
     function sealFail(){
       audio.sfx("wrong");
       sealBtn.classList.add("wiggle");
       setTimeout(()=>sealBtn.classList.remove("wiggle"), 380);
-      dateHint.textContent = "Хм… почти. Попробуй ещё раз 😌";
-      dateHint.style.color = "rgba(255,255,255,.78)";
+      dateHint.textContent="Почти. Попробуй ещё раз 😌";
+      dateHint.style.color="rgba(20,20,24,.72)";
     }
-
     function sealSuccess(){
-      audio.sfx("success");
-      audio.sfx("paper");
+      audio.sfx("success"); audio.sfx("paper");
       closeDateCheck();
 
-      // seal "slides off"
+      // seal slides away
       sealBtn.animate([
-        { transform: "translate(-50%,-50%) rotate(0deg)", opacity: 1 },
-        { transform: "translate(-50%,-10%) rotate(16deg)", opacity: 0.0 }
-      ], { duration: 620, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards" });
+        { transform:"translate(-50%,-50%) rotate(0deg)", opacity: 1 },
+        { transform:"translate(-50%,-10%) rotate(16deg)", opacity: 0 }
+      ], {duration: 620, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
 
-      // envelope open effect
-      const flap = env3d.querySelector(".envFlap");
+      // flap opens
       flap.animate([
-        { transform: "translateY(0) rotate(0deg)", opacity: .9 },
-        { transform: "translateY(-8px) rotateX(55deg)", opacity: .78 }
-      ], { duration: 680, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards" });
+        { transform:"rotateX(0deg) translateY(0)", opacity:.9 },
+        { transform:"rotateX(55deg) translateY(-6px)", opacity:.78 }
+      ], {duration: 680, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
 
       fx.burst("hearts");
       setTimeout(()=>fx.burst("confetti"), 120);
 
-      // show photos + letter
-      setTimeout(()=>{
-        showFinal();
-      }, 680);
+      setTimeout(()=> showFinal(), 680);
     }
 
     dateCheck.addEventListener("click", ()=>{
       audio.sfx("click");
-      const v = dateInput.value; // yyyy-mm-dd
-      if (!v){
-        sealFail();
-        return;
-      }
-      if (v !== CONFIG.fanBirthday){
-        sealFail();
-        return;
-      }
+      const v = dateInput.value;
+      if(!v) return sealFail();
+      if(v !== CONFIG.fanBirthday) return sealFail();
       sealSuccess();
     });
 
     /* =========================================================
-       Final modal: photos fade carousel
+       Gallery
        ========================================================= */
-    const photoEls = [ $("ph0"), $("ph1"), $("ph2"), $("ph3") ];
-    const dots = $("dots");
-    let galleryTimer = null;
-    let galleryIndex = 0;
-    let galleryUrls = [];
+    const photoEls=[$("ph0"),$("ph1"),$("ph2"),$("ph3")];
+    const dots=$("dots");
+    let galleryTimer=null;
+    let galleryIndex=0;
+    let galleryUrls=[];
 
     function setupGallery(){
       galleryUrls = CONFIG.images.slice(0,4).filter(Boolean);
-      // Assign src and keep hidden until shown
-      for (let i=0;i<photoEls.length;i++){
-        const el = photoEls[i];
-        if (galleryUrls[i]){
-          el.src = galleryUrls[i];
-          el.style.display = "block";
+      for(let i=0;i<photoEls.length;i++){
+        const el=photoEls[i];
+        if(galleryUrls[i]){
+          el.src=galleryUrls[i];
+          el.style.display="block";
           el.classList.remove("show");
-        } else {
+        }else{
           el.removeAttribute("src");
-          el.style.display = "none";
+          el.style.display="none";
           el.classList.remove("show");
         }
       }
-
-      dots.innerHTML = "";
-      const n = galleryUrls.length;
-      for (let i=0;i<n;i++){
-        const d = document.createElement("div");
-        d.className = "dot" + (i===0 ? " on" : "");
+      dots.innerHTML="";
+      for(let i=0;i<galleryUrls.length;i++){
+        const d=document.createElement("div");
+        d.className="dot" + (i===0?" on":"");
         dots.appendChild(d);
       }
-      galleryIndex = 0;
+      galleryIndex=0;
       showPhoto(0);
-
-      if (galleryTimer) clearInterval(galleryTimer);
-      if (n > 1){
-        galleryTimer = setInterval(()=>{
-          showPhoto((galleryIndex+1) % n);
-        }, 2700);
+      if(galleryTimer) clearInterval(galleryTimer);
+      if(galleryUrls.length>1){
+        galleryTimer=setInterval(()=>showPhoto((galleryIndex+1)%galleryUrls.length), 2700);
       }
     }
-
     function showPhoto(i){
-      const n = galleryUrls.length;
-      if (!n) return;
-      galleryIndex = i;
-
-      for (let k=0;k<photoEls.length;k++){
+      if(!galleryUrls.length) return;
+      galleryIndex=i;
+      for(let k=0;k<photoEls.length;k++){
         photoEls[k].classList.toggle("show", k===i);
       }
-      const dotEls = [...dots.children];
-      dotEls.forEach((d, idx)=> d.classList.toggle("on", idx===i));
+      [...dots.children].forEach((d,idx)=>d.classList.toggle("on", idx===i));
     }
 
     function showFinal(){
       audio.sfx("success");
       finalModal.classList.add("show");
       setupGallery();
-
-      // gentle "settle" feeling
-      const letter = $("letter");
+      const letter=$("letter");
       letter.animate([
-        { transform: "translateY(10px) scale(.99)", opacity: 0.0 },
-        { transform: "translateY(0px) scale(1)", opacity: 1.0 }
-      ], { duration: 680, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards" });
+        { transform:"translateY(10px) scale(.99)", opacity:0 },
+        { transform:"translateY(0) scale(1)", opacity:1 }
+      ], {duration: 640, easing:"cubic-bezier(.2,.8,.2,1)", fill:"forwards"});
     }
 
-    /* =========================================================
-       Restart
-       ========================================================= */
+    /* Restart (простое — reload, чтобы вернуть удалённые кнопки и анимации) */
     restart.addEventListener("click", ()=>{
       audio.sfx("click");
-      // stop gallery
-      if (galleryTimer) clearInterval(galleryTimer);
-      galleryTimer = null;
-
-      // reset UI
-      finalModal.classList.remove("show");
-      dateModal.classList.remove("show");
-
-      // reset buttons
-      if (!document.getElementById("throwBtn")){
-        // If removed, recreate it for a clean restart
-        const btn = document.createElement("button");
-        btn.className = "btn danger wide";
-        btn.id = "throwBtn";
-        btn.textContent = "Выбросить";
-        envButtons.prepend(btn);
-
-        // rewire handler
-        btn.addEventListener("click", ()=>{
-          audio.sfx("wrong");
-          audio.sfx("paper");
-          env3d.animate([
-            { transform: `${env3d.style.transform}` },
-            { transform: `${env3d.style.transform} translateX(-4px)` },
-            { transform: `${env3d.style.transform} translateX(4px)` },
-            { transform: `${env3d.style.transform}` }
-          ], { duration: 360, easing:"ease-out" });
-          toast("Щас по шее получишь");
-
-          if (!throwUsed){
-            throwUsed = true;
-            btn.classList.add("hidden");
-            openBtn.animate([
-              { transform: "translateX(0)" },
-              { transform: "translateX(-14px)" },
-              { transform: "translateX(0)" }
-            ], { duration: 480, easing:"cubic-bezier(.2,.8,.2,1)" });
-
-            setTimeout(()=> btn.remove(), 260);
-          }
-        });
-      }
-      throwUsed = false;
-
-      // reset seal + flap
-      sealBtn.style.transform = "translate(-50%,-50%)";
-      sealBtn.style.opacity = "1";
-      sealBtn.getAnimations().forEach(a=>a.cancel());
-
-      const flap = env3d.querySelector(".envFlap");
-      flap.style.transform = "none";
-      flap.style.opacity = ".9";
-      flap.getAnimations().forEach(a=>a.cancel());
-
-      // reset env scale
-      env3d.style.transform = `rotateX(${envRot.rotX}deg) rotateY(${envRot.rotY}deg)`;
-      env3d.getAnimations().forEach(a=>a.cancel());
-
-      // reset lock visuals
-      lockBtn.style.animation = "pulse 1.25s infinite ease-in-out";
-      lockBtn.style.opacity = "";
-      lockBtn.style.transform = "";
-
-      // reset rotators
-      boxRot.reset();
-      envRot.reset();
-
-      // reset reels to start
-      reelDay.setIndex(0, true);
-      reelMonth.setIndex(0, true);
-      reelYear.setIndex(0, true);
-
-      // reset signature modal
-      // easiest: reload scene 1 UI state (keep current DOM changes)
       location.reload();
     });
 
@@ -2326,27 +1865,22 @@
        Boot
        ========================================================= */
     function setDefaultDateConstraints(){
-      // Nice UX: set min/max around 2000..2010 for picker, but allow any if you want.
-      dateInput.min = "1998-01-01";
-      dateInput.max = "2010-12-31";
-      // don’t auto-fill; user must choose
-      dateInput.value = "";
+      dateInput.min="1998-01-01";
+      dateInput.max="2010-12-31";
+      dateInput.value="";
     }
 
     function startApp(){
-      // Start with scene 1 and show modal
       showScene(0);
       setDefaultDateConstraints();
-
-      // open signature modal after short beat
-      setTimeout(()=> openSignModal(), 420);
+      setTimeout(()=> $("signModal").classList.add("show"), 420);
     }
 
-    // Tap anywhere on loader to unlock audio + hide loader
+    // Loader tap unlock
     async function onFirstTap(){
       loader.removeEventListener("pointerdown", onFirstTap);
       audio.sfx("click");
-      await audio.unlock(); // unlock + start bgm
+      await audio.unlock();
       loader.classList.add("hide");
       setTimeout(()=> loader.style.display="none", 520);
       startApp();
@@ -2354,21 +1888,9 @@
 
     (async ()=>{
       await preload();
-      // prepare audio context in advance (won't play until unlock)
       try{ await audio.init(); }catch(e){}
       loader.addEventListener("pointerdown", onFirstTap, {passive:true});
     })();
-
-    /* =========================================================
-       Telegram WebView niceties (safe no-op)
-       ========================================================= */
-    // Prevent accidental double-tap zoom on iOS
-    let lastTouchEnd = 0;
-    document.addEventListener("touchend", (e)=>{
-      const t = Date.now();
-      if (t - lastTouchEnd <= 280) e.preventDefault();
-      lastTouchEnd = t;
-    }, {passive:false});
   </script>
 </body>
 </html>
