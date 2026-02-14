@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
   <meta name="theme-color" content="#0b0c0f" />
   <title>Валентинка</title>
+
   <style>
     :root{
       --bg:#0b0c0f;
@@ -40,58 +41,59 @@
       overscroll-behavior: none;
     }
 
-    /* ===== Stronger CRT + Pixel TV feel ===== */
+    /* ===== CRT + Pixel TV feel (stronger) ===== */
     .crt{
       position:fixed; inset:0; pointer-events:none; z-index:60;
-      opacity:.26;
+      opacity:.22;
       mix-blend-mode:multiply;
       background:
+        radial-gradient(1200px 800px at 50% 50%, rgba(255,255,255,.06), rgba(0,0,0,0) 65%),
         repeating-linear-gradient(
           to bottom,
-          rgba(255,255,255,.055) 0px,
-          rgba(255,255,255,.055) 1px,
+          rgba(255,255,255,.045) 0px,
+          rgba(255,255,255,.045) 1px,
           rgba(0,0,0,0) 3px,
-          rgba(0,0,0,0) 6px
+          rgba(0,0,0,0) 7px
         );
-      animation: flick 6.0s linear infinite;
+      animation: flick 5.8s linear infinite;
     }
     @keyframes flick{
-      0%,100%{opacity:.24}
-      30%{opacity:.30}
-      55%{opacity:.22}
-      80%{opacity:.31}
+      0%,100%{opacity:.20}
+      20%{opacity:.26}
+      55%{opacity:.18}
+      80%{opacity:.28}
     }
 
     .crtMask{
       position:fixed; inset:0; pointer-events:none; z-index:61;
-      opacity:.18;
+      opacity:.16;
       mix-blend-mode: overlay;
       background:
         repeating-linear-gradient(
           90deg,
           rgba(255,0,0,.09) 0px,
           rgba(255,0,0,.09) 1px,
-          rgba(0,255,255,.07) 1px,
-          rgba(0,255,255,.07) 2px
+          rgba(0,255,255,.06) 1px,
+          rgba(0,255,255,.06) 2px
         );
-      animation: jitter 3.2s steps(10) infinite;
+      animation: jitter 2.9s steps(10) infinite;
     }
     @keyframes jitter{
       0%,100%{transform: translate(0,0)}
-      20%{transform: translate(.6px,0)}
-      40%{transform: translate(-.8px,0)}
-      60%{transform: translate(.3px,-.3px)}
-      80%{transform: translate(-.4px,.3px)}
+      18%{transform: translate(.6px,0)}
+      38%{transform: translate(-.8px,0)}
+      58%{transform: translate(.3px,-.2px)}
+      78%{transform: translate(-.4px,.2px)}
     }
 
     .pxGrid{
       position:fixed; inset:0; pointer-events:none; z-index:62;
-      opacity:.18;
+      opacity:.16;
       mix-blend-mode: overlay;
       background:
         linear-gradient(rgba(255,255,255,.12) 1px, rgba(0,0,0,0) 1px) 0 0/8px 8px,
         linear-gradient(90deg, rgba(255,255,255,.12) 1px, rgba(0,0,0,0) 1px) 0 0/8px 8px;
-      filter: contrast(1.25);
+      filter: contrast(1.2);
       animation: pxShift 1.6s steps(6) infinite;
     }
     @keyframes pxShift{
@@ -154,17 +156,6 @@
         linear-gradient(180deg, #14151a 0%, #0c0d11 100%);
       transform: translateZ(0);
     }
-    /* extra in-viewport CRT vignette + slight blur shimmer (cheap) */
-    .viewport::after{
-      content:"";
-      position:absolute; inset:-2px;
-      pointer-events:none;
-      z-index:5;
-      background:
-        radial-gradient(900px 600px at 50% 0%, rgba(255,255,255,.05), rgba(0,0,0,0) 60%),
-        radial-gradient(800px 800px at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.20) 100%);
-      opacity:.9;
-    }
 
     .scene{
       position:absolute; inset:0;
@@ -172,12 +163,11 @@
       display:flex;
       flex-direction:column;
       justify-content:center;
-      gap:14px;
+      gap:12px;
       opacity:0;
       transform: translateY(10px);
       pointer-events:none;
       transition: opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1);
-      z-index:2;
     }
     .scene.active{
       opacity:1; transform: translateY(0);
@@ -185,38 +175,21 @@
     }
 
     .center{flex:1; display:flex; align-items:center; justify-content:center; position:relative;}
+    .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+
     .bubble{
       align-self:center;
       max-width: 92%;
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: 22px;
       background: linear-gradient(180deg, #f3f0e7, #ebe3d5);
       border: 1px solid rgba(0,0,0,.12);
       box-shadow: var(--shadow2);
       color: rgba(20,20,24,.88);
     }
-    .bubble .who{font-size:12px; opacity:.7; font-weight:900; margin-bottom:6px;}
-    .bubble .txt{font-size:16px; font-weight:900; letter-spacing:.1px;}
-    .bubble.small .txt{font-size:14px;}
-
-    .shake{animation: shake .35s ease;}
-    @keyframes shake{
-      0%{transform:translateX(0)}
-      25%{transform:translateX(-6px)}
-      55%{transform:translateX(6px)}
-      75%{transform:translateX(-4px)}
-      100%{transform:translateX(0)}
-    }
-    .screenShake{animation: screenShake .28s ease;}
-    @keyframes screenShake{
-      0%{transform: translate(0,0)}
-      25%{transform: translate(-3px,1px)}
-      55%{transform: translate(3px,-2px)}
-      80%{transform: translate(-2px,2px)}
-      100%{transform: translate(0,0)}
-    }
-
-    .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+    .bubble .who{font-size:12px; opacity:.7; font-weight:900; margin-bottom:4px;}
+    .bubble .txt{font-size:15px; font-weight:900; letter-spacing:.1px;}
+    .bubble.small .txt{font-size:13px;}
 
     .btn{
       border:none;
@@ -250,6 +223,25 @@
     .btn.wide{min-width: 160px;}
     .btn.hidden{opacity:0; pointer-events:none; transform: translateX(12px) scale(.98);}
 
+    /* Screen shakes */
+    .shake{animation: shake .35s ease;}
+    @keyframes shake{
+      0%{transform:translateX(0)}
+      25%{transform:translateX(-6px)}
+      55%{transform:translateX(6px)}
+      75%{transform:translateX(-4px)}
+      100%{transform:translateX(0)}
+    }
+    .screenShake{ animation: screenShake .42s ease; }
+    @keyframes screenShake{
+      0%{transform: translateZ(0) translateX(0)}
+      18%{transform: translateZ(0) translateX(-6px)}
+      36%{transform: translateZ(0) translateX(6px)}
+      54%{transform: translateZ(0) translateX(-4px)}
+      72%{transform: translateZ(0) translateX(4px)}
+      100%{transform: translateZ(0) translateX(0)}
+    }
+
     .modalWrap{
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center;
@@ -257,7 +249,7 @@
       background: rgba(0,0,0,.35);
       opacity:0; pointer-events:none;
       transition: opacity .28s ease;
-      z-index: 20;
+      z-index: 10;
     }
     .modalWrap.show{opacity:1; pointer-events:auto;}
     .modal{
@@ -305,69 +297,75 @@
       opacity:.9;
     }
 
-    /* ===== Door scene ===== */
-    .doorStage{
-      width:min(380px, 94%);
-      aspect-ratio: 3/4;
+    /* ===== Door (intro) ===== */
+    .doorWrap{
+      width:min(360px, 92%);
+      height:min(520px, 68vh);
+      border-radius: 28px;
       position:relative;
-      perspective: 900px;
+      perspective: 1100px;
       filter: drop-shadow(0 26px 26px rgba(0,0,0,.45));
     }
-    .doorFrame{
+    .door{
       position:absolute; inset:0;
       border-radius: 28px;
-      background: linear-gradient(180deg, #1d1e25, #0f1015);
-      border: 1px solid rgba(255,255,255,.05);
-      overflow:hidden;
-    }
-    .doorFrame::before{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        radial-gradient(900px 520px at 50% 0%, rgba(255,255,255,.05), rgba(255,255,255,0) 60%),
-        radial-gradient(700px 420px at 0% 100%, rgba(0,0,0,.40), rgba(0,0,0,0) 62%),
-        radial-gradient(700px 420px at 100% 100%, rgba(0,0,0,.40), rgba(0,0,0,0) 62%);
-      opacity:.9;
-      pointer-events:none;
-    }
-    .door{
-      position:absolute;
-      left: 10%;
-      top: 8%;
-      width: 80%;
-      height: 84%;
-      transform-style: preserve-3d;
+      transform-style:preserve-3d;
+      transform: rotateY(0deg);
       transform-origin: 0% 50%;
-      border-radius: 22px;
-      background: linear-gradient(180deg, #2a2b33, #171820);
+      transition: transform 900ms cubic-bezier(.2,.8,.2,1);
+      background:
+        radial-gradient(800px 520px at 50% 0%, rgba(255,255,255,.08), rgba(0,0,0,0) 60%),
+        linear-gradient(180deg, #3a2d22, #241b14);
       border: 1px solid rgba(0,0,0,.35);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
-      transition: transform 900ms cubic-bezier(.18,.88,.16,1);
+      overflow:hidden;
     }
     .door::before{
       content:"";
       position:absolute; inset:0;
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.10'/%3E%3C/svg%3E") repeat;
-      mix-blend-mode: overlay;
-      opacity:.35;
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,0) 35%),
+        repeating-linear-gradient(
+          90deg,
+          rgba(0,0,0,.10) 0px,
+          rgba(0,0,0,.10) 2px,
+          rgba(255,255,255,.03) 2px,
+          rgba(255,255,255,.03) 6px
+        );
+      opacity:.65;
       pointer-events:none;
     }
-    .doorKnob{
-      position:absolute;
-      right: 18px;
-      top: 50%;
-      width: 22px;
-      height: 22px;
-      transform: translateY(-50%);
-      border-radius: 999px;
-      background: linear-gradient(180deg, #f2ddaa, #d9b96a);
-      border: 1px solid rgba(0,0,0,.25);
-      box-shadow: 0 10px 14px rgba(0,0,0,.22);
+    .doorPanel{
+      position:absolute; left:10%; right:10%; top:12%; bottom:12%;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.06);
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.18);
     }
-    .door.open{ transform: rotateY(-74deg); }
+    .doorHandle{
+      position:absolute;
+      right: 12%;
+      top: 52%;
+      width: 46px; height: 14px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #e2c28a, #b98c3d);
+      border: 1px solid rgba(0,0,0,.35);
+      box-shadow: 0 10px 14px rgba(0,0,0,.25);
+      transform: translateY(-50%);
+    }
+    .doorKey{
+      position:absolute;
+      right: 12%;
+      top: 57%;
+      width: 16px; height: 16px;
+      border-radius: 6px;
+      background: rgba(0,0,0,.38);
+      border: 1px solid rgba(255,255,255,.06);
+      transform: translate(14px,-50%);
+    }
+    .door.open{
+      transform: rotateY(-70deg);
+    }
 
-    /* ===== Box cuboid (fixed lid geometry) ===== */
+    /* ===== Box cuboid ===== */
     .box3d{
       --w: 270px;
       --h: 240px;
@@ -376,6 +374,12 @@
       left:50%; top:50%;
       transform: translate(-50%,-50%);
       transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 820ms cubic-bezier(.18,.88,.16,1), opacity 500ms ease;
+    }
+    .box3d.drop{
+      transform: translate(-50%,-50%) translateY(88px) scale(.98);
+      opacity: .96;
     }
     .bface{
       position:absolute;
@@ -383,7 +387,6 @@
       border-radius: 22px;
       border: 1px solid rgba(0,0,0,.18);
       overflow:hidden;
-      backface-visibility: hidden;
       background: linear-gradient(180deg, var(--cardboard), var(--cardboard2));
     }
     .bface::before{
@@ -421,17 +424,19 @@
     .bface.right  { transform: translate(-50%,-50%) rotateY(90deg)  translateZ(calc(var(--w)/2)); }
     .bface.left   { transform: translate(-50%,-50%) rotateY(-90deg) translateZ(calc(var(--w)/2)); }
 
-    /* FIXED: top/bottom sit exactly on box edges (slight overlap to hide seams) */
+    /* FIX lid: sits on the box + rotates around back edge */
     .bface.top{
-      transform-origin: 50% 0%;
-      transform: translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2 - 0.5px));
+      transform-origin: 50% 100%;
       transition: transform .88s cubic-bezier(.2,.8,.2,1);
     }
-    .bface.bottom{
-      transform: translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2 - 0.5px));
+    /* closed top: flush with box */
+    .bface.top{
+      transform: translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2 - 0px));
     }
+    .bface.bottom { transform: translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2 - 1px)); }
+
     .box3d.opened .bface.top{
-      transform: translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2 - 0.5px)) rotateX(-105deg);
+      transform: translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2 - 0px)) rotateX(-112deg);
     }
 
     .label{
@@ -545,6 +550,12 @@
       left:50%; top:50%;
       transform: translate(-50%,-50%);
       transform-style: preserve-3d;
+      transition: transform 900ms cubic-bezier(.18,.88,.16,1), opacity 550ms ease;
+      will-change: transform, opacity;
+    }
+    .env3d.downOut{
+      transform: translate(-50%,-50%) translateY(132px) scale(.96);
+      opacity: .12;
     }
     .eface{
       position:absolute;
@@ -552,7 +563,6 @@
       border-radius: 22px;
       border: 1px solid rgba(0,0,0,.16);
       overflow:hidden;
-      backface-visibility:hidden;
       background: linear-gradient(180deg, #f6e6ea 0%, #e7bcc8 100%);
     }
     .eface::before{
@@ -571,14 +581,30 @@
     .eface.back   { transform: translate(-50%,-50%) rotateY(180deg) translateZ(calc(var(--d)/2)); background: linear-gradient(180deg, #f1d3dc, #d9a9b8); }
     .eface.right  { transform: translate(-50%,-50%) rotateY(90deg)  translateZ(calc(var(--w)/2)); }
     .eface.left   { transform: translate(-50%,-50%) rotateY(-90deg) translateZ(calc(var(--w)/2)); }
-    .eface.top    { transform: translate(-50%,-50%) rotateX(90deg)  translateZ(calc(var(--h)/2 - 0.5px)); }
-    .eface.bottom { transform: translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2 - 0.5px)); }
+    .eface.top    { transform: translate(-50%,-50%) rotateX(90deg)  translateZ(calc(var(--h)/2)); }
+    .eface.bottom { transform: translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2)); }
 
     .envFrontUI{ position:absolute; inset:0; }
+    .envLabel{
+      position:absolute;
+      left: 12%;
+      right: 12%;
+      top: 10px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      text-align:center;
+      font-weight: 950;
+      font-size: 13px;
+      color: rgba(20,20,24,.82);
+      background: linear-gradient(180deg, rgba(255,255,255,.68), rgba(240,235,220,.88));
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.14);
+      pointer-events:none;
+    }
 
     .envFlap{
-      position:absolute; left: 10%; right:10%; top: 10%;
-      height: 56%;
+      position:absolute; left: 10%; right:10%; top: 22%;
+      height: 50%;
       border-radius: 18px;
       background: linear-gradient(180deg, rgba(255,255,255,.44), rgba(0,0,0,.06));
       clip-path: polygon(50% 86%, 0% 0%, 100% 0%);
@@ -593,7 +619,7 @@
     }
 
     .seal{
-      position:absolute; left:50%; top: 58%;
+      position:absolute; left:50%; top: 62%;
       width: 84px; height: 84px;
       transform: translate(-50%,-50%);
       border-radius: 24px;
@@ -605,13 +631,6 @@
       touch-action: manipulation;
     }
     .seal b{color: rgba(20,10,14,.72); font-size:18px; font-weight:950;}
-    .seal.wiggle{ animation: sealWiggle .35s ease; }
-    @keyframes sealWiggle{
-      0%{transform:translate(-50%,-50%) rotate(0)}
-      30%{transform:translate(-50%,-50%) rotate(-6deg)}
-      65%{transform:translate(-50%,-50%) rotate(6deg)}
-      100%{transform:translate(-50%,-50%) rotate(0)}
-    }
     .seal.pulse{ animation: sealPulse 1.15s ease-in-out infinite; }
     @keyframes sealPulse{
       0%,100%{transform: translate(-50%,-50%) scale(1)}
@@ -685,7 +704,7 @@
     .lockFooter{display:flex; gap:10px;}
     .lockFooter .btn{flex:1}
 
-    /* Letter (notebook) */
+    /* Letter */
     .notebook{
       width:min(390px,100%);
       padding: 16px 16px 14px 16px;
@@ -802,50 +821,51 @@
     @keyframes tapPulse{0%,100%{transform: scale(1)}50%{transform: scale(1.35)}}
 
     /* FX canvases */
-    canvas#fx{
-      position:absolute; inset:0; pointer-events:none; z-index: 6;
-    }
+    canvas#fx{ position:absolute; inset:0; pointer-events:none; z-index: 6; }
+    /* Real pixelation overlay: low-res canvas scaled up by CSS */
     canvas#pix{
       position:absolute; inset:0; pointer-events:none; z-index: 7;
       image-rendering: pixelated;
-      opacity:.34;
+      opacity:.28;
       mix-blend-mode: overlay;
-      filter: contrast(1.35);
+      filter: contrast(1.25);
+      transform: translateZ(0);
     }
 
-    /* Envelope "fly out" (arc) */
+    /* Envelope rise out of box + box goes down */
     .envPull{
       position:absolute;
       left:50%; top:64%;
-      transform: translate(-50%,-50%) scale(.76);
+      transform: translate(-50%,-50%) translateY(44px) rotateZ(0deg) rotateY(-10deg) scale(.76);
       opacity:0;
       pointer-events:none;
       z-index: 9;
       filter: drop-shadow(0 26px 26px rgba(0,0,0,.40));
+      will-change: transform, opacity;
     }
     .envPull.fly{
       opacity:1;
-      animation: envArc 900ms cubic-bezier(.18,.88,.16,1) both;
+      animation: envRise 950ms cubic-bezier(.18,.88,.16,1) both;
     }
-    @keyframes envArc{
+    @keyframes envRise{
       0%{
-        transform: translate(-50%,-50%) translate(0, 30px) rotateZ(0deg) rotateY(-14deg) scale(.76);
+        transform: translate(-50%,-50%) translateY(54px) rotateZ(0deg) rotateY(-12deg) scale(.74);
         opacity:0;
       }
-      30%{ opacity:1; }
+      20%{ opacity:1; }
       100%{
-        transform: translate(-50%,-50%) translate(0, -72px) rotateZ(-10deg) rotateY(14deg) scale(.92);
+        transform: translate(-50%,-50%) translateY(-116px) rotateZ(-10deg) rotateY(14deg) scale(.92);
         opacity:1;
       }
     }
 
-    /* Letter slide out from envelope */
+    /* Letter transition */
     .letterSlide{
       position:absolute;
       left:50%;
       top:50%;
       width:min(390px, 92%);
-      transform: translate(-50%,-50%) translateY(34px) scale(.92);
+      transform: translate(-50%,-50%) translateY(12px) scale(.94);
       opacity:0;
       pointer-events:none;
       z-index: 12;
@@ -853,21 +873,15 @@
     }
     .letterSlide.show{
       opacity:1;
-      animation: letterOut 950ms cubic-bezier(.18,.88,.16,1) both;
+      pointer-events:auto;
+      animation: letterPop 700ms cubic-bezier(.18,.88,.16,1) both;
     }
-    @keyframes letterOut{
-      0%{
-        transform: translate(-50%,-50%) translateY(44px) scale(.92);
-        opacity:0;
-      }
-      20%{opacity:1;}
-      100%{
-        transform: translate(-50%,-50%) translateY(-132px) scale(1);
-        opacity:1;
-      }
+    @keyframes letterPop{
+      0%{ transform: translate(-50%,-50%) translateY(22px) scale(.92); opacity:0; }
+      100%{ transform: translate(-50%,-50%) translateY(-10px) scale(1); opacity:1; }
     }
 
-    /* Center insult overlay */
+    /* Center message */
     .centerMsg{
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center;
@@ -888,6 +902,22 @@
       font-weight: 950;
       text-align:center;
     }
+
+    /* "New item unlocked" */
+    .unlockToast{
+      position:absolute;
+      left:50%; top:14%;
+      transform: translate(-50%,-50%) translateY(8px) scale(.98);
+      opacity:0;
+      z-index: 40;
+      pointer-events:none;
+      transition: opacity .22s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+    }
+    .unlockToast.show{
+      opacity:1;
+      transform: translate(-50%,-50%) translateY(0) scale(1);
+    }
+    .unlockToast .paper{ padding: 12px 14px; }
 
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
@@ -911,7 +941,18 @@
         <canvas id="fx"></canvas>
         <canvas id="pix"></canvas>
 
-        <!-- STEP 0: дверь + стук + открыть? -->
+        <div class="unlockToast" id="unlockToast">
+          <div class="paper">
+            <div style="font-weight:950;color:rgba(20,20,24,.9); text-align:center;">
+              Вам доступен новый предмет ✨
+              <div style="font-weight:850; font-size:12px; color:rgba(20,20,24,.64); margin-top:4px;">
+                3D посылка
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 0: DOOR -->
         <section class="scene active" id="step0">
           <div class="bubble" id="doorBubble">
             <div class="who">???</div>
@@ -920,18 +961,18 @@
 
           <div class="center">
             <div class="objectStage">
-              <div class="doorStage" id="doorStage">
-                <div class="doorFrame">
-                  <div class="door" id="door3d">
-                    <div class="doorKnob"></div>
-                  </div>
+              <div class="doorWrap">
+                <div class="door" id="door">
+                  <div class="doorPanel"></div>
+                  <div class="doorHandle"></div>
+                  <div class="doorKey"></div>
                 </div>
               </div>
 
               <div class="modalWrap show" id="doorModal">
                 <div class="modal paper">
-                  <h3>К тебе стучатся</h3>
-                  <p id="doorPrompt">Открыть дверь?</p>
+                  <h3>В дверь стучатся</h3>
+                  <p id="doorModalText">Открыть дверь?</p>
                   <div class="row" id="doorButtons">
                     <button class="btn ghost wide" id="doorNo">Нет</button>
                     <button class="btn primary wide" id="doorYes">Да</button>
@@ -942,10 +983,10 @@
           </div>
         </section>
 
-        <!-- STEP 1: мини-диалог с доставщиком -->
+        <!-- STEP 1: COURIER DIALOG -->
         <section class="scene" id="step1">
           <div class="bubble" id="courierBubble">
-            <div class="who">Яндекс-курьер</div>
+            <div class="who" id="courierWho">Курьер</div>
             <div class="txt" id="courierText">Привет. Вы Джама?</div>
           </div>
 
@@ -958,26 +999,26 @@
                     <div style="position:absolute;bottom:8px;left:10px;right:10px;height:8px;border-radius:6px;background:rgba(0,0,0,.10);"></div>
                   </div>
                   <div style="flex:1;">
-                    <div style="font-weight:950;font-size:16px;">Яндекс-курьер</div>
+                    <div style="font-weight:950;font-size:16px;">Яндекс-доставщик</div>
                     <div style="margin-top:4px;color:rgba(0,0,0,.62);font-weight:850;font-size:12px;line-height:1.2;">
-                      Я не подкатываю. Я доставляю 😌
+                      “Я не подкатываю. Я работаю.” 😐
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="modalWrap show" id="dialogModal">
+              <div class="modalWrap show" id="courierModal">
                 <div class="modal paper">
-                  <h3 id="dlgTitle">Вопрос</h3>
-                  <p id="dlgText">Вы Джама?</p>
-                  <div class="row" id="dlgButtons"></div>
+                  <h3 id="courierTitle">Вопрос</h3>
+                  <p id="courierPrompt">Привет. Вы Джама?</p>
+                  <div class="row" id="courierButtons"></div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- STEP 2: box + lock -->
+        <!-- STEP 2: BOX (as before) -->
         <section class="scene" id="step2">
           <div class="bubble small" id="boxBubble">
             <div class="who">Посылка</div>
@@ -1010,15 +1051,17 @@
                     <div class="bface bottom"></div>
                   </div>
                 </div>
+
                 <div class="pixelFrame"></div>
 
-                <!-- envelope fly out preview (real 3D) -->
-                <div class="envPull" id="envPullReal">
+                <!-- envelope preview that rises out -->
+                <div class="envPull" id="envPull">
                   <div class="env3d">
                     <div class="eface front">
                       <div class="envFrontUI">
+                        <div class="envLabel">Конверт</div>
                         <div class="envFlap"></div>
-                        <div class="seal" style="top:60%;"><b>♥</b></div>
+                        <div class="seal" style="top:62%;"><b>♥</b></div>
                       </div>
                     </div>
                     <div class="eface back"></div>
@@ -1028,7 +1071,6 @@
                     <div class="eface bottom"></div>
                   </div>
                 </div>
-
               </div>
 
               <div class="modalWrap" id="lockModal">
@@ -1069,11 +1111,11 @@
           </div>
         </section>
 
-        <!-- STEP 3: envelope + letter slide -->
+        <!-- STEP 3: ENVELOPE -->
         <section class="scene" id="step3">
           <div class="bubble small" id="envBubble">
-            <div class="who">Посылка</div>
-            <div class="txt" id="envHint">Нажми на печать. Она с “замком”.</div>
+            <div class="who" id="envWho">Конверт</div>
+            <div class="txt" id="envHint">Нажми на печать (она “с замком”).</div>
           </div>
 
           <div class="center">
@@ -1088,6 +1130,7 @@
                   <div class="env3d" id="env3d">
                     <div class="eface front">
                       <div class="envFrontUI">
+                        <div class="envLabel">Конверт</div>
                         <div class="envFlap" id="flap"></div>
                         <div class="seal pulse" id="sealBtn" aria-label="seal"><b>♥</b></div>
                       </div>
@@ -1101,7 +1144,6 @@
                 </div>
                 <div class="pixelFrame"></div>
 
-                <!-- Letter slides out (no modal) -->
                 <div class="letterSlide" id="letterSlide">
                   <div class="notebook">
                     <div class="noteTitle">Письмо 📝</div>
@@ -1114,17 +1156,13 @@
                       <div>даже когда вокруг холодно.</div>
                       <div>♥</div>
                     </div>
-                    <div class="row" style="margin-top:14px;">
-                      <button class="btn primary wide" id="restart">Ещё раз</button>
-                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Envelope lock modal (DOB) -->
               <div class="modalWrap" id="envLockModal">
                 <div class="modal paper">
-                  <h3>Дата рождения фаната</h3>
+                  <h3>Когда день рождения у вашего фаната?</h3>
                   <p>Свайпай вверх/вниз на колёсиках. Потом нажми “Готово”.</p>
 
                   <div class="reels" id="envReels">
@@ -1184,12 +1222,8 @@
         wrong: "Audio/wrong.mp3",
         whoosh: "Audio/whoosh.mp3"
       },
-      // коробка: дата начала отношений (пример)
       boxLock: { day: 5, monthIndex: 10, year: 2025 },
-
-      // конверт: ДР фаната = 1 февраля 2005
       envLock: { day: 1, monthIndex: 1, year: 2005 },
-
       maxParticles: 90
     };
 
@@ -1198,8 +1232,17 @@
     const lerp = (a,b,t)=>a+(b-a)*t;
     const now = ()=>performance.now();
 
+    function screenShake(){
+      const vp = $("viewport");
+      vp.classList.remove("screenShake");
+      // restart anim
+      void vp.offsetWidth;
+      vp.classList.add("screenShake");
+      setTimeout(()=>vp.classList.remove("screenShake"), 520);
+    }
+
     /* =========================================================
-       Audio
+       Audio (kept lightweight, fallback beeps)
        ========================================================= */
     class AudioEngine{
       constructor(){
@@ -1282,12 +1325,6 @@
           case "whoosh": this._beep(0.03,240,0.18,1); this._beep(0.02,180,0.20,1); break;
         }
       }
-      knock(){
-        // короткий "стук" (если нет файла)
-        if (this._playBuffer("wrong",0.35)) return;
-        this._beep(0.05,120,0.06,2);
-        this._beep(0.04,92,0.08,2);
-      }
       async startBGM(){
         if (!this.unlocked) return;
         const url = CONFIG.audio.bgm;
@@ -1311,7 +1348,7 @@
     const tapToStart = $("tapToStart");
 
     async function preload(){
-      barFill.style.width = "100%";
+      barFill.style.width = `100%`;
       tapToStart.classList.add("show");
     }
 
@@ -1321,7 +1358,7 @@
     const steps = [$("step0"), $("step1"), $("step2"), $("step3")];
     let stepIndex = 0;
     function showStep(i){
-      stepIndex = clamp(i,0,3);
+      stepIndex = clamp(i,0,steps.length-1);
       steps.forEach((s,idx)=>s.classList.toggle("active", idx===stepIndex));
       fx.resize();
       pix.resize();
@@ -1338,9 +1375,6 @@
         this.rotX = opts.rotX ?? 12;
         this.rotY = opts.rotY ?? -18;
         this.vx=0; this.vy=0;
-
-        this.scale = 1;
-        this.scaleTarget = 1;
 
         this.maxSpeed=240;
         this.damping=11.2;
@@ -1364,10 +1398,8 @@
       }
       reset(){
         this.rotX=12; this.rotY=-18; this.vx=this.vy=0;
-        this.scale=this.scaleTarget=1;
         this.apply();
       }
-      setScale(target){ this.scaleTarget = clamp(target, 0.90, 1.12); }
       onDown(e){
         if (e.isPrimary === false) return;
         const t = e.target;
@@ -1427,13 +1459,12 @@
           if (Math.abs(this.vy) < 0.02) this.vy=0;
         }
 
-        this.scale = lerp(this.scale, this.scaleTarget, 1 - Math.exp(-10*dt));
         this.apply();
         requestAnimationFrame(()=>this.loop());
       }
       apply(){
         this.el.style.transform =
-          `translateZ(0) rotateX(${this.rotX.toFixed(2)}deg) rotateY(${this.rotY.toFixed(2)}deg) scale(${this.scale.toFixed(3)})`;
+          `translateZ(0) rotateX(${this.rotX.toFixed(2)}deg) rotateY(${this.rotY.toFixed(2)}deg)`;
       }
     }
 
@@ -1460,6 +1491,7 @@
         this._lastT=now();
 
         this.populate();
+        this.measure();
 
         this._down=(e)=>this.onDown(e);
         this._move=(e)=>this.onMove(e);
@@ -1479,6 +1511,13 @@
           const d=document.createElement("div");
           d.className="reelItem";
           this.list.appendChild(d);
+        }
+      }
+      measure(){
+        const first=this.list.querySelector(".reelItem");
+        if (first){
+          const r=first.getBoundingClientRect();
+          if (r.height>0) this.itemH=r.height;
         }
       }
       setIndex(idx, quiet=false){
@@ -1564,7 +1603,7 @@
     }
 
     /* =========================================================
-       FX particles
+       FX
        ========================================================= */
     class FX{
       constructor(canvas){
@@ -1655,7 +1694,7 @@
         ctx.bezierCurveTo(x, y+(s+t)/1.2, x+s/2, y+(s+t)/2, x+s/2, y+t);
         ctx.bezierCurveTo(x+s/2, y, x, y, x, y+t);
         ctx.closePath();
-        ctx.fillStyle="rgba(255,179,199,.90)";
+        ctx.fillStyle="rgba(255,179,199,.92)";
         ctx.fill();
         ctx.strokeStyle="rgba(0,0,0,.18)";
         ctx.lineWidth=1;
@@ -1675,14 +1714,15 @@
     const fx = new FX($("fx"));
 
     /* =========================================================
-       Pixel noise overlay (chunky + scan glitches)
+       Pixel TV overlay (real pixel blocks + scanline noise)
        ========================================================= */
     class PixelOverlay{
       constructor(canvas){
         this.c=canvas;
         this.ctx=canvas.getContext("2d", {alpha:true});
         this.w=0; this.h=0;
-        this.scale=9; // меньше -> "сильнее пиксели"
+        this.scale=9; // stronger pixelation
+        this._t=0;
         window.addEventListener("resize", ()=>this.resize(), {passive:true});
         this.resize();
         this.loop();
@@ -1696,28 +1736,36 @@
       }
       loop(){
         const ctx=this.ctx;
+        this._t = (this._t + 1) % 6000;
+
         ctx.clearRect(0,0,this.w,this.h);
 
+        // grain
         const img = ctx.createImageData(this.w, this.h);
-        for(let i=0;i<img.data.length;i+=4){
+        const d = img.data;
+        for(let i=0;i<d.length;i+=4){
           const v = (Math.random()*255)|0;
-          img.data[i]=v;
-          img.data[i+1]=(v+(Math.random()*18-9))|0;
-          img.data[i+2]=(v+(Math.random()*18-9))|0;
-          img.data[i+3]=42;
+          d[i]=v; d[i+1]=v; d[i+2]=v; d[i+3]=44; // alpha
         }
         ctx.putImageData(img,0,0);
 
-        // occasional bright/dark scanlines
-        if (Math.random()<0.30){
+        // random scanlines
+        if (Math.random()<0.35){
           const y = (Math.random()*this.h)|0;
-          ctx.fillStyle = "rgba(255,255,255,.28)";
+          ctx.fillStyle = "rgba(255,255,255,.22)";
           ctx.fillRect(0,y,this.w,1);
         }
-        if (Math.random()<0.14){
+        if (Math.random()<0.16){
           const y = (Math.random()*this.h)|0;
-          ctx.fillStyle = "rgba(0,0,0,.26)";
+          ctx.fillStyle = "rgba(0,0,0,.24)";
           ctx.fillRect(0,y,this.w,2);
+        }
+
+        // “tracking” band sometimes
+        if (Math.random()<0.06){
+          const y = (Math.random()*this.h)|0;
+          ctx.fillStyle = "rgba(255,255,255,.10)";
+          ctx.fillRect(0,y,this.w,6);
         }
 
         requestAnimationFrame(()=>this.loop());
@@ -1726,139 +1774,129 @@
     const pix = new PixelOverlay($("pix"));
 
     /* =========================================================
-       Helpers
+       Door scene logic
        ========================================================= */
-    function addViewportShake(){
-      const v = $("viewport");
-      v.classList.add("screenShake");
-      setTimeout(()=>v.classList.remove("screenShake"), 300);
-    }
-    function lockShake(modalEl){
-      audio.sfx("wrong");
-      const m = modalEl.querySelector(".modal");
-      m.classList.add("shake");
-      setTimeout(()=>m.classList.remove("shake"), 380);
-    }
-
-    /* =========================================================
-       Step 0: Door flow
-       ========================================================= */
-    const door3d = $("door3d");
+    const door = $("door");
     const doorModal = $("doorModal");
-    const doorText = $("doorText");
-    const doorPrompt = $("doorPrompt");
     const doorNo = $("doorNo");
     const doorYes = $("doorYes");
+    const doorText = $("doorText");
+    const doorModalText = $("doorModalText");
 
-    function doKnock(times=1){
-      for(let i=0;i<times;i++){
-        setTimeout(()=>{
-          audio.knock();
-          doorText.textContent = i===0 ? "*тук-тук*" : "*тук-тук* (ещё громче)";
-          addViewportShake();
-        }, i*320);
-      }
+    let doorNoUsed = false;
+
+    function knock(){
+      audio.sfx("wrong");
+      screenShake();
+      doorText.textContent = "*тук-тук*";
     }
 
     doorNo.addEventListener("click", ()=>{
       audio.sfx("wrong");
-      addViewportShake();
-      doorPrompt.textContent = "эээ, ну пожалуйстааааа";
-      doKnock(1);
-      // красиво убрать кнопку "нет"
-      doorNo.classList.add("hidden");
-      setTimeout(()=>doorNo.remove(), 260);
+      screenShake();
+      doorModalText.textContent = "эээ, ну пожалуйстааааа";
+      doorText.textContent = "*тук-тук* *тук*";
+      // hide NO button nicely
+      if (!doorNoUsed){
+        doorNoUsed = true;
+        doorNo.classList.add("hidden");
+        setTimeout(()=>doorNo.remove(), 260);
+      }
+      setTimeout(()=>audio.sfx("wrong"), 120);
     });
 
     doorYes.addEventListener("click", ()=>{
       audio.sfx("click");
-      doorPrompt.textContent = "Открываю…";
-      door3d.classList.add("open");
+      door.open = true;
+      door.classList.add("open");
       doorModal.classList.remove("show");
+      // small whoosh + then courier
       setTimeout(()=>{
-        // чуть пауза, чтобы было понятно что произошло
+        audio.sfx("whoosh");
         showStep(1);
-      }, 780);
+      }, 520);
     });
 
     /* =========================================================
-       Step 1: Courier dialog mini-game
+       Courier dialog logic (mini-game)
        ========================================================= */
-    const courierText = $("courierText");
     const courierBubble = $("courierBubble");
+    const courierText = $("courierText");
+    const courierModal = $("courierModal");
+    const courierTitle = $("courierTitle");
+    const courierPrompt = $("courierPrompt");
+    const courierButtons = $("courierButtons");
+    const unlockToast = $("unlockToast");
 
-    const dialogModal = $("dialogModal");
-    const dlgTitle = $("dlgTitle");
-    const dlgText = $("dlgText");
-    const dlgButtons = $("dlgButtons");
-
-    function setDialog(title, text, buttons){
-      dlgTitle.textContent = title;
-      dlgText.textContent = text;
-      dlgButtons.innerHTML = "";
+    function setCourierDialog(title, prompt, buttons){
+      courierTitle.textContent = title;
+      courierPrompt.textContent = prompt;
+      courierButtons.innerHTML = "";
       buttons.forEach(b=>{
         const btn=document.createElement("button");
-        btn.className = "btn " + (b.kind || "ghost") + " wide";
-        btn.textContent = b.label;
+        btn.className = `btn wide ${b.kind||"ghost"}`;
+        btn.textContent = b.text;
         btn.addEventListener("click", b.onClick, {passive:true});
-        dlgButtons.appendChild(btn);
+        courierButtons.appendChild(btn);
       });
+      courierModal.classList.add("show");
     }
 
-    function courierSay(text){
-      courierText.textContent = text;
+    function courierShake(){
       courierBubble.classList.add("shake");
-      setTimeout(()=>courierBubble.classList.remove("shake"), 320);
+      setTimeout(()=>courierBubble.classList.remove("shake"), 380);
+    }
+
+    function showUnlockToast(){
+      unlockToast.classList.add("show");
+      setTimeout(()=>unlockToast.classList.remove("show"), 1200);
+    }
+
+    function goToBox(){
+      // meme unlock + then box scene
+      audio.sfx("success");
+      fx.burst("confetti"); fx.burst("hearts");
+      showUnlockToast();
+      setTimeout(()=>showStep(2), 820);
     }
 
     function startCourierDialog(){
-      dialogModal.classList.add("show");
-      courierSay("Привет. Вы Джама?");
-      setDialog("Вопрос", "Привет, вы Джама?", [
-        {label:"Да", kind:"primary", onClick: ()=> {
-          audio.sfx("click");
-          courierSay("Тогда вам посылка от фаната.");
-          setDialog("Выбор", "Принять посылку?", [
-            {label:"Взять", kind:"primary", onClick: ()=> acceptBox("Ай, счастливого для влюблённых 😌")},
-            {label:"Не взять", kind:"ghost", onClick: ()=> refuseBox()}
-          ]);
-        }},
-        {label:"Нет", kind:"ghost", onClick: ()=> {
-          audio.sfx("click");
-          courierSay("Не пиздите 🙂 Я не подкатываю, я просто принёс коробку.");
-          setDialog("Выбор", "Вот вам посылка от фаната. Взять?", [
-            {label:"Взять", kind:"primary", onClick: ()=> acceptBox("Вот. Это вам. И да — он(а) реально старался(ась).")},
-            {label:"Не взять", kind:"ghost", onClick: ()=> refuseBox()}
-          ]);
-        }}
-      ]);
-    }
-
-    function refuseBox(){
-      audio.sfx("wrong");
-      addViewportShake();
-      courierSay("Да что ты говоришь… держи. Ради тебя вообще-то старались.");
-      setDialog("Ладно", "Без вариантов 😌", [
-        {label:"Взять", kind:"primary", onClick: ()=> acceptBox("Вот так-то лучше.")},
-      ]);
-    }
-
-    function acceptBox(line){
-      audio.sfx("success");
-      fx.burst("confetti"); fx.burst("hearts");
-      courierSay(line);
-      // мемная "новый предмет"
-      setDialog("Новый предмет!", "Вам доступен новый предмет: «Посылка»", [
-        {label:"ОК", kind:"primary", onClick: ()=> {
-          audio.sfx("click");
-          dialogModal.classList.remove("show");
-          setTimeout(()=>showStep(2), 320);
-        }}
+      setCourierDialog("Вопрос", "Привет. Вы Джама?", [
+        {
+          text:"Да",
+          kind:"primary",
+          onClick: ()=>{
+            audio.sfx("click");
+            courierText.textContent = "Отлично. Вам посылка от фаната.";
+            courierShake();
+            setCourierDialog("Подтверждение", "Берёте посылку?", [
+              { text:"Взять", kind:"primary", onClick: ()=>{ audio.sfx("success"); courierModal.classList.remove("show"); goToBox(); } },
+              { text:"Не взять", kind:"ghost", onClick: ()=>{ audio.sfx("wrong"); courierText.textContent="Ай счастливого для влюблённых 😐"; courierShake(); setCourierDialog("Ладно", "…но я всё равно оставлю.", [
+                  { text:"Ладно, взять", kind:"primary", onClick: ()=>{ audio.sfx("success"); courierModal.classList.remove("show"); goToBox(); } }
+                ]); } }
+            ]);
+          }
+        },
+        {
+          text:"Нет",
+          kind:"ghost",
+          onClick: ()=>{
+            audio.sfx("click");
+            courierText.textContent = "Не пиздите. Я не подкатываю, я просто принёс коробку. Вот вам посылка от фаната.";
+            courierShake();
+            setCourierDialog("Подтверждение", "Берёте посылку?", [
+              { text:"Взять", kind:"primary", onClick: ()=>{ audio.sfx("success"); courierModal.classList.remove("show"); goToBox(); } },
+              { text:"Не взять", kind:"ghost", onClick: ()=>{ audio.sfx("wrong"); courierText.textContent="Да фто ты говоришь… Держи. Ради тебя вообще-то старались."; courierShake(); setCourierDialog("Без вариантов", "Она уже твоя.", [
+                  { text:"Взять", kind:"primary", onClick: ()=>{ audio.sfx("success"); courierModal.classList.remove("show"); goToBox(); } }
+                ]); } }
+            ]);
+          }
+        }
       ]);
     }
 
     /* =========================================================
-       Step 2: box + lock + open + envelope arc
+       Step 2: Box (kept)
        ========================================================= */
     const boxObj=$("boxObj");
     const lockBtn=$("lockBtn");
@@ -1867,19 +1905,13 @@
     const lockDone=$("lockDone");
     const boxReset=$("boxReset");
     const box3d=$("box3d");
-    const envPullReal = $("envPullReal");
+    const envPull=$("envPull");
 
     const boxRot = new InertialRotator(boxObj, {rotX: 14, rotY: -22});
     boxReset.addEventListener("click", ()=>{ audio.sfx("click"); boxRot.reset(); });
 
-    function openLock(){
-      audio.sfx("lock");
-      lockModal.classList.add("show");
-    }
-    function closeLockUI(){
-      audio.sfx("paper");
-      lockModal.classList.remove("show");
-    }
+    function openLock(){ audio.sfx("lock"); lockModal.classList.add("show"); }
+    function closeLockUI(){ audio.sfx("paper"); lockModal.classList.remove("show"); }
 
     let lockDown = null;
     lockBtn.addEventListener("pointerdown", (e)=>{
@@ -1911,7 +1943,15 @@
     reelMonth.setIndex(0,true);
     reelYear.setIndex(0,true);
 
-    async function unlockSequence(){
+    function lockShake(modalEl){
+      audio.sfx("wrong");
+      const m = modalEl.querySelector(".modal");
+      m.classList.add("shake");
+      setTimeout(()=>m.classList.remove("shake"), 380);
+      screenShake();
+    }
+
+    function unlockSequence(){
       audio.sfx("success");
       fx.burst("confetti"); fx.burst("hearts");
 
@@ -1921,19 +1961,17 @@
 
       closeLockUI();
 
-      // 1) open lid
       box3d.classList.add("opened");
       audio.sfx("whoosh");
 
-      // 2) envelope flies out on arc
       setTimeout(()=>{
-        envPullReal.classList.add("fly");
+        box3d.classList.add("drop");
+        envPull.classList.add("fly");
         audio.sfx("paper");
         fx.burst("hearts");
       }, 520);
 
-      // 3) proceed to envelope step
-      setTimeout(()=> showStep(3), 1350);
+      setTimeout(()=> showStep(3), 1500);
     }
 
     lockDone.addEventListener("click", ()=>{
@@ -1947,7 +1985,7 @@
     });
 
     /* =========================================================
-       Step 3: envelope DOB-lock on seal + letter slides out
+       Step 3: Envelope (kept)
        ========================================================= */
     const envObj=$("envObj");
     const envRot = new InertialRotator(envObj, {rotX: 12, rotY: 18});
@@ -1955,6 +1993,7 @@
     const sealBtn=$("sealBtn");
     const env3d=$("env3d");
     const envHint=$("envHint");
+    const envWho=$("envWho");
 
     const throwBtn=$("throwBtn");
     const centerMsg=$("centerMsg");
@@ -1965,7 +2004,6 @@
     const envLockDone=$("envLockDone");
 
     const letterSlide=$("letterSlide");
-    const restart=$("restart");
 
     const envReelDay = new Reel($("envReels").querySelector('[data-reel="day"]'), $("envReelDay"), days, v=>String(v));
     const envReelMonth = new Reel($("envReels").querySelector('[data-reel="month"]'), $("envReelMonth"), months, v=>v);
@@ -1975,7 +2013,6 @@
     envReelMonth.setIndex(0,true);
     envReelYear.setIndex(0,true);
 
-    let envUnlocked = false;
     let envelopeOpened = false;
 
     function showCenterText(text){
@@ -1995,6 +2032,24 @@
 
     envLockBack.addEventListener("click", ()=> closeEnvLock());
 
+    function openEnvelopeAndLetter(){
+      if (envelopeOpened) return;
+      envelopeOpened = true;
+
+      audio.sfx("whoosh");
+      env3d.classList.add("opened");
+      fx.burst("hearts");
+      setTimeout(()=>fx.burst("confetti"), 120);
+
+      setTimeout(()=>{
+        envWho.textContent = "Письмо";
+        envHint.textContent = "Вот что было внутри.";
+        env3d.classList.add("downOut");
+        audio.sfx("paper");
+        letterSlide.classList.add("show");
+      }, 420);
+    }
+
     envLockDone.addEventListener("click", ()=>{
       audio.sfx("click");
       const day = envReelDay.getValue();
@@ -2003,34 +2058,13 @@
       const ok = (day===CONFIG.envLock.day && months.indexOf(month)===CONFIG.envLock.monthIndex && year===CONFIG.envLock.year);
       if(!ok){ lockShake(envLockModal); return; }
 
-      envUnlocked = true;
       closeEnvLock();
       audio.sfx("success");
       fx.burst("confetti"); fx.burst("hearts");
-      envHint.textContent = "Теперь нажми на печать ещё раз — и откроется.";
-      sealBtn.classList.add("pulse");
+
+      setTimeout(()=>openEnvelopeAndLetter(), 260);
     });
 
-    function openEnvelopeAndLetter(){
-      if (envelopeOpened) return;
-      envelopeOpened = true;
-
-      audio.sfx("whoosh");
-      sealBtn.classList.add("wiggle");
-      setTimeout(()=>sealBtn.classList.remove("wiggle"), 380);
-
-      env3d.classList.add("opened");
-      fx.burst("hearts");
-      setTimeout(()=>fx.burst("confetti"), 120);
-
-      // letter slides out from the envelope opening
-      setTimeout(()=>{
-        audio.sfx("paper");
-        letterSlide.classList.add("show");
-      }, 420);
-    }
-
-    // Seal behavior: first it opens lock, after unlock it opens envelope
     let sealDown = null;
     sealBtn.addEventListener("pointerdown", (e)=>{
       sealDown = {x:e.clientX, y:e.clientY, t: now()};
@@ -2045,20 +2079,16 @@
       sealDown=null;
       if(dx>=10 || dy>=10 || dt>650) return;
 
-      if (!envUnlocked){
-        openEnvLock();
-      } else {
-        openEnvelopeAndLetter();
-      }
+      if (!envelopeOpened) openEnvLock();
       e.stopPropagation();
     }, {passive:true});
 
-    // Only "throw away" button
     let throwUsed=false;
     throwBtn.addEventListener("click", ()=>{
       audio.sfx("wrong");
       showCenterText("ты что вообще ошалела иди открывай и не наглей");
       $("envWrap").classList.add("shake");
+      screenShake();
       setTimeout(()=>$("envWrap").classList.remove("shake"), 380);
 
       if (!throwUsed){
@@ -2069,19 +2099,13 @@
       }
     });
 
-    restart.addEventListener("click", ()=>{
-      audio.sfx("click");
-      location.reload();
-    });
-
     /* =========================================================
        Boot
        ========================================================= */
     function startApp(){
       showStep(0);
-      // понятное начало: стук, пауза, потом модалка уже показана
-      setTimeout(()=>doKnock(1), 260);
-      setTimeout(()=>audio.knock(), 650);
+      // initial knock
+      setTimeout(()=>{ knock(); }, 220);
     }
 
     async function onFirstTap(){
@@ -2091,14 +2115,14 @@
       loader.classList.add("hide");
       setTimeout(()=> loader.style.display="none", 520);
       startApp();
-      // диалог курьера стартует, когда попадём на step1
+      // Start courier dialog once we arrive to step1
       const obs = new MutationObserver(()=>{
-        if (steps[1].classList.contains("active")){
+        if ($("step1").classList.contains("active")){
           obs.disconnect();
-          setTimeout(()=>startCourierDialog(), 220);
+          setTimeout(()=>startCourierDialog(), 260);
         }
       });
-      obs.observe(steps[1], {attributes:true, attributeFilter:["class"]});
+      obs.observe($("step1"), {attributes:true, attributeFilter:["class"]});
     }
 
     (async ()=>{
