@@ -871,6 +871,14 @@
       from { transform: translateY(0); }
       to   { transform: translateY(30px); }
     }
+    /* cinematic auto-focus for envelope */
+    #envObj.autofocus{
+      transition: transform 520ms cubic-bezier(.2,.9,.2,1);
+    }
+    #sealBtn.press{
+      transition: transform 220ms cubic-bezier(.2,.9,.2,1);
+      transform: translate(-50%,-50%) scale(.94);
+    }
     .loaderImg{
       display:block;
       width:min(240px, 70vw);
@@ -2257,32 +2265,47 @@
 
       env3d.classList.add("opened");
 
-      // === координаты печати (центр источника эффекта) ===
+      // координаты печати
       const sealRect = sealBtn.getBoundingClientRect();
       const vpRect = $("viewport").getBoundingClientRect();
-
       const x = (sealRect.left + sealRect.width/2) - vpRect.left;
-      const y = (sealRect.top + sealRect.height/2) - vpRect.top;
+      const y = (sealRect.top  + sealRect.height/2) - vpRect.top;
 
-      // лёгкий слоумо (делает эффект "вау")
-      fx.timeScale = 0.32;
-      setTimeout(()=>fx.timeScale = 1, 520);
+      // ===== МОМЕНТ ТИШИНЫ (простая версия) =====
+      const prevVol = (audio.bgmBus ? audio.bgmBus.gain.value : audio.bgmGain);
 
-      // ✅ особый звук именно тут
-      audio.sfx("sparkle");
+      // музыка почти в 0
+      if (audio.bgmBus) audio.bgmBus.gain.value = 0.002;
+      else if (audio.bgmEl) audio.bgmEl.volume = 0.002;
 
-      // ✅ сердечки + фейерверк (кольцо + струя)
-      fx.burstAt(x, y, "hearts", 1.35);
-      setTimeout(()=>fx.burstAt(x, y, "confetti", 1.35), 70);
-      setTimeout(()=>fx.burstAt(x, y - 14, "hearts", 1.25), 140);
-      setTimeout(()=>fx.burstAt(x, y - 24, "confetti", 1.15), 230);
-      setTimeout(()=>fx.burstAt(x, y - 10, "hearts", 1.10), 320);
+      // стоп частицы
+      fx.particles.length = 0;
+      if (fx._raf){ cancelAnimationFrame(fx._raf); fx._raf = null; }
+      fx.ctx.clearRect(0,0,fx.w,fx.h);
 
-      // письмо выезжает
+      // пауза 0.5 сек
       setTimeout(()=>{
-        audio.sfx("paper");
-        letterSlide.classList.add("show");
-      }, 420);
+
+        // вернуть громкость
+        if (audio.bgmBus) audio.bgmBus.gain.value = prevVol;
+        else if (audio.bgmEl) audio.bgmEl.volume = prevVol;
+
+        // взрыв любви
+        audio.sfx("sparkle");
+        fx.timeScale = 0.32;
+        setTimeout(()=>fx.timeScale = 1, 520);
+
+        fx.burstAt(x, y, "hearts", 1.45);
+        setTimeout(()=>fx.burstAt(x, y, "confetti", 1.35), 70);
+        setTimeout(()=>fx.burstAt(x, y - 14, "hearts", 1.25), 140);
+
+        // письмо выезжает
+        setTimeout(()=>{
+          audio.sfx("paper");
+          letterSlide.classList.add("show");
+        }, 420);
+
+      }, 500);
     }
 
     // Seal behavior: first it opens lock, after unlock it opens envelope
