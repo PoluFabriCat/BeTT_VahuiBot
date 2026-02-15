@@ -776,6 +776,9 @@
       filter: drop-shadow(0 22px 22px rgba(0,0,0,.35));
     }
     .letterSlide.show{
+      pointer-events:auto; /* ловит клики ТОЛЬКО когда письмо показано */
+    }
+    .letterSlide.show{
       opacity:1;
       animation: letterOut 950ms cubic-bezier(.18,.88,.16,1) both;
     }
@@ -832,10 +835,29 @@
       font-weight: 950;
       text-align:center;
     }
+    #boxWrap{ position: relative; }
+
+    #boxWrap{
+      position: relative;
+    }
+
+    #boxObj{
+      position: relative;
+      z-index: 5;   /* коробка */
+    }
+
+    #envPullReal{
+      position: relative;
+      z-index: 10;  /* конверт выше коробки */
+    }
     /* cheap barrel-ish feel */
     .viewport{
       transform: translateZ(0) perspective(900px) rotateX(.6deg) scale(1.012);
       transform-origin: 50% 50%;
+    }
+    #signModal{
+      border-radius: 30px;   /* степень закругления */
+      overflow: hidden;      /* чтобы фон не выходил за края */
     }
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
@@ -850,8 +872,8 @@
 <body>
   <div class="loader" id="loader">
     <div class="loaderCard">
-      <div class="loaderTitle">Подготовка посылки…</div>
-      <div class="loaderSub">Один раз тапни — чтобы Telegram разрешил музыку.</div>
+      <div class="loaderTitle">Загрузка любви...</div>
+      <div class="loaderSub">Тапни на экран, чтобы начать :)</div>
       <div class="bar"><i id="barFill"></i></div>
       <div class="tapToStart" id="tapToStart"><span class="tapDot"></span>Тапни, чтобы начать</div>
     </div>
@@ -899,7 +921,7 @@
         <!-- STEP 2: box + lock -->
         <section class="scene" id="step2">
           <div class="bubble small" id="boxBubble">
-            <div class="who">Посылка</div>
+            <div class="who">Советчик</div>
             <div class="txt">Покрути коробку пальцем и нажми на замок.</div>
           </div>
 
@@ -991,7 +1013,7 @@
         <!-- STEP 3: envelope + letter slide -->
         <section class="scene" id="step3">
           <div class="bubble small" id="envBubble">
-            <div class="who">Посылка</div>
+            <div class="who">Советчик</div>
             <div class="txt" id="envHint">Нажми на печать. Она с “замком”.</div>
           </div>
 
@@ -1023,18 +1045,19 @@
                 <!-- Letter slides out (no modal) -->
                 <div class="letterSlide" id="letterSlide">
                   <div class="notebook">
-                    <div class="noteTitle">Письмо 📝</div>
+                    <div class="noteTitle">Любовное письмо</div>
                     <div class="noteText" id="letterText">
-                      <div>Джама, привет…</div>
-                      <div>Я спрятал(а) это письмо внутри посылки,</div>
+                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
+                      <div>Котеночек, привет</div>
+                      <div>Я спрятал это письмо внутри конверта и посылки,</div>
                       <div>чтобы сказать простую вещь:</div>
-                      <div>ты — мой самый красивый “счастливый случай”.</div>
-                      <div>Пусть у тебя будет тепло,</div>
+                      <div>Ты — мой самый милый “счастливый случай”.</div>
+                      <div>Пусть у тебя на душе будет тепло,</div>
                       <div>даже когда вокруг холодно.</div>
-                      <div>♥</div>
+                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
                     </div>
                     <div class="row" style="margin-top:14px;">
-                      <button class="btn primary wide" id="restart">Назад</button>
+                      <button class="btn primary wide" id="restart">♥люблю♥</button>
                     </div>
                   </div>
                 </div>
@@ -1081,7 +1104,7 @@
 
       </div>
 
-      <div class="foot">Вертикальная ориентация • Telegram WebView</div>
+      <div class="foot">Подарочная игра полностью пренадлежит Джаме</div>
     </div>
   </div>
 
@@ -1883,7 +1906,7 @@
       }
 
       else if (st === STEP.JAMA_ASK){
-        setTop("Курьер", "Здравствуйте, вас зовут Джама");
+        setTop("Яндекс-Курьер", "Салам алейкум, вас зовут Джамиля, верно?");
         setCenter("Согласиться?", "Выберите ответ", "Да", "Нет", true);
 
         btnNo.addEventListener("click", ()=>{
@@ -1902,7 +1925,7 @@
 
       else if (st === STEP.SIGN_FROM_NO){
         setTop(
-          "Курьер",
+          "Яндекс-Курьер",
           "Да не пиздите, по красивым глазам вижу что это вы! Я же не подкатываю, так что успокойтесь, я просто принёс посылку от вашего фаната! Вам осталось только расписаться за получение и забрать ваш чёткий подарок :)"
         );
         setCenter("Расписаться?", "Подтвердить получение", "Да", "Нет", true);
@@ -1923,7 +1946,7 @@
 
       else if (st === STEP.SIGN_FROM_YES){
         setTop(
-          "Курьер",
+          "Яндекс-Курьер",
           "Я с хорошими новостями, один очень красивый и сексуальный фанат вам отправил посылку, распишитесь и можете насладиться своим ебейшим, как и вы, подарком :)"
         );
         setCenter("Расписаться?", "Подтвердить получение", "Да", "Нет", true);
@@ -1943,7 +1966,7 @@
       }
 
       else if (st === STEP.PICKUP_FROM_SIGN_YES){
-        setTop("Курьер", "УУУ так вы душнила которая правила соблюдаете, так, всеее! Вот ваша посылка :)");
+        setTop("Яндекс-Курьер", "УУУ так вы душнила которая правила соблюдаете, так, всеее! Вот ваша посылка :)");
         setCenter("Забрать посылку?", "И перейти к подарку", "Да", "", false);
 
         btnYes.addEventListener("click", ()=>{
@@ -1954,7 +1977,7 @@
       }
 
       else if (st === STEP.PICKUP_FROM_SIGN_NO){
-        setTop("Курьер", "Пфф, мне лень разбираться с вами, поэтому просто забирайте посылку... бе бе бе");
+        setTop("Яндекс-Курьер", "Пфф, мне лень разбираться с вами, поэтому просто забирайте посылку... бе бе бе");
         setCenter("Забрать посылку?", "И перейти к подарку", "Да", "", false);
 
         btnYes.addEventListener("click", ()=>{
@@ -2033,6 +2056,7 @@
     async function unlockSequence(){
       audio.sfx("success");
       fx.burst("confetti");
+      audio.sfx("sparkle");
 
       lockBtn.classList.remove("pulse");
       lockBtn.style.opacity = "0";
@@ -2128,7 +2152,7 @@
       // только звук успеха, без частиц
       audio.sfx("success");
 
-      envHint.textContent = "Теперь нажми на печать ещё раз, чтобы открыть.";
+      envHint.textContent = "Это письмо было написано с любовью и теплом. Как бв эм, такое и на стену повесить не жалко боше";
       sealBtn.classList.remove("pulse");
       sealBtn.classList.add("pulse");
     });
@@ -2211,8 +2235,25 @@
     });
 
     restart.addEventListener("click", ()=>{
-      audio.sfx("click");
-      location.reload();
+      audio.sfx("sparkle"); // звук
+
+      // координаты центра кнопки (надёжнее чем letterSlide)
+      const vpRect = $("viewport").getBoundingClientRect();
+      const b = restart.getBoundingClientRect();
+      const x = (b.left + b.width/2) - vpRect.left;
+      const y = (b.top + b.height/2) - vpRect.top;
+
+      fx.timeScale = 0.6;
+      setTimeout(()=>fx.timeScale = 1, 650);
+
+      fx.burstAt(x, y, "hearts", 1.35);
+      setTimeout(()=>fx.burstAt(x-40, y, "hearts", 1.10), 120);
+      setTimeout(()=>fx.burstAt(x+40, y, "hearts", 1.10), 240);
+      setTimeout(()=>fx.burstAt(x, y-25, "hearts", 1.20), 360);
+
+      // лёгкая дрожь письма
+      letterSlide.classList.add("shake");
+      setTimeout(()=>letterSlide.classList.remove("shake"), 380);
     });
 
     /* =========================================================
