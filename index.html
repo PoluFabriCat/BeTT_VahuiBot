@@ -340,17 +340,22 @@
     .bface.left   { transform: translate(-50%,-50%) rotateY(-90deg) translateZ(calc(var(--w)/2)); }
 
     /* FIX: top/bottom slightly inset to avoid "floating lid" look */
-    .bface.top    { transform: translate(-50%,-50%) rotateX(90deg)  translateZ(calc(var(--h)/2 - 1px)); }
-    .bface.bottom { transform: translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2 - 1px)); }
+    .bface.top{
+      transform: translate(-50%,-50%)
+                 translateY(calc(var(--h)/-2))
+                 rotateX(90deg);
+    }
+
 
     /* lid open animation */
-    .bface.top{
-      transform-origin: 50% 0%;
-      transition: transform .88s cubic-bezier(.2,.8,.2,1);
-    }
     .box3d.opened .bface.top{
       transform: translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2 - 1px)) rotateX(-105deg);
     }
+    .bface.bottom{
+          transform: translate(-50%,-50%)
+                     translateY(calc(var(--h)/2))
+                     rotateX(-90deg);
+        }
 
     .label{
       position:absolute; left: 12%; right:12%; top: 12%;
@@ -723,11 +728,11 @@
       position:absolute; inset:0; pointer-events:none; z-index: 6;
     }
     canvas#pix{
-      position:absolute; inset:0; pointer-events:none; z-index: 7;
+      position:absolute; inset:0; pointer-events:none; z-index:7;
+      width:100%; height:100%;
       image-rendering: pixelated;
-      opacity:.22;
-      mix-blend-mode: overlay;
-      filter: contrast(1.2);
+      opacity:.12;
+      mix-blend-mode: overlay; /* если в телеге странно — поставь normal */
     }
 
     /* Envelope "fly out" (arc) */
@@ -824,6 +829,11 @@
       color: rgba(20,20,24,.88);
       font-weight: 950;
       text-align:center;
+    }
+    /* cheap barrel-ish feel */
+    .viewport{
+      transform: translateZ(0) perspective(900px) rotateX(.6deg) scale(1.012);
+      transform-origin: 50% 50%;
     }
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
@@ -945,17 +955,17 @@
 
                   <div class="reels" id="reels">
                     <div class="reel" data-reel="day">
-                      <div class="reelHeader">ДЕНЬ</div>
+                      <div class="reelHeader"></div>
                       <div class="windowLine"></div>
                       <div class="reelList" id="reelDay"></div>
                     </div>
                     <div class="reel" data-reel="month">
-                      <div class="reelHeader">МЕСЯЦ</div>
+                      <div class="reelHeader"></div>
                       <div class="windowLine"></div>
                       <div class="reelList" id="reelMonth"></div>
                     </div>
                     <div class="reel" data-reel="year">
-                      <div class="reelHeader">ГОД</div>
+                      <div class="reelHeader"></div>
                       <div class="windowLine"></div>
                       <div class="reelList" id="reelYear"></div>
                     </div>
@@ -1586,48 +1596,119 @@
     const fx = new FX($("fx"));
 
     /* =========================================================
-       Pixel noise overlay (low-res blocks)
-       ========================================================= */
+   Pixel + CRT overlay (low-res blocks + rare scanlines + slight chroma noise)
+   Drop-in replacement for your PixelOverlay
+   ========================================================= */
     class PixelOverlay{
       constructor(canvas){
-        this.c=canvas;
-        this.ctx=canvas.getContext("2d");
-        this.w=0; this.h=0;
-        this.scale=10; // bigger blocks -> more "pixelated TV"
-        window.addEventListener("resize", ()=>this.resize(), {passive:true});
+        this.c = canvas;
+        this.ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+
+        // "render resolution" (smaller = more detailed, larger = chunkier)
+        this.scale = 6;
+
+        this.w = 1; this.h = 1;
+
+        // line / noise controls
+        this.scale = 7;          // чуть крупнее блоки
+        this.baseAlpha = 90;     // было 120 (слишком жирно)
+        this.lineProbBright = 0.008;
+        this.lineProbDark   = 0.004;
+        this.lineBurstProb  = 0.004;  // rare burst of a few lines (VHS-ish)
+
+        // subtle time drift
+        this.t = 0;
+
+        // keep one ImageData buffer (avoid alloc each frame)
+        this.img = null;
+
+        this._raf = null;
+        this._resize = ()=>this.resize();
+
+        window.addEventListener("resize", this._resize, { passive: true });
         this.resize();
         this.loop();
       }
+
       resize(){
-        const r=this.c.getBoundingClientRect();
-        this.w=Math.max(1, Math.floor(r.width/this.scale));
-        this.h=Math.max(1, Math.floor(r.height/this.scale));
-        this.c.width=this.w;
-        this.c.height=this.h;
+        const r = this.c.getBoundingClientRect();
+        const w = Math.max(1, Math.floor(r.width / this.scale));
+        const h = Math.max(1, Math.floor(r.height / this.scale));
+
+        if (w === this.w && h === this.h && this.img) return;
+
+        this.w = w; this.h = h;
+        this.c.width  = w;
+        this.c.height = h;
+
+        // IMPORTANT: disable smoothing so CSS upscale looks "pixelated"
+        this.ctx.imageSmoothingEnabled = false;
+
+        // allocate once
+        this.img = this.ctx.createImageData(this.w, this.h);
       }
+
+      // small helper
+      _clampByte(v){ return v < 0 ? 0 : (v > 255 ? 255 : v|0); }
+
       loop(){
-        const ctx=this.ctx;
-        ctx.clearRect(0,0,this.w,this.h);
+        const ctx = this.ctx;
+        const img = this.img;
+        const d = img.data;
 
-        const img = ctx.createImageData(this.w, this.h);
-        for(let i=0;i<img.data.length;i+=4){
-          const v = (Math.random()*255)|0;
-          img.data[i]=v; img.data[i+1]=v; img.data[i+2]=v; img.data[i+3]=34;
+        // animate very slightly (gives "live" crt feel, not static)
+        this.t += 1;
+
+        // --- 1) low-res grain with tiny chroma separation ---
+        // We do grayscale + small per-channel offset to mimic CRT phosphor noise.
+        // Keep it subtle so it doesn't look like RGB glitter.
+        for(let i=0;i<d.length;i+=4){
+          const v = (Math.random()*256)|0;
+
+          // mild chroma wobble
+          const cr = ((Math.random()*18)|0) - 9;
+          const cg = ((Math.random()*18)|0) - 9;
+          const cb = ((Math.random()*18)|0) - 9;
+
+          d[i]   = this._clampByte(v + cr);
+          d[i+1] = this._clampByte(v + cg);
+          d[i+2] = this._clampByte(v + cb);
+
+          // alpha: not tiny. Your old "5" was effectively invisible.
+          // Also add a very small breathing to feel analog.
+          const a = this.baseAlpha + (((Math.sin((this.t + i*0.0007)*0.06) * 10) | 0));
+          d[i+3] = this._clampByte(a);
         }
-        ctx.putImageData(img,0,0);
 
-        if (Math.random()<0.25){
+        ctx.putImageData(img, 0, 0);
+
+        // --- 2) scanlines/glitches: rare and soft ---
+        // bright line
+        if (Math.random() < this.lineProbBright){
           const y = (Math.random()*this.h)|0;
-          ctx.fillStyle = "rgba(255,255,255,.24)";
-          ctx.fillRect(0,y,this.w,1);
-        }
-        if (Math.random()<0.10){
-          const y = (Math.random()*this.h)|0;
-          ctx.fillStyle = "rgba(0,0,0,.22)";
-          ctx.fillRect(0,y,this.w,2);
+          ctx.fillStyle = "rgba(255,255,255,.14)";
+          ctx.fillRect(0, y, this.w, 1);
         }
 
-        requestAnimationFrame(()=>this.loop());
+        // dark line
+        if (Math.random() < this.lineProbDark){
+          const y = (Math.random()*this.h)|0;
+          ctx.fillStyle = "rgba(0,0,0,.14)";
+          ctx.fillRect(0, y, this.w, 2);
+        }
+
+        // occasional burst (2-4 near lines)
+        if (Math.random() < this.lineBurstProb){
+          const baseY = (Math.random()*this.h)|0;
+          const n = 2 + ((Math.random()*3)|0);
+          ctx.fillStyle = "rgba(255,255,255,.10)";
+          for(let k=0;k<n;k++){
+            const y = baseY + k;
+            if (y>=0 && y<this.h) ctx.fillRect(0, y, this.w, 1);
+          }
+        }
+
+        this._raf = requestAnimationFrame(()=>this.loop());
       }
     }
     const pix = new PixelOverlay($("pix"));
