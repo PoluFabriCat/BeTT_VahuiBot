@@ -2293,13 +2293,13 @@
       audio.sfx("wrong");
       showCenterText("ты что вообще ошалела иди открывай и не наглей");
       $("envWrap").classList.add("shake");
-      setTimeout(()=>$("envWrap").classList.remove("shake"), 500);
+      setTimeout(()=>$("envWrap").classList.remove("shake"), 600);
 
       if (!throwUsed){
         throwUsed=true;
         audio.sfx("whoosh");
         throwBtn.classList.add("hidden");
-        setTimeout(()=> throwBtn.remove(), 500);
+        setTimeout(()=> throwBtn.remove(), 700);
       }
     });
 
