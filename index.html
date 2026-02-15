@@ -2595,8 +2595,8 @@
       });
     })();
     /* =========================================================
-   Letter Tilt + Proper Save (Canvas render) ✅ Telegram-stable
-   ========================================================= */
+       Letter Tilt (tap-to-tilt) + Save (fast canvas) ✅ optimized
+       ========================================================= */
     (() => {
       const $ = (id)=>document.getElementById(id);
 
@@ -2607,127 +2607,183 @@
       const textRoot    = $("letterText");
       if (!letterSlide || !notebook || !saveBtn || !textRoot) return;
 
-      /* -----------------------------
-         CSS (tilt only)
-      ----------------------------- */
+      // ---- CSS ----
       const style = document.createElement("style");
       style.textContent = `
         .letterSlide{ perspective: 900px; transform-style: preserve-3d; }
         .letterSlide .notebook{
           transform: rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) translateZ(0);
           transform-style: preserve-3d;
-          transition: transform 110ms ease;
           will-change: transform;
         }
       `;
       document.head.appendChild(style);
 
-      /* -----------------------------
-         Tilt (stable in Telegram WebView)
-         - listen on window so it works over buttons
-         - no reset on pointerup (so clicks don't "break" it)
-      ----------------------------- */
+      // ---- Tilt engine (no infinite rAF loop) ----
       let active = false;
-      let raf = 0, tx = 0, ty = 0;
-      let lastMoveT = 0;
+      let raf = 0;
+
+      // current tilt
+      let tx = 0, ty = 0;
+      // target tilt (spring)
+      let ttx = 0, tty = 0;
+
+      // cached rect
+      let rect = null;
+      function updateRect(){ rect = letterSlide.getBoundingClientRect(); }
+      updateRect();
+      window.addEventListener("resize", updateRect, {passive:true});
+      window.addEventListener("scroll", updateRect, {passive:true});
+
+      function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
       function apply(){
         raf = 0;
+
+        // лёгкая пружина к target
+        const k = 0.18;   // speed
+        tx += (ttx - tx) * k;
+        ty += (tty - ty) * k;
+
+        // мелкий "friction", чтобы не дрожало
+        if (Math.abs(ttx - tx) < 0.01) tx = ttx;
+        if (Math.abs(tty - ty) < 0.01) ty = tty;
+
         letterSlide.style.setProperty("--tiltX", `${tx.toFixed(2)}deg`);
         letterSlide.style.setProperty("--tiltY", `${ty.toFixed(2)}deg`);
+
+        // если ещё не дошли — продолжаем
+        if (tx !== ttx || ty !== tty) raf = requestAnimationFrame(apply);
       }
-      function setTilt(nx, ny){
-        tx = nx; ty = ny;
+
+      function setTarget(nx, ny){
+        ttx = nx; tty = ny;
         if(!raf) raf = requestAnimationFrame(apply);
       }
 
-      function onMove(e){
+      function resetTarget(){
+        setTarget(0, 0);
+      }
+
+      // ---- Pointer behaviour: "куда ткнул — туда наклон" ----
+      function tiltFromPoint(clientX, clientY, strength=1){
+        if(!rect) updateRect();
+        const px = (clientX - rect.left) / rect.width;
+        const py = (clientY - rect.top)  / rect.height;
+
+        // нормализация (-0.5..0.5)
+        const dx = clamp(px - 0.5, -0.55, 0.55);
+        const dy = clamp(py - 0.5, -0.55, 0.55);
+
+        // больше наклон по Y, чуть меньше по X
+        const maxY = 11 * strength;
+        const maxX =  9 * strength;
+
+        const ny = dx * maxY;     // rotateY
+        const nx = -dy * maxX;    // rotateX
+        setTarget(nx, ny);
+      }
+
+      // НЕ слушаем постоянно window.pointermove (это и даёт лаг/дергание).
+      // Только: pointerdown -> наклон к точке
+      // pointermove -> наклон, НО только когда палец держат (pressed)
+      let pressed = false;
+
+      function onDown(e){
         if(!active) return;
+        pressed = true;
 
-        const r = letterSlide.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width;
-        const py = (e.clientY - r.top)  / r.height;
+        // чтобы не реагировать на клики по UI-кнопкам (люблю/сохранить)
+        const hitBtn = e.target && (e.target.closest?.("#restart") || e.target.closest?.("#saveLetterBtn"));
+        const strength = hitBtn ? 0.55 : 1.05;
 
-        // если движение далеко от письма — мягко затухаем
-        if(px < -0.2 || px > 1.2 || py < -0.2 || py > 1.2){
-          setTilt(tx * 0.90, ty * 0.90);
-          return;
-        }
-
-        const dx = (px - 0.5);
-        const dy = (py - 0.5);
-
-        // "дорогой" диапазон
-        const newX = -dy * 8;  // rotateX
-        const newY =  dx * 10; // rotateY
-
-        // лёгкая инерция
-        setTilt(tx + (newX - tx) * 0.35, ty + (newY - ty) * 0.35);
-        lastMoveT = performance.now();
+        tiltFromPoint(e.clientX, e.clientY, strength);
       }
 
-      function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+      function onMove(e){
+        if(!active || !pressed) return;
 
-      function smoothReset(ms=180){
-        const sx = tx, sy = ty;
-        const t0 = performance.now();
-        function tick(){
-          const t = Math.min(1, (performance.now()-t0)/ms);
-          const k = 1 - easeOutCubic(t);
-          setTilt(sx * k, sy * k);
-          if(t < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
+        // при удержании — плавно следует
+        tiltFromPoint(e.clientX, e.clientY, 1.0);
       }
 
-      // Авто-замедленное затухание, если палец/мышь перестали двигаться
-      function decayLoop(){
-        if(active){
-          const idle = performance.now() - lastMoveT;
-          if(idle > 120){
-            setTilt(tx * 0.965, ty * 0.965);
-            if(Math.abs(tx) < 0.05) tx = 0;
-            if(Math.abs(ty) < 0.05) ty = 0;
-          }
-        }
-        requestAnimationFrame(decayLoop);
+      function onUp(){
+        if(!active) return;
+        pressed = false;
+        // мягко возвращаем
+        resetTarget();
       }
-      requestAnimationFrame(decayLoop);
 
       function enableTilt(){
         if(active) return;
         active = true;
-        lastMoveT = performance.now();
-        window.addEventListener("pointermove", onMove, {passive:true});
-      }
-      function disableTilt(){
-        active = false;
-        window.removeEventListener("pointermove", onMove);
-        smoothReset(200);
+        updateRect();
+
+        // важно: слушаем на letterSlide, а не на window — меньше событий и лагов
+        letterSlide.addEventListener("pointerdown", onDown, {passive:true});
+        letterSlide.addEventListener("pointermove", onMove, {passive:true});
+        window.addEventListener("pointerup", onUp, {passive:true});
+        window.addEventListener("pointercancel", onUp, {passive:true});
       }
 
-      // включать только когда letterSlide.show
+      function disableTilt(){
+        active = false;
+        pressed = false;
+        letterSlide.removeEventListener("pointerdown", onDown);
+        letterSlide.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        resetTarget();
+      }
+
+      // auto enable when shown
       const obs = new MutationObserver(() => {
         if (letterSlide.classList.contains("show")) enableTilt();
         else disableTilt();
       });
       obs.observe(letterSlide, { attributes:true, attributeFilter:["class"] });
 
-      // Реакция письма на кнопку "люблю"
+      // ---- LOVE button: visible kick + spring ----
       if (loveBtn){
         loveBtn.addEventListener("click", () => {
-          // маленький "kick"
-          const kx = (Math.random()*2 - 1) * 1.6;
-          const ky = (Math.random()*2 - 1) * 2.2;
-          setTilt(tx + kx, ty + ky);
-          smoothReset(260);
+          // сильнее и заметнее (короткая отдача)
+          const kx = (Math.random()*2 - 1) * 4.2;
+          const ky = (Math.random()*2 - 1) * 6.0;
+
+          // мгновенный “удар”
+          tx += kx * 0.55;
+          ty += ky * 0.55;
+          letterSlide.style.setProperty("--tiltX", `${tx.toFixed(2)}deg`);
+          letterSlide.style.setProperty("--tiltY", `${ty.toFixed(2)}deg`);
+
+          // цель — слегка в ту же сторону и потом в ноль
+          setTarget(kx * 0.35, ky * 0.35);
+          setTimeout(()=>resetTarget(), 220);
         }, {passive:true});
       }
 
       /* -----------------------------
-         Canvas render (pretty letter PNG)
-         Works better than DOM->PNG in Telegram
+         Save (FAST canvas): no full getImageData noise
       ----------------------------- */
+
+      // маленький тайл шума (64x64) — очень быстрый
+      let noiseTile = null;
+      function getNoiseTile(){
+        if (noiseTile) return noiseTile;
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        const ctx = c.getContext("2d");
+        const img = ctx.createImageData(64,64);
+        const d = img.data;
+        for(let i=0;i<d.length;i+=4){
+          const n = (Math.random()*20|0) + 230; // светлый шум
+          d[i]=n; d[i+1]=n; d[i+2]=n; d[i+3]=18; // низкая альфа
+        }
+        ctx.putImageData(img,0,0);
+        noiseTile = c;
+        return noiseTile;
+      }
+
       function getLetterLines(){
         return Array.from(textRoot.querySelectorAll("div")).map(d => (d.textContent || "").trim());
       }
@@ -2752,70 +2808,70 @@
         return y;
       }
 
+      function roundRect(ctx, x, y, w, h, r){
+        const rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x+rr, y);
+        ctx.arcTo(x+w, y,   x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x,   y+h, rr);
+        ctx.arcTo(x,   y+h, x,   y,   rr);
+        ctx.arcTo(x,   y,   x+w, y,   rr);
+        ctx.closePath();
+      }
+
       function renderLetterCanvas(){
         const dpr = Math.min(2, window.devicePixelRatio || 1);
 
         const cardRect = notebook.getBoundingClientRect();
-        const W = Math.max(320, Math.round(cardRect.width)); // чуть минимум, чтобы красиво
+        const W = Math.max(320, Math.round(cardRect.width));
         const padding = Math.round(Math.max(20, W * 0.06));
 
         const title = (notebook.querySelector(".noteTitle")?.textContent || "Любовное письмо").trim();
         const lines = getLetterLines();
 
-        // оценка высоты по реальному тексту (чтобы не обрезало)
-        // примерно: 1 строка ~ 24px, плюс запас
         const approx = Math.max(10, lines.length + 10);
         const H = Math.round(padding*2 + 70 + approx * 24);
 
         const c = document.createElement("canvas");
-        c.width = Math.floor(W * dpr);
+        c.width  = Math.floor(W * dpr);
         c.height = Math.floor(H * dpr);
         const ctx = c.getContext("2d");
         ctx.setTransform(dpr,0,0,dpr,0,0);
 
-        // --- фон: "бумага" с лёгкой текстурой ---
+        // paper base
         ctx.fillStyle = "#f3efe3";
         ctx.fillRect(0,0,W,H);
 
-        // шум-текстура (процедурно)
-        const img = ctx.getImageData(0,0,W,H);
-        const d = img.data;
-        for(let i=0;i<d.length;i+=4){
-          const n = ((Math.random()*18)|0) - 9; // лёгкий шум
-          d[i]   = Math.max(0, Math.min(255, d[i]   + n));
-          d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
-          d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
-          // alpha оставляем
-        }
-        ctx.putImageData(img, 0, 0);
+        // subtle paper texture (fast pattern)
+        const tile = getNoiseTile();
+        const pat = ctx.createPattern(tile, "repeat");
+        ctx.fillStyle = pat;
+        ctx.fillRect(0,0,W,H);
 
-        // --- "карточка" со скруглением + тенью ---
+        // card shadow
         const rx = 18;
         const x0 = 16, y0 = 16, w0 = W-32, h0 = H-32;
 
         ctx.save();
-        ctx.shadowColor = "rgba(0,0,0,.18)";
-        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(0,0,0,.16)";
+        ctx.shadowBlur = 16;
         ctx.shadowOffsetY = 10;
-
-        ctx.beginPath();
         roundRect(ctx, x0, y0, w0, h0, rx);
-        ctx.fillStyle = "rgba(255,255,255,.25)";
+        ctx.fillStyle = "rgba(255,255,255,.22)";
         ctx.fill();
         ctx.restore();
 
-        // рамка
-        ctx.beginPath();
+        // border
         roundRect(ctx, x0, y0, w0, h0, rx);
         ctx.strokeStyle = "rgba(0,0,0,.12)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // вертикальная красная линия "тетрадь"
+        // red margin line
         ctx.fillStyle = "rgba(255,75,115,.42)";
         ctx.fillRect(padding + 18, padding + 10, 3, H - padding*2 - 20);
 
-        // голубые строки
+        // blue lines
         ctx.strokeStyle = "rgba(80,150,255,.18)";
         ctx.lineWidth = 1;
         const lineTop = padding + 86;
@@ -2826,12 +2882,12 @@
           ctx.stroke();
         }
 
-        // заголовок
+        // title
         ctx.fillStyle = "rgba(20,20,24,.92)";
         ctx.font = "900 18px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
         ctx.fillText(title, padding + 28, padding + 44);
 
-        // текст
+        // text
         ctx.font = "800 15px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
         ctx.fillStyle = "rgba(20,20,24,.88)";
 
@@ -2857,22 +2913,12 @@
           if (ty0 > H - padding - 20) break;
         }
 
-        // небольшой watermark снизу
+        // watermark
         ctx.fillStyle = "rgba(255,77,125,.22)";
         ctx.font = "900 12px ui-rounded, system-ui";
         ctx.fillText("💌 для Джамы", W - padding - 92, H - padding + 2);
 
         return c;
-
-        function roundRect(ctx, x, y, w, h, r){
-          const rr = Math.min(r, w/2, h/2);
-          ctx.moveTo(x+rr, y);
-          ctx.arcTo(x+w, y,   x+w, y+h, rr);
-          ctx.arcTo(x+w, y+h, x,   y+h, rr);
-          ctx.arcTo(x,   y+h, x,   y,   rr);
-          ctx.arcTo(x,   y,   x+w, y,   rr);
-          ctx.closePath();
-        }
       }
 
       async function canvasToBlob(canvas){
@@ -2880,7 +2926,7 @@
       }
 
       async function saveLetter(){
-        // Выключаем tilt, чтобы картинка была ровная
+        // фикс: при сохранении убираем наклон
         const wasActive = active;
         if (wasActive) disableTilt();
 
@@ -2895,11 +2941,9 @@
 
           const file = new File([blob], "love-letter.png", { type:"image/png" });
 
-          // Telegram/iOS: это самый шанс "в галерею" через share sheet
           if (navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
             await navigator.share({ files:[file], title:"Письмо", text:"💌" });
           } else {
-            // fallback: скачать
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -2924,7 +2968,6 @@
 
           setTimeout(()=>{ saveBtn.textContent = prev; saveBtn.disabled=false; }, 1300);
         } finally {
-          // вернём tilt, если письмо всё ещё открыто
           if (letterSlide.classList.contains("show")) enableTilt();
         }
       }
