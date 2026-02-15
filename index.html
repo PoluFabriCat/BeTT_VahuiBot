@@ -846,9 +846,12 @@
       z-index: 5;   /* коробка */
     }
 
+    /* НЕ трогаем position, чтобы работала траектория envArc */
     #envPullReal{
-      position: relative;
-      z-index: 10;  /* конверт выше коробки */
+      z-index: 10;         /* просто выше коробки */
+      position: absolute;  /* на всякий случай фиксируем абсолют */
+      left: 50%;
+      top: 64%;
     }
     /* cheap barrel-ish feel */
     .viewport{
