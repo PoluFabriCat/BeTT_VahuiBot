@@ -2342,7 +2342,107 @@
       letterSlide.classList.add("shake");
       setTimeout(()=>letterSlide.classList.remove("shake"), 380);
     });
+    /* =========================================================
+       Cinematic breathing + emotion sync (box/env pulse)
+       ========================================================= */
+    const Pulse = (() => {
+      // базовые параметры "дыхания"
+      let baseAmp   = 0.025;  // базовая амплитуда
+      let baseSpeed = 0.55;   // базовая скорость (циклы/сек)
 
+      // усиление (эмоции)
+      let boost = 0;          // 0..1
+      let boostTarget = 0;    // куда стремимся
+      let boostDecay = 1.2;   // как быстро затухает
+      let boostRise  = 7.0;   // как быстро набирается
+
+      let t0 = performance.now();
+
+      function bgmIsPlaying(){
+        return !!(audio && audio.bgmEl && !audio.bgmEl.paused);
+      }
+
+      // мягкий "киношный" импульс: вдох/выдох, без дрожи
+      function shapeWave(t, speed){
+        // основной вдох
+        const a = Math.sin(t * speed * Math.PI * 2);
+        const b = Math.sin(t * speed * Math.PI * 4) * 0.22; // легкая "неровность"
+        const x = (a * 0.70 + b * 0.30); // -1..1
+        const y = (x * 0.5 + 0.5);      // 0..1
+
+        // делаем "удар" чуть более выраженным, но мягким
+        return Math.pow(y, 1.9);
+      }
+
+      // вызов: Pulse.hit({strength, hold, decay, speedUp})
+      function hit(opts={}){
+        const strength = Math.max(0, Math.min(1, opts.strength ?? 0.6));
+        const holdMs   = opts.hold ?? 0;
+        boostDecay     = opts.decay ?? 1.2;
+
+        // сразу поднимем таргет
+        boostTarget = Math.max(boostTarget, strength);
+
+        // если надо подержать — держим таргет и потом отпускаем
+        if (holdMs > 0){
+          setTimeout(()=>{ boostTarget = 0; }, holdMs);
+        } else {
+          // небольшой автоспад чтобы не залипало
+          setTimeout(()=>{ boostTarget = 0; }, 180);
+        }
+
+        // кратковременное ускорение можно сделать через временную смену baseSpeed
+        if (opts.speedUp){
+          const old = baseSpeed;
+          baseSpeed = Math.max(0.35, Math.min(1.2, old + opts.speedUp));
+          setTimeout(()=>{ baseSpeed = old; }, opts.speedUpHold ?? 520);
+        }
+      }
+
+      function tick(){
+        const t = (performance.now() - t0) / 1000;
+
+        // плавно тянем boost к boostTarget
+        const dt = 1/60;
+        const riseK  = boostRise;
+        const decayK = boostDecay;
+
+        if (boost < boostTarget){
+          boost += (boostTarget - boost) * (1 - Math.exp(-riseK * dt));
+        } else {
+          boost += (boostTarget - boost) * (1 - Math.exp(-decayK * dt));
+        }
+
+        // амплитуда и скорость зависят от boost
+        const amp   = baseAmp + boost * 0.020;      // +2% max
+        const speed = baseSpeed + boost * 0.55;     // ускорение в эмоциях
+
+        const w = shapeWave(t, speed);
+
+        if (bgmIsPlaying()){
+          // Step2: box
+          if (boxRot){
+            const extra = (stepIndex === 1 ? 0.006 : 0.0);
+            boxRot.setScale(1 + (w * (amp + extra)));
+          }
+
+          // Step3: env
+          if (envRot){
+            const extra = (stepIndex === 2 ? 0.006 : 0.0);
+            envRot.setScale(1 + (w * (amp + extra)));
+          }
+        } else {
+          boxRot?.setScale(1);
+          envRot?.setScale(1);
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+
+      return { hit };
+    })();
     /* =========================================================
    Boot (fixed: no ghost-click + knock after first tap)
    ========================================================= */
