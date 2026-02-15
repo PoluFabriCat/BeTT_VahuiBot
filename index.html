@@ -1161,8 +1161,8 @@
         this.ctx=null; this.unlocked=false;
         this.buffers=new Map();
         this.bgmEl=null;
-        this.bgmGain=0.01;
-        this.sfxGain=0.70;
+        this.bgmGain=0.009;
+        this.sfxGain=0.90;
         this.master=null; this.sfxBus=null;
       }
       async init(){
@@ -1253,6 +1253,24 @@
       }
     }
     const audio = new AudioEngine();
+
+    function resumeAudio(){
+      if (!audio.ctx) return;
+      if (audio.ctx.state !== "running"){
+        audio.ctx.resume().catch(()=>{});
+      }
+    }
+
+// когда телега сворачивает/разворачивает вебвью — WebAudio часто “засыпает”
+document.addEventListener("visibilitychange", ()=>{
+  if (!document.hidden) resumeAudio();
+});
+
+window.addEventListener("focus", resumeAudio);
+window.addEventListener("pageshow", resumeAudio);
+
+// и на любой тап тоже (надежно в TG)
+window.addEventListener("pointerdown", resumeAudio, {passive:true});
 
     /* =========================================================
        Loader
