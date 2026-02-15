@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
@@ -2594,288 +2595,288 @@
         say(pickLine());
       });
     })();
-    /* =========================================================
-       LOVE button kick + Save (fast canvas) ✅ Telegram-safe
-       ========================================================= */
-    (() => {
-      const $ = (id)=>document.getElementById(id);
+  /* =========================================================
+     LOVE button kick + Save (fast canvas) ✅ Telegram-safe
+     ========================================================= */
+  (() => {
+    const $ = (id)=>document.getElementById(id);
 
-      let tries = 0;
-      function init(){
-        const letterSlide = $("letterSlide");
-        const notebook    = letterSlide?.querySelector(".notebook");
-        const saveBtn     = $("saveLetterBtn");
-        const loveBtn     = $("restart");     // кнопка "люблю"
-        const textRoot    = $("letterText");
-        if (!letterSlide || !notebook || !saveBtn || !textRoot){
-          if (tries++ < 80) requestAnimationFrame(init);
-          return;
-        }
-        if (letterSlide.__loveSaveWired) return;
-        letterSlide.__loveSaveWired = true;
+    let tries = 0;
+    function init(){
+      const letterSlide = $("letterSlide");
+      const notebook    = letterSlide?.querySelector(".notebook");
+      const saveBtn     = $("saveLetterBtn");
+      const loveBtn     = $("restart");     // кнопка "люблю"
+      const textRoot    = $("letterText");
+      if (!letterSlide || !notebook || !saveBtn || !textRoot){
+        if (tries++ < 80) requestAnimationFrame(init);
+        return;
+      }
+      if (letterSlide.__loveSaveWired) return;
+      letterSlide.__loveSaveWired = true;
 
-        /* -----------------------------
-           CSS: заметный kick (без tilt)
-        ----------------------------- */
-        if (!document.getElementById("loveKickStyle")){
-          const style = document.createElement("style");
-          style.id = "loveKickStyle";
-          style.textContent = `
-            /* применяем к письму (notebook) */
-            #letterSlide .notebook{
-              transform: translateZ(0);
-              will-change: transform;
-            }
-            /* быстрый, видимый “удар” */
-            #letterSlide .notebook.kick{
-              animation: loveKick 220ms cubic-bezier(.2,.9,.25,1);
-            }
-            @keyframes loveKick{
-              0%   { transform: translateZ(0) scale(1) rotate(0deg); }
-              25%  { transform: translateZ(0) scale(1.02) rotate(-0.8deg); }
-              55%  { transform: translateZ(0) scale(0.995) rotate(0.9deg); }
-              100% { transform: translateZ(0) scale(1) rotate(0deg); }
-            }
-          `;
-          document.head.appendChild(style);
-        }
-
-        /* -----------------------------
-           LOVE: используем pointerdown (в Telegram быстрее и без лагов)
-           + стоп всплытия, чтобы не триггерило другие обработчики
-        ----------------------------- */
-        function doLoveKick(){
-          // перезапуск анимации
-          notebook.classList.remove("kick");
-          // reflow
-          void notebook.offsetWidth;
-          notebook.classList.add("kick");
-          // снять класс после анимации
-          setTimeout(()=>notebook.classList.remove("kick"), 260);
-
-          // если хочешь звук:
-          if (typeof audio?.sfx === "function") audio.sfx("sparkle");
-        }
-
-        if (loveBtn && !loveBtn.__wired){
-          loveBtn.__wired = true;
-          loveBtn.addEventListener("pointerdown", (e) => {
-            // важно для Telegram WebView
-            e.preventDefault();
-            e.stopPropagation();
-            doLoveKick();
-          }, {passive:false});
-        }
-
-        /* -----------------------------
-           Save (FAST canvas) + watermark fixed
-        ----------------------------- */
-        let noiseTile = null;
-        function getNoiseTile(){
-          if (noiseTile) return noiseTile;
-          const c = document.createElement("canvas");
-          c.width = c.height = 64;
-          const ctx = c.getContext("2d");
-          const img = ctx.createImageData(64,64);
-          const d = img.data;
-          for(let i=0;i<d.length;i+=4){
-            const n = (Math.random()*20|0) + 230;
-            d[i]=n; d[i+1]=n; d[i+2]=n; d[i+3]=18;
+      /* -----------------------------
+         CSS: заметный kick (без tilt)
+      ----------------------------- */
+      if (!document.getElementById("loveKickStyle")){
+        const style = document.createElement("style");
+        style.id = "loveKickStyle";
+        style.textContent = `
+          /* применяем к письму (notebook) */
+          #letterSlide .notebook{
+            transform: translateZ(0);
+            will-change: transform;
           }
-          ctx.putImageData(img,0,0);
-          noiseTile = c;
-          return noiseTile;
-        }
-
-        function getLetterLines(){
-          return Array.from(textRoot.querySelectorAll("div")).map(d => (d.textContent || "").trim());
-        }
-
-        function wrapText(ctx, text, x, y, maxW, lineH){
-          const words = text.split(/\s+/).filter(Boolean);
-          let line = "";
-          for (let i=0;i<words.length;i++){
-            const test = line ? (line + " " + words[i]) : words[i];
-            if (ctx.measureText(test).width <= maxW){
-              line = test;
-            } else {
-              if (line) ctx.fillText(line, x, y);
-              y += lineH;
-              line = words[i];
-            }
+          /* быстрый, видимый “удар” */
+          #letterSlide .notebook.kick{
+            animation: loveKick 220ms cubic-bezier(.2,.9,.25,1);
           }
-          if (line){
-            ctx.fillText(line, x, y);
+          @keyframes loveKick{
+            0%   { transform: translateZ(0) scale(1) rotate(0deg); }
+            25%  { transform: translateZ(0) scale(1.02) rotate(-0.8deg); }
+            55%  { transform: translateZ(0) scale(0.995) rotate(0.9deg); }
+            100% { transform: translateZ(0) scale(1) rotate(0deg); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      /* -----------------------------
+         LOVE: используем pointerdown (в Telegram быстрее и без лагов)
+         + стоп всплытия, чтобы не триггерило другие обработчики
+      ----------------------------- */
+      function doLoveKick(){
+        // перезапуск анимации
+        notebook.classList.remove("kick");
+        // reflow
+        void notebook.offsetWidth;
+        notebook.classList.add("kick");
+        // снять класс после анимации
+        setTimeout(()=>notebook.classList.remove("kick"), 260);
+
+        // если хочешь звук:
+        if (typeof audio?.sfx === "function") audio.sfx("sparkle");
+      }
+
+      if (loveBtn && !loveBtn.__wired){
+        loveBtn.__wired = true;
+        loveBtn.addEventListener("pointerdown", (e) => {
+          // важно для Telegram WebView
+          e.preventDefault();
+          e.stopPropagation();
+          doLoveKick();
+        }, {passive:false});
+      }
+
+      /* -----------------------------
+         Save (FAST canvas) + watermark fixed
+      ----------------------------- */
+      let noiseTile = null;
+      function getNoiseTile(){
+        if (noiseTile) return noiseTile;
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        const ctx = c.getContext("2d");
+        const img = ctx.createImageData(64,64);
+        const d = img.data;
+        for(let i=0;i<d.length;i+=4){
+          const n = (Math.random()*20|0) + 230;
+          d[i]=n; d[i+1]=n; d[i+2]=n; d[i+3]=18;
+        }
+        ctx.putImageData(img,0,0);
+        noiseTile = c;
+        return noiseTile;
+      }
+
+      function getLetterLines(){
+        return Array.from(textRoot.querySelectorAll("div")).map(d => (d.textContent || "").trim());
+      }
+
+      function wrapText(ctx, text, x, y, maxW, lineH){
+        const words = text.split(/\s+/).filter(Boolean);
+        let line = "";
+        for (let i=0;i<words.length;i++){
+          const test = line ? (line + " " + words[i]) : words[i];
+          if (ctx.measureText(test).width <= maxW){
+            line = test;
+          } else {
+            if (line) ctx.fillText(line, x, y);
             y += lineH;
+            line = words[i];
           }
-          return y;
         }
+        if (line){
+          ctx.fillText(line, x, y);
+          y += lineH;
+        }
+        return y;
+      }
 
-        function roundRect(ctx, x, y, w, h, r){
-          const rr = Math.min(r, w/2, h/2);
+      function roundRect(ctx, x, y, w, h, r){
+        const rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x+rr, y);
+        ctx.arcTo(x+w, y,   x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x,   y+h, rr);
+        ctx.arcTo(x,   y+h, x,   y,   rr);
+        ctx.arcTo(x,   y,   x+w, y,   rr);
+        ctx.closePath();
+      }
+
+      function renderLetterCanvas(){
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+
+        const cardRect = notebook.getBoundingClientRect();
+        const W = Math.max(320, Math.round(cardRect.width));
+        const padding = Math.round(Math.max(20, W * 0.06));
+
+        const title = (notebook.querySelector(".noteTitle")?.textContent || "Любовное письмо").trim();
+        const lines = getLetterLines();
+
+        const approx = Math.max(10, lines.length + 10);
+        const H = Math.round(padding*2 + 70 + approx * 24);
+
+        const c = document.createElement("canvas");
+        c.width  = Math.floor(W * dpr);
+        c.height = Math.floor(H * dpr);
+        const ctx = c.getContext("2d");
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+
+        ctx.fillStyle = "#f3efe3";
+        ctx.fillRect(0,0,W,H);
+
+        const tile = getNoiseTile();
+        const pat = ctx.createPattern(tile, "repeat");
+        ctx.fillStyle = pat;
+        ctx.fillRect(0,0,W,H);
+
+        const rx = 18;
+        const x0 = 16, y0 = 16, w0 = W-32, h0 = H-32;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,.16)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 10;
+        roundRect(ctx, x0, y0, w0, h0, rx);
+        ctx.fillStyle = "rgba(255,255,255,.22)";
+        ctx.fill();
+        ctx.restore();
+
+        roundRect(ctx, x0, y0, w0, h0, rx);
+        ctx.strokeStyle = "rgba(0,0,0,.12)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(255,75,115,.42)";
+        ctx.fillRect(padding + 18, padding + 10, 3, H - padding*2 - 20);
+
+        ctx.strokeStyle = "rgba(80,150,255,.18)";
+        ctx.lineWidth = 1;
+        const lineTop = padding + 86;
+        for(let y=lineTop; y < H - padding; y += 26){
           ctx.beginPath();
-          ctx.moveTo(x+rr, y);
-          ctx.arcTo(x+w, y,   x+w, y+h, rr);
-          ctx.arcTo(x+w, y+h, x,   y+h, rr);
-          ctx.arcTo(x,   y+h, x,   y,   rr);
-          ctx.arcTo(x,   y,   x+w, y,   rr);
-          ctx.closePath();
-        }
-
-        function renderLetterCanvas(){
-          const dpr = Math.min(2, window.devicePixelRatio || 1);
-
-          const cardRect = notebook.getBoundingClientRect();
-          const W = Math.max(320, Math.round(cardRect.width));
-          const padding = Math.round(Math.max(20, W * 0.06));
-
-          const title = (notebook.querySelector(".noteTitle")?.textContent || "Любовное письмо").trim();
-          const lines = getLetterLines();
-
-          const approx = Math.max(10, lines.length + 10);
-          const H = Math.round(padding*2 + 70 + approx * 24);
-
-          const c = document.createElement("canvas");
-          c.width  = Math.floor(W * dpr);
-          c.height = Math.floor(H * dpr);
-          const ctx = c.getContext("2d");
-          ctx.setTransform(dpr,0,0,dpr,0,0);
-
-          ctx.fillStyle = "#f3efe3";
-          ctx.fillRect(0,0,W,H);
-
-          const tile = getNoiseTile();
-          const pat = ctx.createPattern(tile, "repeat");
-          ctx.fillStyle = pat;
-          ctx.fillRect(0,0,W,H);
-
-          const rx = 18;
-          const x0 = 16, y0 = 16, w0 = W-32, h0 = H-32;
-
-          ctx.save();
-          ctx.shadowColor = "rgba(0,0,0,.16)";
-          ctx.shadowBlur = 16;
-          ctx.shadowOffsetY = 10;
-          roundRect(ctx, x0, y0, w0, h0, rx);
-          ctx.fillStyle = "rgba(255,255,255,.22)";
-          ctx.fill();
-          ctx.restore();
-
-          roundRect(ctx, x0, y0, w0, h0, rx);
-          ctx.strokeStyle = "rgba(0,0,0,.12)";
-          ctx.lineWidth = 2;
+          ctx.moveTo(padding, y);
+          ctx.lineTo(W - padding, y);
           ctx.stroke();
-
-          ctx.fillStyle = "rgba(255,75,115,.42)";
-          ctx.fillRect(padding + 18, padding + 10, 3, H - padding*2 - 20);
-
-          ctx.strokeStyle = "rgba(80,150,255,.18)";
-          ctx.lineWidth = 1;
-          const lineTop = padding + 86;
-          for(let y=lineTop; y < H - padding; y += 26){
-            ctx.beginPath();
-            ctx.moveTo(padding, y);
-            ctx.lineTo(W - padding, y);
-            ctx.stroke();
-          }
-
-          ctx.fillStyle = "rgba(20,20,24,.92)";
-          ctx.font = "900 18px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
-          ctx.fillText(title, padding + 28, padding + 44);
-
-          ctx.font = "800 15px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
-          ctx.fillStyle = "rgba(20,20,24,.88)";
-
-          const tx0 = padding + 28;
-          let ty0 = padding + 98;
-          const maxW = W - padding - tx0;
-
-          for(const raw of lines){
-            const t = raw.trim();
-            if (!t){ ty0 += 18; continue; }
-
-            if (/^[♥\s]+$/.test(t)){
-              ctx.font = "900 16px ui-rounded, system-ui";
-              ctx.fillStyle = "rgba(255,77,125,.85)";
-              ctx.fillText(t, tx0, ty0);
-              ctx.fillStyle = "rgba(20,20,24,.88)";
-              ctx.font = "800 15px ui-rounded, system-ui";
-              ty0 += 26;
-              continue;
-            }
-
-            ty0 = wrapText(ctx, t, tx0, ty0, maxW, 22) + 6;
-            if (ty0 > H - padding - 20) break;
-          }
-
-          // watermark FIX: якорим справа по реальной ширине текста
-          const wm = "💌 для Джамы";
-          ctx.fillStyle = "rgba(255,77,125,.22)";
-          ctx.font = "900 12px ui-rounded, system-ui";
-          const wmW = ctx.measureText(wm).width;
-          const wmX = Math.max(padding, W - padding - wmW);
-          const wmY = H - padding + 2;
-          ctx.fillText(wm, wmX, wmY);
-
-          return c;
         }
 
-        function canvasToBlob(canvas){
-          return new Promise((res) => canvas.toBlob(res, "image/png", 0.95));
-        }
+        ctx.fillStyle = "rgba(20,20,24,.92)";
+        ctx.font = "900 18px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillText(title, padding + 28, padding + 44);
 
-        async function saveLetter(){
-          const prev = saveBtn.textContent;
-          saveBtn.textContent = "Сохраняю…";
-          saveBtn.disabled = true;
+        ctx.font = "800 15px ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillStyle = "rgba(20,20,24,.88)";
 
-          try{
-            const canvas = renderLetterCanvas();
-            const blob = await canvasToBlob(canvas);
-            if(!blob) throw new Error("toBlob failed");
+        const tx0 = padding + 28;
+        let ty0 = padding + 98;
+        const maxW = W - padding - tx0;
 
-            const file = new File([blob], "love-letter.png", { type:"image/png" });
+        for(const raw of lines){
+          const t = raw.trim();
+          if (!t){ ty0 += 18; continue; }
 
-            if (navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
-              await navigator.share({ files:[file], title:"Письмо", text:"💌" });
-            } else {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "love-letter.png";
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              setTimeout(()=>URL.revokeObjectURL(url), 1500);
-            }
-
-            if (typeof audio?.sfx === "function") audio.sfx("success");
-            saveBtn.textContent = "Сохранено";
-            setTimeout(()=>{ saveBtn.textContent = prev; saveBtn.disabled=false; }, 900);
-
-          } catch (e){
-            if (typeof audio?.sfx === "function") audio.sfx("wrong");
-            saveBtn.textContent = "Не вышло 😅";
-            const msg = "В Telegram иногда нельзя сохранить напрямую. Нажми «Поделиться» → «Сохранить изображение» (или сделай скрин).";
-            if (typeof showCenterText === "function") showCenterText(msg);
-            else alert(msg);
-            setTimeout(()=>{ saveBtn.textContent = prev; saveBtn.disabled=false; }, 1300);
+          if (/^[♥\s]+$/.test(t)){
+            ctx.font = "900 16px ui-rounded, system-ui";
+            ctx.fillStyle = "rgba(255,77,125,.85)";
+            ctx.fillText(t, tx0, ty0);
+            ctx.fillStyle = "rgba(20,20,24,.88)";
+            ctx.font = "800 15px ui-rounded, system-ui";
+            ty0 += 26;
+            continue;
           }
+
+          ty0 = wrapText(ctx, t, tx0, ty0, maxW, 22) + 6;
+          if (ty0 > H - padding - 20) break;
         }
 
-        if (!saveBtn.__wired){
-          saveBtn.__wired = true;
-          saveBtn.addEventListener("click", (e)=>{ e.stopPropagation(); saveLetter(); }, {passive:true});
+        // watermark FIX: якорим справа по реальной ширине текста
+        const wm = "💌 для Джамы";
+        ctx.fillStyle = "rgba(255,77,125,.22)";
+        ctx.font = "900 12px ui-rounded, system-ui";
+        const wmW = ctx.measureText(wm).width;
+        const wmX = Math.max(padding, W - padding - wmW);
+        const wmY = H - padding + 2;
+        ctx.fillText(wm, wmX, wmY);
+
+        return c;
+      }
+
+      function canvasToBlob(canvas){
+        return new Promise((res) => canvas.toBlob(res, "image/png", 0.95));
+      }
+
+      async function saveLetter(){
+        const prev = saveBtn.textContent;
+        saveBtn.textContent = "Сохраняю…";
+        saveBtn.disabled = true;
+
+        try{
+          const canvas = renderLetterCanvas();
+          const blob = await canvasToBlob(canvas);
+          if(!blob) throw new Error("toBlob failed");
+
+          const file = new File([blob], "love-letter.png", { type:"image/png" });
+
+          if (navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+            await navigator.share({ files:[file], title:"Письмо", text:"💌" });
+          } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "love-letter.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url), 1500);
+          }
+
+          if (typeof audio?.sfx === "function") audio.sfx("success");
+          saveBtn.textContent = "Сохранено";
+          setTimeout(()=>{ saveBtn.textContent = prev; saveBtn.disabled=false; }, 900);
+
+        } catch (e){
+          if (typeof audio?.sfx === "function") audio.sfx("wrong");
+          saveBtn.textContent = "Не вышло 😅";
+          const msg = "Нуу, если чтоооо то можно сделать скрингот экрана :P А если не рабтает, то не моя вина...";
+          if (typeof showCenterText === "function") showCenterText(msg);
+          else alert(msg);
+          setTimeout(()=>{ saveBtn.textContent = prev; saveBtn.disabled=false; }, 1300);
         }
       }
 
-      if (document.readyState === "loading"){
-        document.addEventListener("DOMContentLoaded", init, {once:true});
-      } else {
-        init();
+      if (!saveBtn.__wired){
+        saveBtn.__wired = true;
+        saveBtn.addEventListener("click", (e)=>{ e.stopPropagation(); saveLetter(); }, {passive:true});
       }
-      setTimeout(init, 0);
-    })();
+    }
+
+    if (document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", init, {once:true});
+    } else {
+      init();
+    }
+    setTimeout(init, 0);
+  })();
     /* =========================================================
    Boot (fixed: no ghost-click + knock after first tap)
    ========================================================= */
