@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ru">
 <head>
@@ -2813,9 +2812,16 @@
         const wm = "💌 для Джамы";
         ctx.fillStyle = "rgba(255,77,125,.22)";
         ctx.font = "900 12px ui-rounded, system-ui";
+
         const wmW = ctx.measureText(wm).width;
-        const wmX = Math.max(padding, W - padding - wmW);
-        const wmY = H - padding + 2;
+
+        // сдвиги (подстрой числа)
+        const shiftLeft = 10;  // левее на 10px
+        const shiftUp   = 8;   // выше на 8px
+
+        const wmX = Math.max(padding, W - padding - wmW - shiftLeft);
+        const wmY = H - padding + 2 - shiftUp;
+
         ctx.fillText(wm, wmX, wmY);
 
         return c;
