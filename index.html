@@ -2132,6 +2132,18 @@
 
     async function unlockSequence(){
       audio.sfx("success");
+      audio.sfx("sparkle");
+
+      // ✅ частицы из крышки коробки
+      const topRect = $("boxTop").getBoundingClientRect();
+      const vpRect  = $("viewport").getBoundingClientRect();
+
+      const x = (topRect.left + topRect.width/2) - vpRect.left;
+      const y = (topRect.top  + topRect.height/2) - vpRect.top;
+
+      fx.burstAt(x, y, "confetti", 1.15);
+      setTimeout(()=>fx.burstAt(x, y-18, "hearts", 1.00), 70);
+      audio.sfx("success");
       fx.burst("confetti");
       audio.sfx("sparkle");
 
