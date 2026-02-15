@@ -726,6 +726,8 @@
     /* FX canvases */
     canvas#fx{
       position:absolute; inset:0; pointer-events:none; z-index: 6;
+      width:100%;
+      height:100%;
     }
     canvas#pix{
       position:absolute; inset:0; pointer-events:none; z-index:7;
@@ -1197,6 +1199,8 @@
           case "wrong":  this._beep(0.05,180,0.10,2); this._beep(0.04,140,0.10,2); break;
           case "success":this._beep(0.06,520,0.08,0); this._beep(0.05,660,0.10,1); this._beep(0.04,820,0.12,0); break;
           case "whoosh": this._beep(0.03,240,0.18,1); this._beep(0.02,180,0.20,1); break;
+          case "sparkle": this._beep(0.03, 520, 0.06, 1); setTimeout(()=>this._beep(0.035, 740, 0.06, 1), 70); setTimeout(()=>this._beep(0.04, 980, 0.07, 0), 140);setTimeout(()=>this._beep(0.055, 1220, 0.08, 0), 210);setTimeout(()=>this._beep(0.05, 420, 0.10, 2), 300);setTimeout(()=>this._beep(0.045, 260, 0.14, 2), 360);
+  break;
         }
       }
       async startBGM(){
@@ -2028,7 +2032,7 @@
 
     async function unlockSequence(){
       audio.sfx("success");
-      fx.burst("confetti"); fx.burst("hearts");
+      fx.burst("confetti");
 
       lockBtn.classList.remove("pulse");
       lockBtn.style.opacity = "0";
@@ -2120,9 +2124,12 @@
 
       envUnlocked = true;
       closeEnvLock();
+
+      // только звук успеха, без частиц
       audio.sfx("success");
-      fx.burst("confetti"); fx.burst("hearts");
-      envHint.textContent = "Вы можете нажать 'Назад' и открыть еще раз";
+
+      envHint.textContent = "Теперь нажми на печать ещё раз, чтобы открыть.";
+      sealBtn.classList.remove("pulse");
       sealBtn.classList.add("pulse");
     });
 
@@ -2144,13 +2151,18 @@
       const y = (sealRect.top + sealRect.height/2) - vpRect.top;
 
       // лёгкий слоумо (делает эффект "вау")
-      fx.timeScale = 0.35;
-      setTimeout(()=>fx.timeScale = 1, 420);
+      fx.timeScale = 0.32;
+      setTimeout(()=>fx.timeScale = 1, 520);
 
-      // фейерверк ИЗ КОНВЕРТА
-      fx.burstAt(x, y, "hearts", 1.15);
-      setTimeout(()=>fx.burstAt(x, y, "confetti", 1.2), 90);
-      setTimeout(()=>fx.burstAt(x, y - 12, "hearts", 1.05), 170);
+      // ✅ особый звук именно тут
+      audio.sfx("sparkle");
+
+      // ✅ сердечки + фейерверк (кольцо + струя)
+      fx.burstAt(x, y, "hearts", 1.35);
+      setTimeout(()=>fx.burstAt(x, y, "confetti", 1.35), 70);
+      setTimeout(()=>fx.burstAt(x, y - 14, "hearts", 1.25), 140);
+      setTimeout(()=>fx.burstAt(x, y - 24, "confetti", 1.15), 230);
+      setTimeout(()=>fx.burstAt(x, y - 10, "hearts", 1.10), 320);
 
       // письмо выезжает
       setTimeout(()=>{
