@@ -862,6 +862,14 @@
       border-radius: 30px;   /* степень закругления */
       overflow: hidden;      /* чтобы фон не выходил за края */
     }
+    /* конверт падает вниз */
+    #envWrap.drop{
+      animation: envDrop 520ms cubic-bezier(.18,.88,.16,1) both;
+    }
+    @keyframes envDrop{
+      from { transform: translateY(0); }
+      to   { transform: translateY(30px); }
+    }
     .loaderImg{
       display:block;
       width:min(240px, 70vw);
@@ -2289,17 +2297,27 @@
 
     // Only "throw away" button
     let throwUsed=false;
+    const envWrap = $("envWrap");
+
     throwBtn.addEventListener("click", ()=>{
       audio.sfx("wrong");
+
+      // надпись показывается 600мс
       showCenterText("ты что вообще ошалела иди открывай и не наглей");
-      $("envWrap").classList.add("shake");
-      setTimeout(()=>$("envWrap").classList.remove("shake"), 600);
+      envWrap.classList.add("shake");
+      setTimeout(()=>envWrap.classList.remove("shake"), 600);
 
       if (!throwUsed){
         throwUsed=true;
-        audio.sfx("whoosh");
-        throwBtn.classList.add("hidden");
-        setTimeout(()=> throwBtn.remove(), 700);
+
+        // ЖДЁМ 600мс, потом конверт падает вниз
+        setTimeout(()=>{
+          audio.sfx("whoosh");
+          envWrap.classList.add("drop");   // <- вот это "опустить конверт"
+
+          throwBtn.classList.add("hidden"); // кнопку убрать
+          // remove можешь вообще не делать (чтобы не прыгало)
+        }, 600);
       }
     });
 
