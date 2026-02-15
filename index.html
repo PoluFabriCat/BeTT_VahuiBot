@@ -151,7 +151,7 @@
       box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,.04);
       background:
-        radial-gradient(900px 600px at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 60%),
+        radial-gradient(900px 600px at 100% 0%, rgba(255,90,150,.38), rgba(255,90,150,0) 100%),
         linear-gradient(180deg, #14151a 0%, #0c0d11 100%);
       transform: translateZ(0);
     }
@@ -859,6 +859,18 @@
       border-radius: 30px;   /* степень закругления */
       overflow: hidden;      /* чтобы фон не выходил за края */
     }
+    .loaderImg{
+      display:block;
+      width:min(240px, 70vw);
+      height:auto;
+      margin: 0 auto 10px auto;
+
+      border-radius:22px;
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow:0 14px 22px rgba(0,0,0,.18);
+
+      object-fit:cover;
+    }
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important; transition:none !important;}
     }
@@ -872,6 +884,7 @@
 <body>
   <div class="loader" id="loader">
     <div class="loaderCard">
+      <img class="loaderImg" src="Images/jama.png" alt="Jama">
       <div class="loaderTitle">Загрузка любви...</div>
       <div class="loaderSub">Тапни на экран, чтобы начать :)</div>
       <div class="bar"><i id="barFill"></i></div>
@@ -1047,14 +1060,14 @@
                   <div class="notebook">
                     <div class="noteTitle">Любовное письмо</div>
                     <div class="noteText" id="letterText">
-                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
+                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
                       <div>Котеночек, привет</div>
                       <div>Я спрятал это письмо внутри конверта и посылки,</div>
                       <div>чтобы сказать простую вещь:</div>
                       <div>Ты — мой самый милый “счастливый случай”.</div>
                       <div>Пусть у тебя на душе будет тепло,</div>
                       <div>даже когда вокруг холодно.</div>
-                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
+                      <div>♥♥♥♥♥♥♥♥♥♥♥♥♥♥</div>
                     </div>
                     <div class="row" style="margin-top:14px;">
                       <button class="btn primary wide" id="restart">♥люблю♥</button>
@@ -2152,7 +2165,7 @@
       // только звук успеха, без частиц
       audio.sfx("success");
 
-      envHint.textContent = "Это письмо было написано с любовью и теплом. Как бв эм, такое и на стену повесить не жалко боше";
+      envHint.textContent = "Это письмо было написано с любовью и теплом. Как бы эм, такое и на стену повесить не жалко боше :o";
       sealBtn.classList.remove("pulse");
       sealBtn.classList.add("pulse");
     });
